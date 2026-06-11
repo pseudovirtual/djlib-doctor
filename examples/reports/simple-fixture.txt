@@ -1,0 +1,15 @@
+djlib-doctor verification: PASS
+Source: tests/fixtures/rekordbox/simple.xml
+File existence check: off
+Collection tracks: 3
+Playlist references: 2
+Local file-backed tracks: 2
+Streaming placeholders: 1
+Unknown location tracks: 0
+Missing local files: 0
+Cues: 3 (2 hotcue, 1 memory, 1 loop)
+Failures: 0
+Warnings: 0
+
+Suggested next actions:
+- Create a snapshot before planning any cleanup or comparing this export to another export.

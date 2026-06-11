@@ -1,0 +1,379 @@
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+import sqlite3
+import sys
+import xml.etree.ElementTree as ET
+
+from .apply_manifest import build_apply_manifest, write_apply_manifest
+from .compatibility import (
+    customize_audio_compatibility_profile,
+    get_audio_compatibility_profile,
+    list_audio_compatibility_profiles,
+)
+from .collision_policy import get_duplicate_collision_policy
+from .compare import compare_exports, write_compare_report
+from .decision_sheet import write_decision_sheet
+from .plan import (
+    build_audio_compatibility_plan,
+    build_bad_paths_plan,
+    build_cues_plan,
+    build_duplicates_plan,
+    build_missing_files_plan,
+    load_plan,
+    write_plan,
+)
+from .port_serato import build_rekordbox_to_serato_plan, write_rekordbox_to_serato_plan
+from .rekordbox_xml import parse_rekordbox_xml
+from .reviewer import load_review_log, run_interactive_review
+from .schemas import render_schema
+from .serato_sqlite import inspect_serato_root_sqlite, write_serato_inspection
+from .snapshot import create_snapshot
+from .verify import SCHEMA_VERSION as VERIFY_SCHEMA_VERSION
+from .verify import verify_library
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(prog="djlib-doctor")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    verify_parser = subparsers.add_parser("verify", help="Verify a Rekordbox XML export without writing anything.")
+    verify_parser.add_argument("xml", type=Path, nargs="?")
+    verify_parser.add_argument(
+        "--no-file-check",
+        action="store_true",
+        help="Parse and classify tracks without checking whether local paths exist.",
+    )
+    verify_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print a machine-readable JSON verification report.",
+    )
+    verify_parser.add_argument(
+        "--pretty",
+        action="store_true",
+        help="Pretty-print JSON output. Only applies with --json.",
+    )
+    verify_parser.add_argument(
+        "--out",
+        type=Path,
+        help="Write the verification report to this file as text or JSON.",
+    )
+    verify_parser.add_argument(
+        "--schema-version",
+        action="store_true",
+        help="Print the verification report schema version and exit.",
+    )
+
+    snapshot_parser = subparsers.add_parser("snapshot", help="Write a read-only snapshot directory for a Rekordbox XML export.")
+    snapshot_parser.add_argument("--rekordbox-xml", required=True, type=Path)
+    snapshot_parser.add_argument("--out", required=True, type=Path)
+    snapshot_parser.add_argument("--music-root", type=Path)
+    snapshot_parser.add_argument(
+        "--no-file-check",
+        action="store_true",
+        help="Parse and classify tracks without checking whether local paths exist.",
+    )
+    snapshot_parser.add_argument(
+        "--redact-paths",
+        action="store_true",
+        help="Redact source, local file, and inventory paths in snapshot artifacts for sharing.",
+    )
+
+    plan_parser = subparsers.add_parser("plan", help="Build a read-only cleanup plan from a snapshot.")
+    plan_subparsers = plan_parser.add_subparsers(dest="plan_command", required=True)
+    missing_parser = plan_subparsers.add_parser("missing-files", help="Plan review actions for missing local files.")
+    missing_parser.add_argument("--snapshot", required=True, type=Path)
+    missing_parser.add_argument("--out", required=True, type=Path)
+    duplicates_parser = plan_subparsers.add_parser("duplicates", help="Plan review actions for duplicate collection records.")
+    duplicates_parser.add_argument("--snapshot", required=True, type=Path)
+    duplicates_parser.add_argument("--out", required=True, type=Path)
+    duplicates_parser.add_argument(
+        "--collision-policy",
+        default="cue-safe",
+        choices=("cue-safe", "quality", "keep-both"),
+        help="How to choose duplicate survivors. Defaults to preserving cue-bearing records.",
+    )
+    bad_paths_parser = plan_subparsers.add_parser("bad-paths", help="Plan review actions for tracks pointing at bad/staging folders.")
+    bad_paths_parser.add_argument("--snapshot", required=True, type=Path)
+    bad_paths_parser.add_argument("--out", required=True, type=Path)
+    bad_paths_parser.add_argument(
+        "--marker",
+        action="append",
+        dest="markers",
+        help="Folder-name marker to flag. Can be repeated; defaults cover trash/staging/temp/quarantine-style folders.",
+    )
+    compatibility_parser = plan_subparsers.add_parser(
+        "audio-compatibility",
+        help="Plan review actions from audio probe metadata CSV.",
+    )
+    compatibility_parser.add_argument("--probe-csv", type=Path)
+    compatibility_parser.add_argument("--out", type=Path)
+    compatibility_parser.add_argument(
+        "--profile",
+        default="rekordbox-conservative",
+        help="Named compatibility profile. Use --list-profiles to see options.",
+    )
+    compatibility_parser.add_argument("--list-profiles", action="store_true", help="List audio compatibility profiles and exit.")
+    compatibility_parser.add_argument("--allow-extension", action="append", dest="allowed_extensions", help="Allowed extension override, repeatable.")
+    compatibility_parser.add_argument("--allow-codec", action="append", dest="allowed_codecs", help="Allowed codec override, repeatable.")
+    compatibility_parser.add_argument("--max-sample-rate", type=int, help="Maximum allowed sample rate in Hz.")
+    compatibility_parser.add_argument("--max-bit-depth", type=int, help="Maximum allowed bit depth.")
+    compatibility_parser.add_argument("--warn-below-bitrate", type=int, help="Warn below this bit rate in kbps.")
+    cues_parser = plan_subparsers.add_parser("cues", help="Plan review actions for cue coverage differences between exports.")
+    cues_parser.add_argument("--baseline", required=True, type=Path)
+    cues_parser.add_argument("--final", required=True, type=Path)
+    cues_parser.add_argument("--out", required=True, type=Path)
+
+    explain_parser = subparsers.add_parser("explain", help="Explain a generated plan.")
+    explain_parser.add_argument("--plan", required=True, type=Path)
+
+    decision_parser = subparsers.add_parser("decision-sheet", help="Write a human review CSV from a generated plan.")
+    decision_parser.add_argument("--plan", required=True, type=Path)
+    decision_parser.add_argument("--out", required=True, type=Path)
+
+    review_parser = subparsers.add_parser("review", help="Interactively review a generated plan and record decisions.")
+    review_parser.add_argument("--plan", required=True, type=Path)
+    review_parser.add_argument("--out", required=True, type=Path)
+
+    manifest_parser = subparsers.add_parser("apply-manifest", help="Write a dry-run-only apply manifest from a generated plan.")
+    manifest_parser.add_argument("--plan", required=True, type=Path)
+    manifest_parser.add_argument("--out", required=True, type=Path)
+    manifest_parser.add_argument("--review-log", type=Path, help="Review decision log produced by `djlib-doctor review`.")
+    manifest_parser.add_argument("--only-reviewed", action="store_true", help="Include only actions present in the review log.")
+
+    schema_parser = subparsers.add_parser("schema", help="Print report and CSV schema metadata.")
+    schema_parser.add_argument("name", nargs="?", help="Optional schema name.")
+    schema_parser.add_argument("--pretty", action="store_true", help="Pretty-print JSON output.")
+
+    inspect_parser = subparsers.add_parser("inspect", help="Inspect DJ library storage without writing to it.")
+    inspect_subparsers = inspect_parser.add_subparsers(dest="inspect_command", required=True)
+    inspect_serato_parser = inspect_subparsers.add_parser("serato", help="Inspect Serato root.sqlite schema and row counts.")
+    inspect_serato_parser.add_argument("--library-dir", required=True, type=Path, help="Serato Library directory containing root.sqlite.")
+    inspect_serato_parser.add_argument("--out", required=True, type=Path)
+
+    port_parser = subparsers.add_parser("port", help="Build dry-run migration plans between DJ library platforms.")
+    port_subparsers = port_parser.add_subparsers(dest="port_command", required=True)
+    rb_to_serato_parser = port_subparsers.add_parser("rb-to-serato", help="Plan a Rekordbox XML playlist as a Serato crate preview.")
+    rb_to_serato_parser.add_argument("--rekordbox-xml", required=True, type=Path)
+    rb_to_serato_parser.add_argument("--playlist", required=True)
+    rb_to_serato_parser.add_argument("--out", required=True, type=Path)
+    rb_to_serato_parser.add_argument("--crate-prefix", default="RB - ")
+
+    compare_parser = subparsers.add_parser("compare", help="Compare two Rekordbox XML exports without writing to either.")
+    compare_subparsers = compare_parser.add_subparsers(dest="compare_command", required=True)
+    exports_parser = compare_subparsers.add_parser("exports", help="Compare baseline and final Rekordbox XML exports.")
+    exports_parser.add_argument("--baseline", required=True, type=Path)
+    exports_parser.add_argument("--final", required=True, type=Path)
+    exports_parser.add_argument("--out", type=Path)
+    exports_parser.add_argument("--json", action="store_true", help="Print JSON instead of text.")
+    exports_parser.add_argument("--pretty", action="store_true", help="Pretty-print JSON output. Only applies with --json.")
+    exports_parser.add_argument("--check-files", action="store_true", help="Check whether final-export local paths exist.")
+
+    args = parser.parse_args(argv)
+
+    if args.command == "verify":
+        if args.schema_version:
+            print(VERIFY_SCHEMA_VERSION)
+            return 0
+        if args.xml is None:
+            verify_parser.error("the following arguments are required: xml")
+        try:
+            library = parse_rekordbox_xml(args.xml)
+        except (ET.ParseError, OSError, ValueError) as exc:
+            print(f"djlib-doctor verification: ERROR\n{exc}", file=sys.stderr)
+            return 3
+        report = verify_library(library, check_files=not args.no_file_check, source_path=str(args.xml))
+        rendered = report.render_json(pretty=args.pretty) if args.json else report.render_text()
+        if args.out:
+            args.out.parent.mkdir(parents=True, exist_ok=True)
+            args.out.write_text(rendered + "\n", encoding="utf-8")
+            print(f"Verification report written: {args.out}")
+        if args.json:
+            print(rendered)
+        else:
+            print(rendered)
+        return 0 if report.passed else 1
+
+    if args.command == "snapshot":
+        try:
+            result = create_snapshot(
+                rekordbox_xml=args.rekordbox_xml,
+                out_dir=args.out,
+                music_root=args.music_root,
+                check_files=not args.no_file_check,
+                redact_paths=args.redact_paths,
+            )
+        except (ET.ParseError, OSError, ValueError) as exc:
+            print(f"djlib-doctor snapshot: ERROR\n{exc}", file=sys.stderr)
+            return 3
+        print(f"Snapshot written: {result.snapshot_path}")
+        print(result.report.render_text())
+        return 0 if result.report.passed else 1
+
+    if args.command == "plan":
+        if args.plan_command == "missing-files":
+            try:
+                report = build_missing_files_plan(args.snapshot)
+                write_plan(report, args.out)
+            except (OSError, KeyError, ValueError, json.JSONDecodeError) as exc:
+                print(f"djlib-doctor plan: ERROR\n{exc}", file=sys.stderr)
+                return 3
+            print(f"Plan written: {args.out}")
+            print(report.render_text())
+            return 0
+        if args.plan_command == "cues":
+            try:
+                report = build_cues_plan(args.baseline, args.final)
+                write_plan(report, args.out)
+            except (ET.ParseError, OSError, KeyError, ValueError, json.JSONDecodeError) as exc:
+                print(f"djlib-doctor plan: ERROR\n{exc}", file=sys.stderr)
+                return 3
+            print(f"Plan written: {args.out}")
+            print(report.render_text())
+            return 0
+        if args.plan_command == "duplicates":
+            try:
+                report = build_duplicates_plan(args.snapshot, collision_policy=get_duplicate_collision_policy(args.collision_policy))
+                write_plan(report, args.out)
+            except (OSError, KeyError, ValueError, json.JSONDecodeError) as exc:
+                print(f"djlib-doctor plan: ERROR\n{exc}", file=sys.stderr)
+                return 3
+            print(f"Plan written: {args.out}")
+            print(report.render_text())
+            return 0
+        if args.plan_command == "bad-paths":
+            try:
+                markers = tuple(args.markers) if args.markers else None
+                report = build_bad_paths_plan(args.snapshot, markers=markers) if markers else build_bad_paths_plan(args.snapshot)
+                write_plan(report, args.out)
+            except (OSError, KeyError, ValueError, json.JSONDecodeError) as exc:
+                print(f"djlib-doctor plan: ERROR\n{exc}", file=sys.stderr)
+                return 3
+            print(f"Plan written: {args.out}")
+            print(report.render_text())
+            return 0
+        if args.plan_command == "audio-compatibility":
+            if args.list_profiles:
+                for profile in list_audio_compatibility_profiles():
+                    print(f"{profile.name}: {profile.description}")
+                return 0
+            if args.probe_csv is None:
+                compatibility_parser.error("the following arguments are required: --probe-csv")
+            if args.out is None:
+                compatibility_parser.error("the following arguments are required: --out")
+            try:
+                profile = customize_audio_compatibility_profile(
+                    get_audio_compatibility_profile(args.profile),
+                    allowed_extensions=tuple(args.allowed_extensions) if args.allowed_extensions else None,
+                    allowed_codecs=tuple(args.allowed_codecs) if args.allowed_codecs else None,
+                    max_sample_rate_hz=args.max_sample_rate,
+                    max_bit_depth=args.max_bit_depth,
+                    warn_below_bit_rate_kbps=args.warn_below_bitrate,
+                )
+                report = build_audio_compatibility_plan(args.probe_csv, profile=profile)
+                write_plan(report, args.out)
+            except (OSError, KeyError, ValueError, json.JSONDecodeError) as exc:
+                print(f"djlib-doctor plan: ERROR\n{exc}", file=sys.stderr)
+                return 3
+            print(f"Plan written: {args.out}")
+            print(report.render_text())
+            return 0
+
+    if args.command == "explain":
+        try:
+            report = load_plan(args.plan)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print(f"djlib-doctor explain: ERROR\n{exc}", file=sys.stderr)
+            return 3
+        print(report.render_text())
+        return 0
+
+    if args.command == "decision-sheet":
+        try:
+            report = load_plan(args.plan)
+            write_decision_sheet(report, args.out)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print(f"djlib-doctor decision-sheet: ERROR\n{exc}", file=sys.stderr)
+            return 3
+        print(f"Decision sheet written: {args.out}")
+        return 0
+
+    if args.command == "review":
+        try:
+            report = load_plan(args.plan)
+            run_interactive_review(report, args.out)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print(f"djlib-doctor review: ERROR\n{exc}", file=sys.stderr)
+            return 3
+        return 0
+
+    if args.command == "apply-manifest":
+        try:
+            report = load_plan(args.plan)
+            review_log = load_review_log(args.review_log) if args.review_log else None
+            manifest = build_apply_manifest(report, review_log=review_log, only_reviewed=args.only_reviewed)
+            write_apply_manifest(manifest, args.out)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print(f"djlib-doctor apply-manifest: ERROR\n{exc}", file=sys.stderr)
+            return 3
+        print(f"Dry-run apply manifest written: {args.out}")
+        return 0
+
+    if args.command == "schema":
+        try:
+            print(render_schema(args.name, pretty=args.pretty))
+        except ValueError as exc:
+            print(f"djlib-doctor schema: ERROR\n{exc}", file=sys.stderr)
+            return 3
+        return 0
+
+    if args.command == "inspect":
+        if args.inspect_command == "serato":
+            try:
+                inspection = inspect_serato_root_sqlite(args.library_dir / "root.sqlite")
+                out_path = write_serato_inspection(inspection, args.out)
+            except (OSError, sqlite3.Error, ValueError) as exc:
+                print(f"djlib-doctor inspect: ERROR\n{exc}", file=sys.stderr)
+                return 3
+            print(f"Serato inspection written: {out_path}")
+            return 0
+
+    if args.command == "port":
+        if args.port_command == "rb-to-serato":
+            try:
+                plan = build_rekordbox_to_serato_plan(args.rekordbox_xml, args.playlist, crate_prefix=args.crate_prefix)
+                outputs = write_rekordbox_to_serato_plan(plan, args.out)
+            except (ET.ParseError, OSError, ValueError) as exc:
+                print(f"djlib-doctor port: ERROR\n{exc}", file=sys.stderr)
+                return 3
+            print(f"Port manifest written: {outputs['manifest']}")
+            print(f"Serato crate preview written: {outputs['crate_preview']}")
+            print(f"Unsupported report written: {outputs['unsupported_csv']}")
+            return 0
+
+    if args.command == "compare":
+        if args.compare_command == "exports":
+            try:
+                report = compare_exports(args.baseline, args.final, check_files=args.check_files)
+                if args.out:
+                    write_compare_report(report, args.out)
+            except (ET.ParseError, OSError, ValueError) as exc:
+                print(f"djlib-doctor compare: ERROR\n{exc}", file=sys.stderr)
+                return 3
+            if args.json:
+                print(report.render_json(pretty=args.pretty))
+            else:
+                if args.out:
+                    print(f"Compare report written: {args.out}")
+                print(report.render_text())
+            return 0 if report.passed else 1
+
+    parser.error(f"unknown command: {args.command}")
+    return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

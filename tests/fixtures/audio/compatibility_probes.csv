@@ -1,0 +1,6 @@
+track_id,artist,title,path,extension,codec,sample_rate_hz,bit_depth,bit_rate_kbps,duration_seconds,probe_ok
+1,Fixture Artist,AAC M4A,/fixture/music/aac-track.m4a,.m4a,aac,44100,,256,180.0,yes
+2,Fixture Artist,ALAC M4A,/fixture/music/alac-track.m4a,.m4a,alac,44100,16,900,181.0,yes
+3,Fixture Artist,FLAC Track,/fixture/music/flac-track.flac,.flac,flac,44100,16,850,182.0,yes
+4,Fixture Artist,High Rate AIFF,/fixture/music/high-rate.aiff,.aiff,pcm_s24be,96000,24,2304,183.0,yes
+5,Fixture Artist,Probe Failed,/fixture/music/probe-failed.wav,.wav,,0,0,0,0,no

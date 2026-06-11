@@ -1,0 +1,26 @@
+djlib-doctor verification: FAIL
+Source: tests/fixtures/rekordbox/validation_issues.xml
+File existence check: off
+Collection tracks: 3
+Playlist references: 2
+Local file-backed tracks: 2
+Streaming placeholders: 0
+Unknown location tracks: 1
+Missing local files: 0
+Cues: 1 (0 hotcue, 1 memory, 0 loop)
+Failures: 2
+Warnings: 2
+
+Failures:
+- Duplicate collection TrackID found: 10
+- Playlist reference points at missing collection TrackID 999: ROOT / Broken Playlist
+
+Warnings:
+- Unknown location kind for TrackID 11: mystery://fixture-track
+- Unknown cue type on TrackID 10 at 1.000s
+
+Suggested next actions:
+- Run `djlib-doctor snapshot` and then `djlib-doctor plan duplicates` to choose cue-safe survivor records.
+- Inspect playlist references before removing or rebuilding playlists.
+- Review unknown locations; djlib-doctor will not guess whether they are safe local files or placeholders.
+- Review unknown cue types before migrating or comparing cue data.

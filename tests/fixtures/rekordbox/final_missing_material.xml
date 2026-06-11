@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DJ_PLAYLISTS Version="1.0.0">
+  <PRODUCT Name="rekordbox" Version="7.0.0" Company="AlphaTheta"/>
+  <COLLECTION Entries="2">
+    <TRACK TrackID="1" Name="Local Track" Artist="Fixture Artist" TotalTime="120" Kind="AIFF File" Location="file://localhost/private/tmp/djlib-doctor-fixture-present.aiff">
+      <POSITION_MARK Name="Memory One" Type="0" Start="12.345" Num="-1"/>
+    </TRACK>
+    <TRACK TrackID="3" Name="Streaming Track" Artist="Fixture Artist" TotalTime="140" Kind="Unknown Format" Location="file://localhostsoundcloud:tracks:123456"/>
+  </COLLECTION>
+  <PLAYLISTS>
+    <NODE Type="0" Name="ROOT" Count="1">
+      <NODE Name="Fixture Playlist" Type="1" KeyType="0" Entries="1">
+        <TRACK Key="1"/>
+      </NODE>
+    </NODE>
+  </PLAYLISTS>
+</DJ_PLAYLISTS>

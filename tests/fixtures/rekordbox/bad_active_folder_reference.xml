@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DJ_PLAYLISTS Version="1.0.0">
+  <PRODUCT Name="rekordbox" Version="7.0.0" Company="AlphaTheta"/>
+  <COLLECTION Entries="2">
+    <TRACK TrackID="10" Name="Active Bad Path" Artist="Fixture Artist" TotalTime="120" Kind="AIFF File" Location="file://localhost/private/tmp/djlib-doctor/bad-folder/active-bad-path.aiff">
+      <POSITION_MARK Name="Hotcue A" Type="0" Start="24.000" Num="0"/>
+    </TRACK>
+    <TRACK TrackID="11" Name="Clean Path" Artist="Fixture Artist" TotalTime="130" Kind="WAV File" Location="file://localhost/private/tmp/djlib-doctor/clean/clean-path.wav"/>
+  </COLLECTION>
+  <PLAYLISTS>
+    <NODE Type="0" Name="ROOT" Count="1">
+      <NODE Name="Fixture Playlist" Type="1" KeyType="0" Entries="1">
+        <TRACK Key="10"/>
+      </NODE>
+    </NODE>
+  </PLAYLISTS>
+</DJ_PLAYLISTS>

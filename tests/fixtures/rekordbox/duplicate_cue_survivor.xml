@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DJ_PLAYLISTS Version="1.0.0">
+  <PRODUCT Name="rekordbox" Version="7.0.0" Company="AlphaTheta"/>
+  <COLLECTION Entries="2">
+    <TRACK TrackID="21" Name="Duplicate Tune" Artist="Fixture Artist" TotalTime="120" Kind="M4A File" Location="file://localhost/private/tmp/duplicate-tune.m4a"/>
+    <TRACK TrackID="22" Name="Duplicate Tune" Artist="Fixture Artist" TotalTime="120" Kind="AIFF File" Location="file://localhost/private/tmp/duplicate-tune.aiff">
+      <POSITION_MARK Name="Hotcue A" Type="0" Start="16.000" Num="0"/>
+    </TRACK>
+  </COLLECTION>
+  <PLAYLISTS>
+    <NODE Type="0" Name="ROOT" Count="1">
+      <NODE Name="Duplicates" Type="1" KeyType="0" Entries="2">
+        <TRACK Key="21"/>
+        <TRACK Key="22"/>
+      </NODE>
+    </NODE>
+  </PLAYLISTS>
+</DJ_PLAYLISTS>

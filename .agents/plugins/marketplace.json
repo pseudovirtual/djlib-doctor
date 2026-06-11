@@ -1,0 +1,20 @@
+{
+  "name": "djlib-doctor-repo",
+  "interface": {
+    "displayName": "djlib-doctor Repo Plugins"
+  },
+  "plugins": [
+    {
+      "name": "djlib-doctor",
+      "source": {
+        "source": "local",
+        "path": "./plugins/djlib-doctor"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Music"
+    }
+  ]
+}

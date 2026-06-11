@@ -1,0 +1,28 @@
+{
+  "counts": {
+    "collection_tracks": 3,
+    "cues": 3,
+    "failures": 0,
+    "hotcues": 2,
+    "local_file_tracks": 2,
+    "loops": 1,
+    "memory_cues": 1,
+    "missing_local_files": 0,
+    "playlist_references": 2,
+    "streaming_placeholders": 1,
+    "unknown_location_tracks": 0,
+    "warnings": 0
+  },
+  "failures": [],
+  "next_actions": [
+    "Create a snapshot before planning any cleanup or comparing this export to another export."
+  ],
+  "schema_version": "1.0",
+  "source": {
+    "check_files": false,
+    "path": "tests/fixtures/rekordbox/simple.xml",
+    "type": "rekordbox_xml"
+  },
+  "status": "pass",
+  "warnings": []
+}

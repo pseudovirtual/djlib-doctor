@@ -1,0 +1,35 @@
+{
+  "name": "djlib-doctor",
+  "version": "0.1.0",
+  "description": "Read-only Rekordbox DJ library verification and cleanup planning for Claude Desktop.",
+  "author": {
+    "name": "pseudovirtual"
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js"
+  },
+  "user_config": {
+    "rekordbox_exports_dir": {
+      "type": "directory",
+      "title": "Rekordbox exports folder",
+      "description": "Folder containing Rekordbox XML exports to verify."
+    },
+    "music_root": {
+      "type": "directory",
+      "title": "Music folder",
+      "description": "Optional folder to inventory when creating snapshots.",
+      "required": false
+    }
+  },
+  "tools": [
+    {
+      "name": "verify_rekordbox_export",
+      "description": "Read-only verification of a Rekordbox XML export."
+    },
+    {
+      "name": "snapshot_rekordbox_export",
+      "description": "Read-only snapshot of a Rekordbox XML export and optional music folder."
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DJ_PLAYLISTS Version="1.0.0">
+  <PRODUCT Name="rekordbox" Version="7.0.0" Company="AlphaTheta"/>
+  <COLLECTION Entries="2">
+    <TRACK TrackID="31" Name="Policy Tune" Artist="Fixture Artist" TotalTime="120" Kind="MP3 File" Location="file://localhost/private/tmp/policy-tune-cued.mp3">
+      <POSITION_MARK Name="Hotcue A" Type="0" Start="16.000" Num="0"/>
+    </TRACK>
+    <TRACK TrackID="32" Name="Policy Tune" Artist="Fixture Artist" TotalTime="120" Kind="WAV File" Location="file://localhost/private/tmp/policy-tune-clean.wav"/>
+  </COLLECTION>
+  <PLAYLISTS>
+    <NODE Type="0" Name="ROOT" Count="1">
+      <NODE Name="Duplicates" Type="1" KeyType="0" Entries="2">
+        <TRACK Key="31"/>
+        <TRACK Key="32"/>
+      </NODE>
+    </NODE>
+  </PLAYLISTS>
+</DJ_PLAYLISTS>

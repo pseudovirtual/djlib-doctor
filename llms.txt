@@ -1,0 +1,51 @@
+# djlib-doctor
+
+`djlib-doctor` is a read-only-first, cue-safe DJ library verification, cleanup planning, and dry-run porting toolkit for Rekordbox XML exports and Serato planning artifacts.
+
+Primary commands:
+
+- `djlib-doctor verify export.xml`
+- `djlib-doctor snapshot --rekordbox-xml export.xml --music-root ~/Music --out run/`
+- `djlib-doctor snapshot --rekordbox-xml export.xml --music-root ~/Music --out shareable-run/ --redact-paths`
+- `djlib-doctor plan missing-files --snapshot run/snapshot.json --out run/plan-missing-files.json`
+- `djlib-doctor plan duplicates --snapshot run/snapshot.json --out run/plan-duplicates.json`
+- `djlib-doctor plan duplicates --snapshot run/snapshot.json --out run/plan-duplicates-quality.json --collision-policy quality`
+- `djlib-doctor plan bad-paths --snapshot run/snapshot.json --out run/plan-bad-paths.json`
+- `djlib-doctor plan audio-compatibility --list-profiles`
+- `djlib-doctor plan audio-compatibility --probe-csv run/audio-probes.csv --out run/plan-audio-compatibility.json --profile rekordbox-conservative`
+- `djlib-doctor plan cues --baseline baseline.xml --final final.xml --out run/plan-cues.json`
+- `djlib-doctor explain --plan run/plan-missing-files.json`
+- `djlib-doctor review --plan run/plan-missing-files.json --out run/review-decisions.json`
+- `djlib-doctor decision-sheet --plan run/plan-missing-files.json --out run/decision-sheet.csv`
+- `djlib-doctor apply-manifest --plan run/plan-missing-files.json --review-log run/review-decisions.json --only-reviewed --out run/apply-manifest.json`
+- `djlib-doctor schema --pretty`
+- `djlib-doctor inspect serato --library-dir "/path/to/serato-library" --out run/inspect-serato`
+- `djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --out run/rb-to-serato`
+- `djlib-doctor compare exports --baseline baseline.xml --final final.xml --out run/compare.json`
+- `djlib-doctor compare exports --baseline baseline.xml --final final.xml --out run/compare-with-files.json --check-files`
+
+Safety boundary:
+
+- current workflows are read-only with respect to Rekordbox databases, XML exports, and music files
+- current Serato workflows are read-only or dry-run run-folder artifact generation only
+- future write-capable features must use dry-run manifests, backups, explicit approval, and post-apply verification
+
+Key concepts:
+
+- collection tracks are separate from playlist references
+- streaming placeholders are not missing local files
+- cue timing work must be preserved
+- duplicate matching needs evidence and confidence
+- duplicate collision policy can be `cue-safe`, `quality`, or `keep-both`
+- audio compatibility profile can be selected or overridden
+- weak matches become human-review rows, not automatic actions
+
+See:
+
+- `README.md`
+- `docs/feature-list.md`
+- `docs/safety.md`
+- `docs/reports.md`
+- `docs/legacy-script-audit.md`
+- `AGENTS.md`
+- `CLAUDE.md`
