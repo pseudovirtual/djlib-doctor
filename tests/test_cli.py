@@ -12,6 +12,14 @@ FIXTURE = Path(__file__).parent / "fixtures" / "rekordbox" / "simple.xml"
 
 
 class CliTests(unittest.TestCase):
+    def test_self_test_command_passes(self):
+        stdout = io.StringIO()
+        with contextlib.redirect_stdout(stdout):
+            exit_code = main(["self-test"])
+
+        self.assertEqual(exit_code, 0)
+        self.assertIn("djlib-doctor self-test: PASS", stdout.getvalue())
+
     def test_verify_returns_input_error_for_malformed_xml(self):
         with TemporaryDirectory() as tmpdir:
             xml_path = Path(tmpdir) / "bad.xml"

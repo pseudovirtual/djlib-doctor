@@ -45,6 +45,7 @@ from .sqlite_stage import install_sqlite_stage, stage_sqlite_operations
 from .snapshot import create_snapshot
 from .verify import SCHEMA_VERSION as VERIFY_SCHEMA_VERSION
 from .verify import verify_library
+from .workflows import migrate_rekordbox_to_serato
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -202,6 +203,21 @@ def main(argv: list[str] | None = None) -> int:
     install_rb_db_parser.add_argument("--stage-dir", required=True, type=Path)
     install_rb_db_parser.add_argument("--db", required=True, type=Path)
     install_rb_db_parser.add_argument("--confirm-token", required=True)
+
+    migrate_parser = subparsers.add_parser("migrate", help="Run guided multi-step migration workflows.")
+    migrate_subparsers = migrate_parser.add_subparsers(dest="migrate_command", required=True)
+    migrate_rb_serato = migrate_subparsers.add_parser("rb-to-serato", help="Plan and optionally stage a Rekordbox XML to Serato migration.")
+    migrate_rb_serato.add_argument("--rekordbox-xml", required=True, type=Path)
+    migrate_rb_serato.add_argument("--playlist")
+    migrate_rb_serato.add_argument("--playlists-file", type=Path)
+    migrate_rb_serato.add_argument("--out", required=True, type=Path)
+    migrate_rb_serato.add_argument("--crate-prefix", default="RB - ")
+    migrate_rb_serato.add_argument("--serato-library-dir", type=Path)
+    migrate_rb_serato.add_argument("--serato-music-dir", type=Path)
+    migrate_rb_serato.add_argument("--stage-library", action="store_true")
+    migrate_rb_serato.add_argument("--stage-tags", action="store_true")
+
+    self_test_parser = subparsers.add_parser("self-test", help="Run a fast built-in smoke test using synthetic fixtures.")
 
     port_parser = subparsers.add_parser("port", help="Build dry-run migration plans between DJ library platforms.")
     port_subparsers = port_parser.add_subparsers(dest="port_command", required=True)
@@ -485,6 +501,51 @@ def main(argv: list[str] | None = None) -> int:
             print(f"Rekordbox DB stage installed: {args.stage_dir / 'rekordbox-sqlite-install-report.json'}")
             print(f"Backup: {report['backup']}")
             return 0
+
+    if args.command == "migrate":
+        if args.migrate_command == "rb-to-serato":
+            if bool(args.playlist) == bool(args.playlists_file):
+                migrate_rb_serato.error("exactly one of --playlist or --playlists-file is required")
+            try:
+                playlists = read_playlist_names(args.playlists_file) if args.playlists_file else ()
+                result = migrate_rekordbox_to_serato(
+                    rekordbox_xml=args.rekordbox_xml,
+                    playlist=args.playlist,
+                    playlists=playlists,
+                    out_dir=args.out,
+                    crate_prefix=args.crate_prefix,
+                    serato_library_dir=args.serato_library_dir,
+                    serato_music_dir=args.serato_music_dir,
+                    stage_library=args.stage_library,
+                    stage_tags=args.stage_tags,
+                )
+            except (ET.ParseError, OSError, sqlite3.Error, ValueError, RuntimeError, json.JSONDecodeError) as exc:
+                print(f"djlib-doctor migrate: ERROR\n{exc}", file=sys.stderr)
+                return 3
+            print(f"Port manifest: {result.port_manifest}")
+            for crate_path in result.crate_previews:
+                print(f"Crate preview: {crate_path}")
+            if result.serato_stage:
+                print(f"Serato stage: {result.serato_stage.stage_manifest_path}")
+                print(f"Serato install token: {result.serato_stage.install_token}")
+            if result.tag_stage:
+                print(f"Serato tag stage: {result.tag_stage.stage_manifest_path}")
+                print(f"Serato tag install token: {result.tag_stage.install_token}")
+            return 0
+
+    if args.command == "self-test":
+        fixture = Path(__file__).resolve().parents[2] / "tests" / "fixtures" / "rekordbox" / "simple.xml"
+        try:
+            library = parse_rekordbox_xml(fixture)
+            report = verify_library(library, check_files=False, source_path=str(fixture))
+            build_rekordbox_to_serato_plan(fixture, "ROOT / Fixture Playlist")
+        except Exception as exc:
+            print(f"djlib-doctor self-test: ERROR\n{exc}", file=sys.stderr)
+            return 3
+        print("djlib-doctor self-test: PASS")
+        print(f"Fixture: {fixture}")
+        print(f"Tracks: {report.collection_tracks}")
+        return 0
 
     if args.command == "port":
         if args.port_command == "rb-to-serato":
