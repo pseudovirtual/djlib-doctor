@@ -56,22 +56,21 @@ Implemented now:
 - Serato legacy crate preview generation in an output folder
 - staged Serato SQLite/crate updates from reviewed port manifests
 - guarded Serato stage install with backups, hashes, sidecar checks, app-closed checks, and explicit confirmation tokens
+- staged Serato audio tag writes for AIFF/AIF, M4A/MP4, and MP3 with backup/token install flow
+- staged file copy, move, delete, and ffmpeg conversion operations from explicit manifests
+- staged structured SQLite row operations for Rekordbox DB workflows
 - synthetic XML fixture tests
 - Codex and Claude project guidance files
 
 Not implemented yet:
 
-- write-capable cue cleanup
-- Serato audio-file tag writing
-- file moves, conversion, quarantine, or deletion
 - Rekordbox XML writing
-- Rekordbox database writing
 - Claude Desktop extension packaging
 - public PyPI or GitHub release
 
 ## Safety Promise
 
-The current project must not write to a Rekordbox database or real music library.
+The current project must not write to a Rekordbox database or real music library except through explicit staged install/apply commands with manifest files, backups, hashes, and confirmation tokens.
 
 Future write-capable features must be built behind:
 
@@ -200,9 +199,15 @@ djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlists-file playl
 djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlists-file playlists.txt --summary-only --out run/unused
 djlib-doctor stage serato --port-manifest run/rb-to-serato/port-manifest.json --serato-library-dir "/path/to/serato-library" --serato-music-dir "/path/to/_Serato_" --stage-dir run/serato-stage
 djlib-doctor install serato-stage --stage-dir run/serato-stage --serato-library-dir "/path/to/serato-library" --serato-music-dir "/path/to/_Serato_" --confirm-token "INSTALL_SERATO_STAGE:..."
+djlib-doctor stage serato-tags --port-manifest run/rb-to-serato/port-manifest.json --stage-dir run/serato-tags
+djlib-doctor install serato-tags --stage-dir run/serato-tags --confirm-token "INSTALL_SERATO_TAGS:..."
+djlib-doctor stage rekordbox-db --db master.db --operations rekordbox-ops.json --stage-dir run/rb-db-stage
+djlib-doctor install rekordbox-db --stage-dir run/rb-db-stage --db master.db --confirm-token "INSTALL_SQLITE_STAGE:..."
+djlib-doctor stage file-ops --operations file-ops.json --stage-dir run/file-ops-stage
+djlib-doctor install file-ops --stage-dir run/file-ops-stage --confirm-token "INSTALL_FILE_OPS:..."
 ```
 
-The install command writes live Serato SQLite/crate files only after a separate stage verifies and the exact stage token is supplied. It does not write Serato audio tags, so cue intents remain planning data until a future tag-writer milestone.
+The install commands write live files only after separate stages verify and exact stage tokens are supplied. Serato audio tags, Rekordbox SQLite row edits, and file copy/move/delete/convert operations are all explicit staged workflows, not side effects of planning.
 
 The `compare exports` command can compare a baseline and final XML export:
 

@@ -37,6 +37,9 @@ The project is not a one-click repair tool. It prioritizes verification, dry-run
 - dry-run Rekordbox XML to Serato port manifests and crate previews
 - Serato playlist-file batch planning, summary-only reports, crate-preview verification, cue-count metrics, format capability notes, and managed namespace warnings
 - staged Serato SQLite/crate updates and guarded install with backups, sidecar checks, app-closed checks, exact confirmation tokens, and hash verification
+- staged Serato audio tag writes for AIFF/AIF, M4A/MP4, and MP3 with backup/token install flow
+- staged structured Rekordbox SQLite row operations
+- staged file copy, move, delete, and ffmpeg conversion operations
 - safety utilities for future DB-write guardrails
 - Codex `AGENTS.md`
 - Claude `CLAUDE.md`
@@ -45,21 +48,14 @@ The project is not a one-click repair tool. It prioritizes verification, dry-run
 
 ## Not Implemented
 
-- real file moves
-- conversion
-- quarantine or deletion
 - Rekordbox XML writing
-- Rekordbox DB writing
-- Serato audio-tag writing
 - standalone MCP server
 - public GitHub publishing
 - PyPI publishing
 
 ## Safety
 
-Do not write to a Rekordbox database or real music library. Do not move, rename, convert, quarantine, or delete music files. Do not modify real Rekordbox XML exports.
-
-Do not write to Serato audio tags. Live Serato SQLite/crate writes are allowed only through `install serato-stage` after `stage serato` has produced a verified stage manifest and the caller supplies the exact confirmation token.
+Do not write to live databases, music files, or Serato audio tags from planning commands. Writes are allowed only through staged install/apply commands with exact confirmation tokens: `install serato-stage`, `install serato-tags`, `install rekordbox-db`, and `install file-ops`.
 
 Write-capable future features must require:
 

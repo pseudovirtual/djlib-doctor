@@ -291,7 +291,43 @@ Current behavior:
 - backs up live `root.sqlite` and overwritten crate files
 - verifies installed file hashes
 - writes `serato-install-report.json`
-- does not write Serato audio tags
+- does not write Serato audio tags; use `stage serato-tags` for the separate audio-tag workflow
+
+### Serato Audio Tag Stage And Install
+
+Stages and installs Serato cue/loop tag writes from a port manifest:
+
+```bash
+djlib-doctor stage serato-tags --port-manifest run/rb-to-serato/port-manifest.json --stage-dir run/serato-tags
+djlib-doctor install serato-tags --stage-dir run/serato-tags --confirm-token "INSTALL_SERATO_TAGS:..."
+```
+
+Current behavior:
+
+- stages tagged audio-file copies before touching originals
+- supports AIFF/AIF, M4A/MP4, and MP3 when `djlib-doctor[audio-tags]` is installed
+- records unsupported formats or missing dependencies in the stage manifest
+- backs up originals before install
+- requires exact install token
+
+### Generic Staged Write Operations
+
+Supports explicit manifest-backed write workflows:
+
+```bash
+djlib-doctor stage rekordbox-db --db master.db --operations rekordbox-ops.json --stage-dir run/rb-db-stage
+djlib-doctor install rekordbox-db --stage-dir run/rb-db-stage --db master.db --confirm-token "INSTALL_SQLITE_STAGE:..."
+djlib-doctor stage file-ops --operations file-ops.json --stage-dir run/file-ops-stage
+djlib-doctor install file-ops --stage-dir run/file-ops-stage --confirm-token "INSTALL_FILE_OPS:..."
+```
+
+Current behavior:
+
+- stages structured SQLite insert/update/delete operations on a DB copy
+- stages file copy, move, delete, and ffmpeg conversion operations
+- requires install tokens
+- creates backups before live mutation
+- verifies staged hashes
 
 ### Dry-Run Apply Manifest
 

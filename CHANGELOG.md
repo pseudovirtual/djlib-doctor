@@ -19,6 +19,7 @@
 - Added dry-run Rekordbox XML to Serato port manifests and Serato crate previews.
 - Expanded Serato dry-runs with playlist-file batches, summary-only mode, preview verification, cue-count metrics, format capability notes, and namespace warnings.
 - Added staged Serato SQLite/crate install workflow with stage manifests, verification, install tokens, backups, sidecar checks, app-closed checks, and hash verification.
+- Added staged Serato audio tag writes, structured Rekordbox SQLite row operations, and file copy/move/delete/convert operations behind manifest/token workflows.
 - Added repo-scoped Codex skill and plugin skeleton.
 - Added Claude Desktop extension template with explicit non-installable status.
 - Added safety guard utilities for future DB-write milestones.

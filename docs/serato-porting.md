@@ -11,16 +11,17 @@ The separate porting lab remains separate. The open-source project only copies g
 - cue-count and audio-format summaries
 - cue intent mapping for hotcues, memory cues, and loops
 - staged Serato SQLite and crate updates from a port manifest
+- staged Serato audio tag writes from a port manifest
 - guarded install with backups, hashes, app-closed checks, and an explicit confirmation token
 
 ## Safety Boundary
 
-Current Serato support can stage and install Serato SQLite/crate changes, but it still does not:
+Current Serato support separates the risky surfaces:
 
-- modify audio-file metadata tags
-- copy, move, convert, or delete music files
-- modify Rekordbox databases or XML exports
-- write cue data into audio files
+- `stage serato` / `install serato-stage` update Serato SQLite and crate files.
+- `stage serato-tags` / `install serato-tags` update Serato cue/loop tags in audio files.
+- planning commands do not write live files.
+- all install commands require exact stage tokens and backups.
 
 The install command is deliberately separate from planning and staging. It refuses to proceed unless the stage verifies, SQLite sidecars are absent, Serato is not running, and the caller supplies the exact install token from the stage manifest.
 
@@ -130,6 +131,32 @@ Install behavior:
 - verifies live installed file hashes against staged files
 - writes `serato-install-report.json`
 
+## Stage And Install Serato Audio Tags
+
+Serato cue and loop visibility requires audio-file metadata tags. Stage tag writes separately:
+
+```bash
+djlib-doctor stage serato-tags \
+  --port-manifest run/rb-to-serato/port-manifest.json \
+  --stage-dir run/serato-tags
+```
+
+Install the tagged copies only after reviewing the stage manifest:
+
+```bash
+djlib-doctor install serato-tags \
+  --stage-dir run/serato-tags \
+  --confirm-token "INSTALL_SERATO_TAGS:..."
+```
+
+Current support:
+
+- AIFF/AIF via ID3 GEOB-style Serato Markers2
+- M4A/MP4 via MP4 freeform `markersv2`
+- MP3 via ID3 GEOB-style Serato Markers2
+- backup originals before install
+- record unsupported formats and missing optional dependencies
+
 ## Serato Library Surfaces
 
 Serato DJ Pro uses more than one library surface:
@@ -161,7 +188,7 @@ Current dry-run cue intent mapping:
 - Rekordbox hotcue loops keep both hotcue and saved-loop intent rows.
 - Out-of-range cue slots and exhausted Serato slots are reported as unsupported.
 
-The planner does not write Serato audio tags. It records cue intent so future write-capable modules know what would need to be applied and reviewed.
+The planner does not write Serato audio tags. It records cue intent for `stage serato-tags`, where tag writes are staged and reviewed separately.
 
 Cue counts are reported three ways because Serato and Rekordbox do not map one-to-one:
 

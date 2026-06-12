@@ -10,11 +10,11 @@ Use this skill when the user wants to inspect, verify, snapshot, compare, port, 
 ## Safety Rules
 
 - Start read-only.
-- Do not write to a Rekordbox database.
+- Do not write to a Rekordbox database except through `install rekordbox-db` after a verified staged SQLite manifest and exact confirmation token.
 - Do not write to a live Serato database except through `install serato-stage` after a verified stage manifest and exact confirmation token.
-- Do not modify, move, rename, convert, quarantine, or delete music files.
+- Do not modify, move, rename, convert, quarantine, or delete music files except through `install file-ops` after a staged file-operation manifest and exact confirmation token.
 - Do not modify a real Rekordbox XML export.
-- Do not write Serato audio tags.
+- Do not write Serato audio tags except through `install serato-tags` after a staged audio-tag manifest and exact confirmation token.
 - Use `snapshot`, `plan`, `compare`, and `verify` before discussing any future write workflow.
 - Treat cue points as creative work that must be preserved.
 - Treat streaming placeholders as placeholders, not missing local files.

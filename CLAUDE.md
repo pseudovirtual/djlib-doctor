@@ -2,7 +2,7 @@
 
 `djlib-doctor` helps DJs verify and eventually plan safe cleanup for Rekordbox-oriented music libraries, with read-only/dry-run Serato porting support.
 
-Start with read-only XML verification. Never write to a Rekordbox database, Serato audio tags, move music files, convert audio, quarantine files, or delete anything. Live Serato SQLite/crate install is allowed only through `install serato-stage` after `stage serato` has produced a verified manifest and the caller supplies the exact confirmation token.
+Start with read-only XML verification. Writes are allowed only through explicit staged install commands with exact confirmation tokens: `install serato-stage`, `install serato-tags`, `install rekordbox-db`, and `install file-ops`. Never hide writes inside planning commands.
 
 Useful commands:
 

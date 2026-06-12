@@ -4,10 +4,10 @@
 
 ## Current Safety Rules
 
-- Do not write to any Rekordbox database.
+- Do not write to any Rekordbox database except through `install rekordbox-db` after a verified staged SQLite manifest and exact confirmation token.
 - Do not write to any live Serato database except through `install serato-stage` after a verified `stage serato` manifest and exact confirmation token.
-- Do not modify, move, rename, convert, quarantine, or delete real music files.
-- Do not write Serato audio tags.
+- Do not modify, move, rename, convert, quarantine, or delete real music files except through `install file-ops` after a staged file-operation manifest and exact confirmation token.
+- Do not write Serato audio tags except through `install serato-tags` after a staged audio-tag manifest and exact confirmation token.
 - Use synthetic fixtures for tests.
 - Keep collection `<TRACK>` records separate from playlist `<TRACK Key="...">` references.
 - Treat streaming placeholders as placeholders, not missing local files.

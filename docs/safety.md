@@ -6,15 +6,15 @@
 
 The current code must not:
 
-- write to a Rekordbox database
+- write to a Rekordbox database except through staged SQLite operations with exact confirmation tokens
 - write to a live Serato database except through `install serato-stage` after a verified stage, backup, sidecar check, app-closed check, and exact confirmation token
 - modify a Rekordbox XML export
 - modify Serato audio tags
-- move music files
+- move music files except through staged file operations with exact confirmation tokens
 - rename music files
-- convert audio files
+- convert audio files except through staged file operations with exact confirmation tokens
 - quarantine files
-- delete files
+- delete files except through staged file operations with exact confirmation tokens
 
 ## Future Write-Capable Rule
 
