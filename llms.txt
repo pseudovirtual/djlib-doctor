@@ -20,7 +20,9 @@ Primary commands:
 - `djlib-doctor apply-manifest --plan run/plan-missing-files.json --review-log run/review-decisions.json --only-reviewed --out run/apply-manifest.json`
 - `djlib-doctor schema --pretty`
 - `djlib-doctor inspect serato --library-dir "/path/to/serato-library" --out run/inspect-serato`
-- `djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --out run/rb-to-serato`
+- `djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --out run/rb-to-serato --verify-preview`
+- `djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlists-file playlists.txt --summary-only --out run/unused`
+- `djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlists-file playlists.txt --out run/rb-to-serato-batch`
 - `djlib-doctor compare exports --baseline baseline.xml --final final.xml --out run/compare.json`
 - `djlib-doctor compare exports --baseline baseline.xml --final final.xml --out run/compare-with-files.json --check-files`
 
@@ -28,6 +30,7 @@ Safety boundary:
 
 - current workflows are read-only with respect to Rekordbox databases, XML exports, and music files
 - current Serato workflows are read-only or dry-run run-folder artifact generation only
+- Serato dry-run manifests report cue-count semantics, format capability, managed crate namespace, skipped placeholders, and crate filename warnings
 - future write-capable features must use dry-run manifests, backups, explicit approval, and post-apply verification
 
 Key concepts:

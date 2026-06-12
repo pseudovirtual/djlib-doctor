@@ -35,6 +35,7 @@ The project is not a one-click repair tool. It prioritizes verification, dry-run
 - baseline/final export comparison
 - read-only Serato root.sqlite inspection
 - dry-run Rekordbox XML to Serato port manifests and crate previews
+- Serato playlist-file batch planning, summary-only reports, crate-preview verification, cue-count metrics, format capability notes, and managed namespace warnings
 - safety utilities for future DB-write guardrails
 - Codex `AGENTS.md`
 - Claude `CLAUDE.md`
@@ -81,7 +82,7 @@ Write-capable future features must require:
 8. Use `apply-manifest` only to produce dry-run-only operation manifests, and pass `--review-log` when decisions exist.
 9. Use `schema` when an agent needs report or CSV field contracts.
 10. Use `compare exports` when baseline and final XML exports exist.
-11. Use `inspect serato` and `port rb-to-serato` for Serato read-only/dry-run workflows.
+11. Use `inspect serato` and `port rb-to-serato` for Serato read-only/dry-run workflows. Prefer `--summary-only` before large batch runs.
 12. Avoid write-capable suggestions unless a later milestone implements the required safety workflow.
 
 ## Important Docs

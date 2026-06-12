@@ -34,6 +34,7 @@ The codebase includes safety utilities for future write-capable milestones:
 
 - detect Rekordbox SQLite sidecars such as `master.db-wal` and `master.db-shm`
 - detect Serato SQLite sidecars such as `root.sqlite-wal`, `root.sqlite-shm`, and `root.sqlite-journal`
+- check mocked or captured process listings for running Rekordbox or Serato apps before future staged installs
 - generate timestamped backup paths
 - aggregate safety check status
 

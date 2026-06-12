@@ -270,7 +270,9 @@ Commands:
 
 ```bash
 djlib-doctor inspect serato --library-dir "/path/to/serato-library" --out run/inspect-serato # done
-djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --out run/rb-to-serato # done
+djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --out run/rb-to-serato --verify-preview # done
+djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlists-file playlists.txt --summary-only --out run/unused # done
+djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlists-file playlists.txt --out run/rb-to-serato-batch # done
 ```
 
 Tasks:
@@ -280,6 +282,13 @@ Tasks:
 - generate schema fingerprint for Serato inspection (done)
 - write Serato legacy crate previews to run folders only (done)
 - generate dry-run Rekordbox XML to Serato port manifests (done)
+- support playlist-file batch planning (done)
+- support summary-only planning before writing artifacts (done)
+- verify single-crate preview order against the manifest (done)
+- report raw cue rows, unique per-track cues, and Serato-writable cue slots (done)
+- report Serato cue-tag capability by audio extension (done)
+- warn on trim-only playlist matches and sanitized crate filename collisions (done)
+- record managed crate namespace policy (done)
 - map hotcue, memory cue, and loop intent for Serato (done)
 - keep live Serato DB writing and audio-tag writing out of scope (done)
 

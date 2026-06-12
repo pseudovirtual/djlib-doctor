@@ -244,19 +244,29 @@ Current behavior:
 
 ### Rekordbox XML To Serato Dry-Run Port
 
-Builds a dry-run Serato crate plan from a Rekordbox XML playlist:
+Builds a dry-run Serato crate plan from Rekordbox XML playlists:
 
 ```bash
 djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --crate-prefix "RB - " --out run/rb-to-serato
+djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlists-file playlists.txt --crate-prefix "RB - " --out run/rb-to-serato-batch
+djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlists-file playlists.txt --summary-only --out run/unused
+djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --out run/rb-to-serato --verify-preview
 ```
 
 Current behavior:
 
 - writes `port-manifest.json`
-- writes a Serato legacy `.crate` preview in the output folder
+- writes Serato legacy `.crate` previews in the output folder
 - writes `unsupported.csv`
 - reuses the neutral library model used by Rekordbox parsing
 - maps hotcue, memory cue, and loop intent for Serato
+- supports one playlist or a text file of playlists
+- supports summary-only dry runs
+- verifies single-crate preview order against the manifest with `--verify-preview`
+- reports raw Rekordbox cue rows, unique per-track cues, and Serato-writable cue slots
+- reports Serato cue-tag capability by audio extension
+- records a managed crate namespace policy
+- warns on trim-only playlist matches and sanitized crate filename collisions
 - skips non-local placeholder tracks
 - never writes live Serato SQLite files or audio tags
 

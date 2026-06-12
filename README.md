@@ -52,7 +52,7 @@ Implemented now:
 - schema discovery for JSON reports and CSV inputs/outputs
 - baseline/final export comparison
 - read-only Serato `root.sqlite` inspection
-- dry-run Rekordbox XML playlist to Serato crate planning
+- dry-run Rekordbox XML playlist and playlist-file batch planning to Serato crate previews
 - Serato legacy crate preview generation in an output folder
 - synthetic XML fixture tests
 - Codex and Claude project guidance files
@@ -112,7 +112,7 @@ PYTHONPATH=src python3 -m djlib_doctor.cli review --plan work/snapshot-demo/plan
 PYTHONPATH=src python3 -m djlib_doctor.cli decision-sheet --plan work/snapshot-demo/plan-missing-files.json --out work/snapshot-demo/decision-sheet.csv
 PYTHONPATH=src python3 -m djlib_doctor.cli apply-manifest --plan work/snapshot-demo/plan-missing-files.json --review-log work/snapshot-demo/review-decisions.json --only-reviewed --out work/snapshot-demo/apply-manifest.json
 PYTHONPATH=src python3 -m djlib_doctor.cli schema --pretty
-PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlist "ROOT / Fixture Playlist" --out work/serato-port-demo
+PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlist "ROOT / Fixture Playlist" --out work/serato-port-demo --verify-preview
 PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline tests/fixtures/rekordbox/simple.xml --final tests/fixtures/rekordbox/simple.xml
 PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline tests/fixtures/rekordbox/simple.xml --final tests/fixtures/rekordbox/simple.xml --check-files
 ```
@@ -194,10 +194,12 @@ The Serato dry-run port command also exists:
 
 ```bash
 djlib-doctor inspect serato --library-dir "/path/to/serato-library" --out run/inspect-serato
-djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --crate-prefix "RB - " --out run/rb-to-serato
+djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --crate-prefix "RB - " --out run/rb-to-serato --verify-preview
+djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlists-file playlists.txt --crate-prefix "RB - " --out run/rb-to-serato-batch
+djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlists-file playlists.txt --summary-only --out run/unused
 ```
 
-These commands inspect or write run-folder artifacts only. They do not install Serato crates, write Serato SQLite files, or write audio tags.
+These commands inspect or write run-folder artifacts only. They do not install Serato crates, write Serato SQLite files, or write audio tags. The port manifest reports cue-count semantics, audio format capability, managed crate namespace policy, and warnings such as trim-only playlist matches or crate filename collisions.
 
 The `compare exports` command can compare a baseline and final XML export:
 

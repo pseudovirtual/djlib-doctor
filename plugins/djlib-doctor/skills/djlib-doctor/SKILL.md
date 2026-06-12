@@ -37,7 +37,8 @@ PYTHONPATH=src python3 -m djlib_doctor.cli decision-sheet --plan run/plan-missin
 PYTHONPATH=src python3 -m djlib_doctor.cli apply-manifest --plan run/plan-missing-files.json --review-log run/review-decisions.json --only-reviewed --out run/apply-manifest.json
 PYTHONPATH=src python3 -m djlib_doctor.cli schema --pretty
 PYTHONPATH=src python3 -m djlib_doctor.cli inspect serato --library-dir "/path/to/serato-library" --out run/inspect-serato
-PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --out run/rb-to-serato
+PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --out run/rb-to-serato --verify-preview
+PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml export.xml --playlists-file playlists.txt --summary-only --out run/unused
 PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline baseline.xml --final final.xml --out run/compare.json
 PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline baseline.xml --final final.xml --out run/compare-with-files.json --check-files
 ```

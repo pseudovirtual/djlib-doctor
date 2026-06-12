@@ -24,7 +24,8 @@ PYTHONPATH=src python3 -m djlib_doctor.cli apply-manifest --plan work/snapshot-d
 PYTHONPATH=src python3 -m djlib_doctor.cli schema --pretty
 PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline tests/fixtures/rekordbox/simple.xml --final tests/fixtures/rekordbox/simple.xml
 PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline tests/fixtures/rekordbox/simple.xml --final tests/fixtures/rekordbox/simple.xml --check-files
-PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlist "ROOT / Fixture Playlist" --out work/serato-port-demo
+PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlist "ROOT / Fixture Playlist" --out work/serato-port-demo --verify-preview
+PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlists-file playlists.txt --summary-only --out work/unused
 ```
 
 Important concepts:
@@ -51,5 +52,6 @@ Current project status:
 - schema discovery exists
 - baseline/final export compare exists
 - Serato read-only inspection and Rekordbox XML to Serato dry-run port manifests exist
+- Serato dry-run planning supports batch playlist files, summary-only reports, cue-count metrics, format capability notes, and crate-preview verification
 - tests use synthetic fixtures only
 - no DB writer exists

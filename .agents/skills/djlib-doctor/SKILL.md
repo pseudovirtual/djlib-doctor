@@ -49,7 +49,8 @@ PYTHONPATH=src python3 -m djlib_doctor.cli decision-sheet --plan run/plan-missin
 PYTHONPATH=src python3 -m djlib_doctor.cli apply-manifest --plan run/plan-missing-files.json --review-log run/review-decisions.json --only-reviewed --out run/apply-manifest.json
 PYTHONPATH=src python3 -m djlib_doctor.cli schema --pretty
 PYTHONPATH=src python3 -m djlib_doctor.cli inspect serato --library-dir "/path/to/serato-library" --out run/inspect-serato
-PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --out run/rb-to-serato
+PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --out run/rb-to-serato --verify-preview
+PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml export.xml --playlists-file playlists.txt --summary-only --out run/unused
 ```
 
 Compare baseline/final XML exports:
@@ -69,4 +70,5 @@ PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline baseline.x
 6. Ask or infer the user's duplicate collision preference and audio compatibility target before choosing `--collision-policy` or `--profile`.
 7. Use `review` for row-by-row human decisions; use `decision-sheet` only when a spreadsheet artifact is helpful.
 8. If the user has baseline and final XML exports, run `compare exports`.
-9. Suggest only read-only next steps unless a future write-capable milestone exists and the user explicitly asks for it.
+9. For Serato porting, prefer `--summary-only` first for batch playlist files, then generate crate previews with `--verify-preview` for single-playlist checks.
+10. Suggest only read-only next steps unless a future write-capable milestone exists and the user explicitly asks for it.

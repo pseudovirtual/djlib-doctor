@@ -205,17 +205,24 @@ djlib-doctor inspect serato --library-dir "/path/to/serato-library" --out run/in
 
 Answers:
 
-- which Rekordbox XML playlist is being mapped?
-- what Serato crate name would be generated?
+- which Rekordbox XML playlist or playlist batch is being mapped?
+- what Serato crate names and preview filenames would be generated?
 - which tracks are local and portable?
 - what cue/loop intents would need future Serato tag writing?
 - which tracks or cues are unsupported?
+- how many raw Rekordbox cue rows, unique per-track cues, and Serato-writable cue slots exist?
+- which audio extensions are present and what Serato cue-tag capability is known?
+- which managed crate namespace is being used?
 
 Command:
 
 ```bash
-djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --out run/rb-to-serato
+djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --out run/rb-to-serato --verify-preview
+djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlists-file playlists.txt --out run/rb-to-serato-batch
+djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlists-file playlists.txt --summary-only --out run/unused
 ```
+
+Cue counts deliberately separate source rows from target intents. Rekordbox hotcue-associated loops can map to both a Serato hotcue intent and a saved-loop intent, so the Serato-writable slot count can be larger than the source cue row count.
 
 ### Compare Report
 

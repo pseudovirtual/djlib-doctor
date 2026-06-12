@@ -32,7 +32,8 @@ PYTHONPATH=src python3 -m djlib_doctor.cli decision-sheet --plan work/snapshot-d
 PYTHONPATH=src python3 -m djlib_doctor.cli apply-manifest --plan work/snapshot-demo/plan-missing-files.json --review-log work/snapshot-demo/review-decisions.json --only-reviewed --out work/snapshot-demo/apply-manifest.json
 PYTHONPATH=src python3 -m djlib_doctor.cli schema --pretty
 PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline tests/fixtures/rekordbox/simple.xml --final tests/fixtures/rekordbox/simple.xml --check-files
-PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlist "ROOT / Fixture Playlist" --out work/serato-port-demo
+PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlist "ROOT / Fixture Playlist" --out work/serato-port-demo --verify-preview
+PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlists-file playlists.txt --summary-only --out work/unused
 ```
 
 If bytecode compilation is needed in a sandboxed environment, keep cache writes inside the project:
@@ -55,5 +56,6 @@ The current milestone is read-only verification, snapshots, comparisons, and cle
 - run interactive CLI review and record ingestible decisions
 - export dry-run-only apply manifests without applying them
 - inspect Serato root.sqlite read-only and build dry-run Rekordbox XML to Serato port manifests
+- support Serato batch playlist dry-runs, summary-only reports, cue-count metrics, format capability notes, and crate-preview verification
 
 Do not start with DB writes. The verifier is the foundation.
