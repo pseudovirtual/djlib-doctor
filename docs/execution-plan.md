@@ -262,9 +262,9 @@ Exit criteria:
 
 - users can prove a cleanup plan did not lose material tracks, playlist order, or cue timing work
 
-## Phase 5.75: Serato Read-Only Porting Support
+## Phase 5.75: Serato Port Planning Support
 
-Goal: incorporate generalized lessons from the separate Rekordbox-to-Serato porting lab without importing that project or enabling live writes.
+Goal: incorporate generalized planning lessons from the separate Rekordbox-to-Serato porting lab without importing that project directly.
 
 Commands:
 
@@ -290,13 +290,48 @@ Tasks:
 - warn on trim-only playlist matches and sanitized crate filename collisions (done)
 - record managed crate namespace policy (done)
 - map hotcue, memory cue, and loop intent for Serato (done)
-- keep live Serato DB writing and audio-tag writing out of scope (done)
+- keep live Serato DB writing out of the planning command (done)
+- keep Serato audio-tag writing out of scope (done)
 
 Exit criteria:
 
-- no live Serato files are modified
+- no live Serato files are modified by inspect or port commands
 - fixtures cover crate encoding, SQLite inspection, and dry-run port manifest generation
 - docs clearly distinguish the separate porting lab from open-source `djlib-doctor`
+
+## Phase 5.8: Serato Stage And Guarded Install
+
+Goal: make the Rekordbox-to-Serato crate/library workflow safe end-to-end for agents and humans.
+
+Commands:
+
+```bash
+djlib-doctor stage serato --port-manifest run/rb-to-serato/port-manifest.json --serato-library-dir "/path/to/serato-library" --serato-music-dir "/path/to/_Serato_" --stage-dir run/serato-stage # done
+djlib-doctor install serato-stage --stage-dir run/serato-stage --serato-library-dir "/path/to/serato-library" --serato-music-dir "/path/to/_Serato_" --confirm-token INSTALL_SERATO_STAGE:... # done
+```
+
+Tasks:
+
+- consume existing `port-manifest.json` rather than re-reading source data (done)
+- copy live `root.sqlite` to a stage directory before writes (done)
+- write staged Serato SQLite crate/container/asset rows only to the copy (done)
+- write staged legacy crate files under the stage directory (done)
+- run SQLite integrity checks before and after staged writes (done)
+- write `serato-stage-manifest.json` with staged file hashes and an install token (done)
+- verify staged hashes and SQLite integrity before install (done)
+- refuse install without exact token (done)
+- refuse install when Serato appears to be running (done)
+- refuse install when live SQLite sidecars exist (done)
+- back up live `root.sqlite` and overwritten crate files (done)
+- verify installed hashes against staged files (done)
+- write `serato-install-report.json` (done)
+- keep Serato audio-tag writing out of scope (done)
+
+Exit criteria:
+
+- agents can call `port`, `stage`, and `install` as separate auditable commands
+- live writes happen only in `install serato-stage`
+- tests use synthetic SQLite fixtures only
 
 ## Phase 6: Codex Skill
 

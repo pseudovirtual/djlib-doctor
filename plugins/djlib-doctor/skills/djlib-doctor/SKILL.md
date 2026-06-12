@@ -11,7 +11,7 @@ Use this skill when the user wants to inspect, verify, snapshot, compare, port, 
 
 - Start read-only.
 - Do not write to a Rekordbox database.
-- Do not write to a live Serato database.
+- Do not write to a live Serato database except through `install serato-stage` after a verified stage manifest and exact confirmation token.
 - Do not modify, move, rename, convert, quarantine, or delete music files.
 - Do not modify a real Rekordbox XML export.
 - Do not write Serato audio tags.
@@ -39,6 +39,8 @@ PYTHONPATH=src python3 -m djlib_doctor.cli schema --pretty
 PYTHONPATH=src python3 -m djlib_doctor.cli inspect serato --library-dir "/path/to/serato-library" --out run/inspect-serato
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --out run/rb-to-serato --verify-preview
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml export.xml --playlists-file playlists.txt --summary-only --out run/unused
+PYTHONPATH=src python3 -m djlib_doctor.cli stage serato --port-manifest run/rb-to-serato/port-manifest.json --serato-library-dir "/path/to/serato-library" --serato-music-dir "/path/to/_Serato_" --stage-dir run/serato-stage
+PYTHONPATH=src python3 -m djlib_doctor.cli install serato-stage --stage-dir run/serato-stage --serato-library-dir "/path/to/serato-library" --serato-music-dir "/path/to/_Serato_" --confirm-token INSTALL_SERATO_STAGE:...
 PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline baseline.xml --final final.xml --out run/compare.json
 PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline baseline.xml --final final.xml --out run/compare-with-files.json --check-files
 ```

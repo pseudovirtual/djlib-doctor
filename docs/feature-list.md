@@ -270,6 +270,29 @@ Current behavior:
 - skips non-local placeholder tracks
 - never writes live Serato SQLite files or audio tags
 
+### Serato Stage And Guarded Install
+
+Stages and installs Serato SQLite/crate changes from a reviewed port manifest:
+
+```bash
+djlib-doctor stage serato --port-manifest run/rb-to-serato/port-manifest.json --serato-library-dir "/path/to/serato-library" --serato-music-dir "/path/to/_Serato_" --stage-dir run/serato-stage
+djlib-doctor install serato-stage --stage-dir run/serato-stage --serato-library-dir "/path/to/serato-library" --serato-music-dir "/path/to/_Serato_" --confirm-token "INSTALL_SERATO_STAGE:..."
+```
+
+Current behavior:
+
+- stages changes into copied `root.sqlite`, never the live database
+- writes staged crate files under the stage directory
+- writes `serato-stage-manifest.json` with hashes and an install token
+- writes `serato-stage-verification.json`
+- requires exact install token for live install
+- refuses install if Serato appears to be running
+- refuses install if live SQLite sidecars exist
+- backs up live `root.sqlite` and overwritten crate files
+- verifies installed file hashes
+- writes `serato-install-report.json`
+- does not write Serato audio tags
+
 ### Dry-Run Apply Manifest
 
 Writes an inert apply manifest from any generated plan:

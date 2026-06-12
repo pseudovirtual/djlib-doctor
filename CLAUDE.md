@@ -2,7 +2,7 @@
 
 `djlib-doctor` helps DJs verify and eventually plan safe cleanup for Rekordbox-oriented music libraries, with read-only/dry-run Serato porting support.
 
-Start with read-only XML verification. Never write to a Rekordbox database, live Serato database, Serato audio tags, move music files, convert audio, quarantine files, or delete anything unless the user explicitly asks for a future write-capable workflow and a dry-run manifest has been reviewed.
+Start with read-only XML verification. Never write to a Rekordbox database, Serato audio tags, move music files, convert audio, quarantine files, or delete anything. Live Serato SQLite/crate install is allowed only through `install serato-stage` after `stage serato` has produced a verified manifest and the caller supplies the exact confirmation token.
 
 Useful commands:
 
@@ -26,6 +26,8 @@ PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline tests/fixt
 PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline tests/fixtures/rekordbox/simple.xml --final tests/fixtures/rekordbox/simple.xml --check-files
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlist "ROOT / Fixture Playlist" --out work/serato-port-demo --verify-preview
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlists-file playlists.txt --summary-only --out work/unused
+PYTHONPATH=src python3 -m djlib_doctor.cli stage serato --port-manifest work/serato-port-demo/port-manifest.json --serato-library-dir /path/to/serato-library --serato-music-dir /path/to/_Serato_ --stage-dir work/serato-stage
+PYTHONPATH=src python3 -m djlib_doctor.cli install serato-stage --stage-dir work/serato-stage --serato-library-dir /path/to/serato-library --serato-music-dir /path/to/_Serato_ --confirm-token INSTALL_SERATO_STAGE:...
 ```
 
 Important concepts:
@@ -53,5 +55,6 @@ Current project status:
 - baseline/final export compare exists
 - Serato read-only inspection and Rekordbox XML to Serato dry-run port manifests exist
 - Serato dry-run planning supports batch playlist files, summary-only reports, cue-count metrics, format capability notes, and crate-preview verification
+- Serato stage/install supports SQLite/crate updates with backups, sidecar checks, app-closed checks, exact confirmation tokens, and hash verification
 - tests use synthetic fixtures only
 - no DB writer exists

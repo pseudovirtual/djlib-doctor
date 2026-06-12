@@ -5,8 +5,9 @@
 ## Current Safety Rules
 
 - Do not write to any Rekordbox database.
-- Do not write to any live Serato database.
+- Do not write to any live Serato database except through `install serato-stage` after a verified `stage serato` manifest and exact confirmation token.
 - Do not modify, move, rename, convert, quarantine, or delete real music files.
+- Do not write Serato audio tags.
 - Use synthetic fixtures for tests.
 - Keep collection `<TRACK>` records separate from playlist `<TRACK Key="...">` references.
 - Treat streaming placeholders as placeholders, not missing local files.
@@ -34,6 +35,8 @@ PYTHONPATH=src python3 -m djlib_doctor.cli schema --pretty
 PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline tests/fixtures/rekordbox/simple.xml --final tests/fixtures/rekordbox/simple.xml --check-files
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlist "ROOT / Fixture Playlist" --out work/serato-port-demo --verify-preview
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlists-file playlists.txt --summary-only --out work/unused
+PYTHONPATH=src python3 -m djlib_doctor.cli stage serato --port-manifest work/serato-port-demo/port-manifest.json --serato-library-dir /path/to/serato-library --serato-music-dir /path/to/_Serato_ --stage-dir work/serato-stage
+PYTHONPATH=src python3 -m djlib_doctor.cli install serato-stage --stage-dir work/serato-stage --serato-library-dir /path/to/serato-library --serato-music-dir /path/to/_Serato_ --confirm-token INSTALL_SERATO_STAGE:...
 ```
 
 If bytecode compilation is needed in a sandboxed environment, keep cache writes inside the project:
@@ -57,5 +60,6 @@ The current milestone is read-only verification, snapshots, comparisons, and cle
 - export dry-run-only apply manifests without applying them
 - inspect Serato root.sqlite read-only and build dry-run Rekordbox XML to Serato port manifests
 - support Serato batch playlist dry-runs, summary-only reports, cue-count metrics, format capability notes, and crate-preview verification
+- stage and install Serato SQLite/crate changes only through token-gated manifests with backups, sidecar checks, app-closed checks, and hash verification
 
 Do not start with DB writes. The verifier is the foundation.

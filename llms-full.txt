@@ -36,6 +36,7 @@ The project is not a one-click repair tool. It prioritizes verification, dry-run
 - read-only Serato root.sqlite inspection
 - dry-run Rekordbox XML to Serato port manifests and crate previews
 - Serato playlist-file batch planning, summary-only reports, crate-preview verification, cue-count metrics, format capability notes, and managed namespace warnings
+- staged Serato SQLite/crate updates and guarded install with backups, sidecar checks, app-closed checks, exact confirmation tokens, and hash verification
 - safety utilities for future DB-write guardrails
 - Codex `AGENTS.md`
 - Claude `CLAUDE.md`
@@ -49,7 +50,6 @@ The project is not a one-click repair tool. It prioritizes verification, dry-run
 - quarantine or deletion
 - Rekordbox XML writing
 - Rekordbox DB writing
-- live Serato DB writing
 - Serato audio-tag writing
 - standalone MCP server
 - public GitHub publishing
@@ -59,7 +59,7 @@ The project is not a one-click repair tool. It prioritizes verification, dry-run
 
 Do not write to a Rekordbox database or real music library. Do not move, rename, convert, quarantine, or delete music files. Do not modify real Rekordbox XML exports.
 
-Do not write to a live Serato database or Serato audio tags. Serato support currently writes only run-folder inspection reports, dry-run manifests, unsupported CSVs, and crate previews.
+Do not write to Serato audio tags. Live Serato SQLite/crate writes are allowed only through `install serato-stage` after `stage serato` has produced a verified stage manifest and the caller supplies the exact confirmation token.
 
 Write-capable future features must require:
 
@@ -83,7 +83,9 @@ Write-capable future features must require:
 9. Use `schema` when an agent needs report or CSV field contracts.
 10. Use `compare exports` when baseline and final XML exports exist.
 11. Use `inspect serato` and `port rb-to-serato` for Serato read-only/dry-run workflows. Prefer `--summary-only` before large batch runs.
-12. Avoid write-capable suggestions unless a later milestone implements the required safety workflow.
+12. Use `stage serato` only from a reviewed `port-manifest.json`.
+13. Use `install serato-stage` only after the user has quit Serato and supplies the exact stage `install_token`.
+14. Avoid write-capable suggestions unless the required safety workflow exists.
 
 ## Important Docs
 

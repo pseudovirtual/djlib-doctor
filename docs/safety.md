@@ -7,7 +7,7 @@
 The current code must not:
 
 - write to a Rekordbox database
-- write to a live Serato database
+- write to a live Serato database except through `install serato-stage` after a verified stage, backup, sidecar check, app-closed check, and exact confirmation token
 - modify a Rekordbox XML export
 - modify Serato audio tags
 - move music files
@@ -27,6 +27,24 @@ Future write-capable features must require:
 - user approval
 - backup or rollback path
 - verification after action
+
+## Current Serato Install Rule
+
+The Serato install workflow is intentionally narrow:
+
+- `port rb-to-serato` writes dry-run manifests and preview crates
+- `stage serato` copies live `root.sqlite` into a stage folder and modifies only the staged copy
+- `install serato-stage` installs the staged `root.sqlite` and staged crate files only after the stage verifies
+- live audio files and Serato audio tags are never modified
+
+The install command must:
+
+- require the exact `install_token` from `serato-stage-manifest.json`
+- refuse if Serato appears to be running
+- refuse if SQLite sidecars exist beside live `root.sqlite`
+- back up live `root.sqlite` and overwritten crate files
+- hash-check installed files against staged files
+- write `serato-install-report.json`
 
 ## Implemented Guard Utilities
 

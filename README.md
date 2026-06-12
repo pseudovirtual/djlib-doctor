@@ -1,6 +1,6 @@
 # djlib-doctor
 
-Read-only first, cue-safe DJ library verification and cleanup planning for Rekordbox exports, with dry-run Serato porting support.
+Read-only first, cue-safe DJ library verification and cleanup planning for Rekordbox exports, with staged Serato porting support.
 
 `djlib-doctor` is an open-source toolkit for DJs who want to clean up a messy Rekordbox-oriented music library without losing hotcues, memory cues, playlist structure, or trust in their files. It starts with a deliberately boring foundation: verify a Rekordbox XML export, explain what is really in it, and produce reports that humans and coding agents can both understand.
 
@@ -54,13 +54,14 @@ Implemented now:
 - read-only Serato `root.sqlite` inspection
 - dry-run Rekordbox XML playlist and playlist-file batch planning to Serato crate previews
 - Serato legacy crate preview generation in an output folder
+- staged Serato SQLite/crate updates from reviewed port manifests
+- guarded Serato stage install with backups, hashes, sidecar checks, app-closed checks, and explicit confirmation tokens
 - synthetic XML fixture tests
 - Codex and Claude project guidance files
 
 Not implemented yet:
 
 - write-capable cue cleanup
-- live Serato library writing or install
 - Serato audio-file tag writing
 - file moves, conversion, quarantine, or deletion
 - Rekordbox XML writing
@@ -190,16 +191,18 @@ djlib-doctor apply-manifest --plan run/plan-missing-files.json --review-log run/
 djlib-doctor schema plan --pretty
 ```
 
-The Serato dry-run port command also exists:
+The Serato planning, staging, and guarded install commands also exist:
 
 ```bash
 djlib-doctor inspect serato --library-dir "/path/to/serato-library" --out run/inspect-serato
 djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --crate-prefix "RB - " --out run/rb-to-serato --verify-preview
 djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlists-file playlists.txt --crate-prefix "RB - " --out run/rb-to-serato-batch
 djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlists-file playlists.txt --summary-only --out run/unused
+djlib-doctor stage serato --port-manifest run/rb-to-serato/port-manifest.json --serato-library-dir "/path/to/serato-library" --serato-music-dir "/path/to/_Serato_" --stage-dir run/serato-stage
+djlib-doctor install serato-stage --stage-dir run/serato-stage --serato-library-dir "/path/to/serato-library" --serato-music-dir "/path/to/_Serato_" --confirm-token "INSTALL_SERATO_STAGE:..."
 ```
 
-These commands inspect or write run-folder artifacts only. They do not install Serato crates, write Serato SQLite files, or write audio tags. The port manifest reports cue-count semantics, audio format capability, managed crate namespace policy, and warnings such as trim-only playlist matches or crate filename collisions.
+The install command writes live Serato SQLite/crate files only after a separate stage verifies and the exact stage token is supplied. It does not write Serato audio tags, so cue intents remain planning data until a future tag-writer milestone.
 
 The `compare exports` command can compare a baseline and final XML export:
 

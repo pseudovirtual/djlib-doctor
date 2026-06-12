@@ -1,6 +1,6 @@
 # Serato Porting
 
-`djlib-doctor` includes read-only and dry-run Serato support for planning Rekordbox-to-Serato workflows.
+`djlib-doctor` includes read-only, dry-run, staged, and guarded-install Serato support for Rekordbox-to-Serato crate/library workflows.
 
 The separate porting lab remains separate. The open-source project only copies generalized, fixture-tested concepts:
 
@@ -10,18 +10,19 @@ The separate porting lab remains separate. The open-source project only copies g
 - batch playlist planning from a text file
 - cue-count and audio-format summaries
 - cue intent mapping for hotcues, memory cues, and loops
+- staged Serato SQLite and crate updates from a port manifest
+- guarded install with backups, hashes, app-closed checks, and an explicit confirmation token
 
 ## Safety Boundary
 
-Current Serato support does not:
+Current Serato support can stage and install Serato SQLite/crate changes, but it still does not:
 
-- write to a live Serato library
-- install staged Serato database files
 - modify audio-file metadata tags
 - copy, move, convert, or delete music files
-- overwrite existing Serato crates
+- modify Rekordbox databases or XML exports
+- write cue data into audio files
 
-Any future live Serato writer must use staged copies, backups, sidecar checks, integrity checks, review logs, and post-apply verification.
+The install command is deliberately separate from planning and staging. It refuses to proceed unless the stage verifies, SQLite sidecars are absent, Serato is not running, and the caller supplies the exact install token from the stage manifest.
 
 ## Inspect Serato
 
@@ -88,6 +89,47 @@ djlib-doctor port rb-to-serato \
 
 The summary reports selected crates, local tracks, skipped tracks, audio format counts, cue intent counts, and warnings.
 
+## Stage And Install Serato
+
+The staged workflow consumes a reviewed `port-manifest.json`:
+
+```bash
+djlib-doctor stage serato \
+  --port-manifest run/rb-to-serato/port-manifest.json \
+  --serato-library-dir "/path/to/serato-library" \
+  --serato-music-dir "/path/to/_Serato_" \
+  --stage-dir run/serato-stage
+```
+
+This writes:
+
+- `run/serato-stage/Library/root.sqlite`
+- `run/serato-stage/_Serato_/Subcrates/*.crate`
+- `run/serato-stage/serato-stage-manifest.json`
+- `run/serato-stage/serato-stage-verification.json`
+
+Staging copies the live `root.sqlite` into the stage directory and modifies only that staged copy. It does not write to the live Serato library.
+
+The stage manifest includes an `install_token`. Install requires that token:
+
+```bash
+djlib-doctor install serato-stage \
+  --stage-dir run/serato-stage \
+  --serato-library-dir "/path/to/serato-library" \
+  --serato-music-dir "/path/to/_Serato_" \
+  --confirm-token "INSTALL_SERATO_STAGE:..."
+```
+
+Install behavior:
+
+- refuses if staged hashes fail verification
+- refuses if `root.sqlite-wal`, `root.sqlite-shm`, or `root.sqlite-journal` exists
+- refuses if Serato appears to be running
+- backs up live `root.sqlite` and any overwritten crate files under the stage directory
+- installs staged `root.sqlite` and staged crate files
+- verifies live installed file hashes against staged files
+- writes `serato-install-report.json`
+
 ## Serato Library Surfaces
 
 Serato DJ Pro uses more than one library surface:
@@ -96,7 +138,7 @@ Serato DJ Pro uses more than one library surface:
 - legacy `.crate` files under `_Serato_/Subcrates`
 - cue and loop metadata stored in audio-file tags
 
-`djlib-doctor` currently inspects SQLite read-only and writes `.crate` previews only inside the requested output folder. It does not install crates, modify SQLite, or write audio tags.
+`djlib-doctor` plans first, stages into a run folder second, and installs only through the explicit `install serato-stage` command. It does not write audio tags.
 
 ## Namespace Policy
 

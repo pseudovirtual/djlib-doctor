@@ -226,6 +226,37 @@ djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlists-file playl
 
 Cue counts deliberately separate source rows from target intents. Rekordbox hotcue-associated loops can map to both a Serato hotcue intent and a saved-loop intent, so the Serato-writable slot count can be larger than the source cue row count.
 
+### Serato Stage Manifest
+
+Answers:
+
+- which dry-run port manifest was staged?
+- which live Serato paths are the intended targets?
+- which staged `root.sqlite` and crate files were generated?
+- what file hashes must verify before install?
+- what exact install token must be supplied?
+
+Command:
+
+```bash
+djlib-doctor stage serato --port-manifest run/rb-to-serato/port-manifest.json --serato-library-dir "/path/to/serato-library" --serato-music-dir "/path/to/_Serato_" --stage-dir run/serato-stage
+```
+
+### Serato Install Report
+
+Answers:
+
+- did the install pass?
+- where are backups stored?
+- which staged files were installed to which live paths?
+- did each live file hash match the staged file hash?
+
+Command:
+
+```bash
+djlib-doctor install serato-stage --stage-dir run/serato-stage --serato-library-dir "/path/to/serato-library" --serato-music-dir "/path/to/_Serato_" --confirm-token "INSTALL_SERATO_STAGE:..."
+```
+
 ### Compare Report
 
 Answers:
