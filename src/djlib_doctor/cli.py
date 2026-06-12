@@ -16,6 +16,7 @@ from .compatibility import (
 )
 from .collision_policy import get_duplicate_collision_policy
 from .compare import compare_exports, write_compare_report
+from .config import default_config, load_config, write_config
 from .decision_sheet import write_decision_sheet
 from .file_operations import apply_file_operations_stage, stage_file_operations
 from .plan import (
@@ -35,6 +36,7 @@ from .port_serato import (
     verify_rekordbox_to_serato_plan,
     write_rekordbox_to_serato_plan,
 )
+from .port_rekordbox import build_serato_to_rekordbox_plan, write_serato_to_rekordbox_plan
 from .rekordbox_xml import parse_rekordbox_xml
 from .reviewer import load_review_log, run_interactive_review
 from .schemas import render_schema
@@ -45,7 +47,7 @@ from .sqlite_stage import install_sqlite_stage, stage_sqlite_operations
 from .snapshot import create_snapshot
 from .verify import SCHEMA_VERSION as VERIFY_SCHEMA_VERSION
 from .verify import verify_library
-from .workflows import migrate_rekordbox_to_serato
+from .workflows import migrate_rekordbox_to_serato, migrate_serato_to_rekordbox
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -161,6 +163,18 @@ def main(argv: list[str] | None = None) -> int:
     schema_parser.add_argument("name", nargs="?", help="Optional schema name.")
     schema_parser.add_argument("--pretty", action="store_true", help="Pretty-print JSON output.")
 
+    config_parser = subparsers.add_parser("config", help="Create or inspect a djlib-doctor JSON config.")
+    config_subparsers = config_parser.add_subparsers(dest="config_command", required=True)
+    config_init = config_subparsers.add_parser("init", help="Write a starter config file.")
+    config_init.add_argument("--out", required=True, type=Path)
+    config_init.add_argument("--rekordbox-xml", type=Path)
+    config_init.add_argument("--serato-library-dir", type=Path)
+    config_init.add_argument("--serato-music-dir", type=Path)
+    config_init.add_argument("--music-root", type=Path)
+    config_init.add_argument("--crate-prefix", default="RB - ")
+    config_show = config_subparsers.add_parser("show", help="Print a config file after validation.")
+    config_show.add_argument("--config", required=True, type=Path)
+
     inspect_parser = subparsers.add_parser("inspect", help="Inspect DJ library storage without writing to it.")
     inspect_subparsers = inspect_parser.add_subparsers(dest="inspect_command", required=True)
     inspect_serato_parser = inspect_subparsers.add_parser("serato", help="Inspect Serato root.sqlite schema and row counts.")
@@ -216,6 +230,12 @@ def main(argv: list[str] | None = None) -> int:
     migrate_rb_serato.add_argument("--serato-music-dir", type=Path)
     migrate_rb_serato.add_argument("--stage-library", action="store_true")
     migrate_rb_serato.add_argument("--stage-tags", action="store_true")
+    migrate_serato_rb = migrate_subparsers.add_parser("serato-to-rb", help="Plan a Serato crate to Rekordbox XML workflow.")
+    migrate_serato_rb.add_argument("--serato-library-dir", required=True, type=Path)
+    migrate_serato_rb.add_argument("--crate", required=True, type=Path)
+    migrate_serato_rb.add_argument("--collection-root", required=True, type=Path)
+    migrate_serato_rb.add_argument("--playlist-name")
+    migrate_serato_rb.add_argument("--out", required=True, type=Path)
 
     self_test_parser = subparsers.add_parser("self-test", help="Run a fast built-in smoke test using synthetic fixtures.")
 
@@ -229,6 +249,12 @@ def main(argv: list[str] | None = None) -> int:
     rb_to_serato_parser.add_argument("--crate-prefix", default="RB - ")
     rb_to_serato_parser.add_argument("--summary-only", action="store_true", help="Print a dry-run summary without writing files.")
     rb_to_serato_parser.add_argument("--verify-preview", action="store_true", help="Verify generated single-crate preview order against the manifest.")
+    serato_to_rb_parser = port_subparsers.add_parser("serato-to-rb", help="Plan a Serato crate as a Rekordbox XML preview.")
+    serato_to_rb_parser.add_argument("--serato-library-dir", required=True, type=Path)
+    serato_to_rb_parser.add_argument("--crate", required=True, type=Path)
+    serato_to_rb_parser.add_argument("--collection-root", required=True, type=Path)
+    serato_to_rb_parser.add_argument("--playlist-name")
+    serato_to_rb_parser.add_argument("--out", required=True, type=Path)
 
     compare_parser = subparsers.add_parser("compare", help="Compare two Rekordbox XML exports without writing to either.")
     compare_subparsers = compare_parser.add_subparsers(dest="compare_command", required=True)
@@ -398,6 +424,30 @@ def main(argv: list[str] | None = None) -> int:
             return 3
         return 0
 
+    if args.command == "config":
+        if args.config_command == "init":
+            try:
+                config = default_config(
+                    rekordbox_xml=args.rekordbox_xml,
+                    serato_library_dir=args.serato_library_dir,
+                    serato_music_dir=args.serato_music_dir,
+                    music_root=args.music_root,
+                    crate_prefix=args.crate_prefix,
+                )
+                write_config(args.out, config)
+            except (OSError, ValueError) as exc:
+                print(f"djlib-doctor config: ERROR\n{exc}", file=sys.stderr)
+                return 3
+            print(f"Config written: {args.out}")
+            return 0
+        if args.config_command == "show":
+            try:
+                print(json.dumps(load_config(args.config), indent=2, sort_keys=True))
+            except (OSError, ValueError, json.JSONDecodeError) as exc:
+                print(f"djlib-doctor config: ERROR\n{exc}", file=sys.stderr)
+                return 3
+            return 0
+
     if args.command == "inspect":
         if args.inspect_command == "serato":
             try:
@@ -532,6 +582,21 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"Serato tag stage: {result.tag_stage.stage_manifest_path}")
                 print(f"Serato tag install token: {result.tag_stage.install_token}")
             return 0
+        if args.migrate_command == "serato-to-rb":
+            try:
+                result = migrate_serato_to_rekordbox(
+                    serato_library_dir=args.serato_library_dir,
+                    crate=args.crate,
+                    collection_root=args.collection_root,
+                    out_dir=args.out,
+                    playlist_name=args.playlist_name,
+                )
+            except (OSError, sqlite3.Error, ValueError, RuntimeError, json.JSONDecodeError) as exc:
+                print(f"djlib-doctor migrate: ERROR\n{exc}", file=sys.stderr)
+                return 3
+            print(f"Port manifest: {result.port_manifest}")
+            print(f"Rekordbox XML preview: {result.rekordbox_xml_preview}")
+            return 0
 
     if args.command == "self-test":
         fixture = Path(__file__).resolve().parents[2] / "tests" / "fixtures" / "rekordbox" / "simple.xml"
@@ -583,6 +648,21 @@ def main(argv: list[str] | None = None) -> int:
                 status = "passed" if verification["passed"] else "failed"
                 print(f"Preview verification: {status}")
                 return 0 if verification["passed"] else 1
+            return 0
+        if args.port_command == "serato-to-rb":
+            try:
+                plan = build_serato_to_rekordbox_plan(
+                    args.serato_library_dir,
+                    args.crate,
+                    args.collection_root,
+                    playlist_name=args.playlist_name,
+                )
+                outputs = write_serato_to_rekordbox_plan(plan, args.out)
+            except (OSError, sqlite3.Error, ValueError, json.JSONDecodeError) as exc:
+                print(f"djlib-doctor port: ERROR\n{exc}", file=sys.stderr)
+                return 3
+            print(f"Port manifest written: {outputs['manifest']}")
+            print(f"Rekordbox XML preview written: {outputs['rekordbox_xml_preview']}")
             return 0
 
     if args.command == "compare":

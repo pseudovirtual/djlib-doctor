@@ -90,6 +90,7 @@ Run the current test suite:
 ```bash
 PYTHONPATH=src python3 -m unittest discover -s tests
 PYTHONPATH=src python3 -m djlib_doctor.cli self-test
+PYTHONPATH=src python3 -m djlib_doctor.cli config init --out work/djlib-doctor.json
 ```
 
 Run the read-only verifier against the synthetic fixture:
@@ -207,6 +208,7 @@ djlib-doctor install rekordbox-db --stage-dir run/rb-db-stage --db master.db --c
 djlib-doctor stage file-ops --operations file-ops.json --stage-dir run/file-ops-stage
 djlib-doctor install file-ops --stage-dir run/file-ops-stage --confirm-token "INSTALL_FILE_OPS:..."
 djlib-doctor migrate rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --out run/migrate --stage-library --stage-tags --serato-library-dir "/path/to/serato-library" --serato-music-dir "/path/to/_Serato_"
+djlib-doctor migrate serato-to-rb --serato-library-dir "/path/to/serato-library" --crate "/path/to/_Serato_/Subcrates/My.crate" --collection-root ~/Music --out run/serato-to-rb
 ```
 
 The install commands write live files only after separate stages verify and exact stage tokens are supplied. Serato audio tags, Rekordbox SQLite row edits, and file copy/move/delete/convert operations are all explicit staged workflows, not side effects of planning.

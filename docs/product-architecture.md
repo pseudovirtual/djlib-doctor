@@ -39,6 +39,7 @@ Workflow shortcut:
 
 ```bash
 djlib-doctor migrate rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / Test" --out run/migrate --stage-library --stage-tags --serato-library-dir ~/serato-library --serato-music-dir ~/_Serato_
+djlib-doctor migrate serato-to-rb --serato-library-dir ~/serato-library --crate ~/Music/_Serato_/Subcrates/Test.crate --collection-root ~/Music --out run/serato-to-rb
 ```
 
 Fast smoke test:

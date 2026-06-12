@@ -6,6 +6,7 @@ Primary commands:
 
 - `djlib-doctor verify export.xml`
 - `djlib-doctor self-test`
+- `djlib-doctor config init --out djlib-doctor.json`
 - `djlib-doctor snapshot --rekordbox-xml export.xml --music-root ~/Music --out run/`
 - `djlib-doctor snapshot --rekordbox-xml export.xml --music-root ~/Music --out shareable-run/ --redact-paths`
 - `djlib-doctor plan missing-files --snapshot run/snapshot.json --out run/plan-missing-files.json`
@@ -33,6 +34,7 @@ Primary commands:
 - `djlib-doctor stage file-ops --operations file-ops.json --stage-dir run/file-ops-stage`
 - `djlib-doctor install file-ops --stage-dir run/file-ops-stage --confirm-token INSTALL_FILE_OPS:...`
 - `djlib-doctor migrate rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --out run/migrate --stage-library --stage-tags --serato-library-dir "/path/to/serato-library" --serato-music-dir "/path/to/_Serato_"`
+- `djlib-doctor migrate serato-to-rb --serato-library-dir "/path/to/serato-library" --crate "/path/to/_Serato_/Subcrates/My.crate" --collection-root ~/Music --out run/serato-to-rb`
 - `djlib-doctor compare exports --baseline baseline.xml --final final.xml --out run/compare.json`
 - `djlib-doctor compare exports --baseline baseline.xml --final final.xml --out run/compare-with-files.json --check-files`
 

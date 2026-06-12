@@ -5,10 +5,12 @@ from typing import Any
 
 from .apply_manifest import APPLY_MANIFEST_SCHEMA_VERSION
 from .compare import COMPARE_SCHEMA_VERSION
+from .config import CONFIG_SCHEMA_VERSION
 from .decision_sheet import DECISION_SHEET_FIELDS
 from .file_operations import FILE_OPS_INSTALL_SCHEMA_VERSION, FILE_OPS_STAGE_SCHEMA_VERSION
 from .plan import PLAN_SCHEMA_VERSION
 from .port_serato import PORT_MANIFEST_SCHEMA_VERSION
+from .port_rekordbox import REKORDBOX_PORT_SCHEMA_VERSION
 from .reviewer import REVIEW_SCHEMA_VERSION
 from .serato_audio_tags import SERATO_AUDIO_TAG_INSTALL_SCHEMA_VERSION, SERATO_AUDIO_TAG_STAGE_SCHEMA_VERSION
 from .serato_sqlite import SERATO_INSPECTION_SCHEMA_VERSION
@@ -24,6 +26,18 @@ SCHEMAS: dict[str, dict[str, Any]] = {
         "format": "json",
         "top_level_fields": ["schema_version", "status", "source", "counts", "failures", "warnings", "next_actions"],
         "status_values": ["pass", "fail"],
+    },
+    "config": {
+        "schema_version": CONFIG_SCHEMA_VERSION,
+        "format": "json",
+        "top_level_fields": [
+            "schema_version",
+            "rekordbox_xml",
+            "serato_library_dir",
+            "serato_music_dir",
+            "music_root",
+            "crate_prefix",
+        ],
     },
     "snapshot": {
         "schema_version": SNAPSHOT_SCHEMA_VERSION,
@@ -137,6 +151,22 @@ SCHEMAS: dict[str, dict[str, Any]] = {
             "format_counts",
             "cue_counts",
             "warnings",
+        ],
+        "mode_values": ["dry_run_only"],
+    },
+    "rekordbox-port-manifest": {
+        "schema_version": REKORDBOX_PORT_SCHEMA_VERSION,
+        "format": "json",
+        "top_level_fields": [
+            "schema_version",
+            "mode",
+            "source_platform",
+            "target_platform",
+            "source_crate",
+            "target_playlist",
+            "summary",
+            "tracks",
+            "skipped",
         ],
         "mode_values": ["dry_run_only"],
     },

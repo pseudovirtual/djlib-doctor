@@ -8,6 +8,7 @@ from .port_serato import (
     build_rekordbox_to_serato_plans,
     write_rekordbox_to_serato_plan,
 )
+from .port_rekordbox import build_serato_to_rekordbox_plan, write_serato_to_rekordbox_plan
 from .serato_audio_tags import SeratoAudioTagStageReport, build_serato_audio_tag_stage
 from .serato_stage import SeratoStageReport, stage_serato_from_port_manifest
 
@@ -19,6 +20,12 @@ class RekordboxToSeratoWorkflowResult:
     crate_previews: tuple[Path, ...]
     serato_stage: SeratoStageReport | None = None
     tag_stage: SeratoAudioTagStageReport | None = None
+
+
+@dataclass(frozen=True)
+class SeratoToRekordboxWorkflowResult:
+    port_manifest: Path
+    rekordbox_xml_preview: Path
 
 
 def migrate_rekordbox_to_serato(
@@ -62,4 +69,24 @@ def migrate_rekordbox_to_serato(
         crate_previews=crate_previews,
         serato_stage=serato_stage,
         tag_stage=tag_stage,
+    )
+
+
+def migrate_serato_to_rekordbox(
+    serato_library_dir: Path,
+    crate: Path,
+    collection_root: Path,
+    out_dir: Path,
+    playlist_name: str | None = None,
+) -> SeratoToRekordboxWorkflowResult:
+    plan = build_serato_to_rekordbox_plan(
+        serato_library_dir,
+        crate,
+        collection_root,
+        playlist_name=playlist_name,
+    )
+    outputs = write_serato_to_rekordbox_plan(plan, out_dir / "port")
+    return SeratoToRekordboxWorkflowResult(
+        port_manifest=Path(outputs["manifest"]),
+        rekordbox_xml_preview=Path(outputs["rekordbox_xml_preview"]),
     )

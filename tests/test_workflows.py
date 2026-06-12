@@ -3,7 +3,8 @@ from tempfile import TemporaryDirectory
 import sqlite3
 import unittest
 
-from djlib_doctor.workflows import migrate_rekordbox_to_serato
+from djlib_doctor.serato_crate import write_serato_crate
+from djlib_doctor.workflows import migrate_rekordbox_to_serato, migrate_serato_to_rekordbox
 
 
 FIXTURE = Path(__file__).parent / "fixtures" / "rekordbox" / "simple.xml"
@@ -53,6 +54,25 @@ class WorkflowTests(unittest.TestCase):
         self.assertTrue(result.port_manifest.name.endswith(".json"))
         self.assertIsNotNone(result.serato_stage)
         self.assertIsNotNone(result.tag_stage)
+
+    def test_migrate_serato_to_rekordbox_writes_preview(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            library = tmp / "Library"
+            library.mkdir()
+            make_serato_root(library / "root.sqlite")
+            crate = tmp / "Test.crate"
+            write_serato_crate(crate, ("Music/Track One.aiff",))
+
+            result = migrate_serato_to_rekordbox(
+                serato_library_dir=library,
+                crate=crate,
+                collection_root=Path("/Users/test"),
+                out_dir=tmp / "run",
+            )
+
+        self.assertTrue(result.port_manifest.name.endswith(".json"))
+        self.assertTrue(result.rekordbox_xml_preview.name.endswith(".xml"))
 
 
 if __name__ == "__main__":
