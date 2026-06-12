@@ -10,6 +10,7 @@ from .plan import PLAN_SCHEMA_VERSION
 from .port_serato import PORT_MANIFEST_SCHEMA_VERSION
 from .reviewer import REVIEW_SCHEMA_VERSION
 from .serato_sqlite import SERATO_INSPECTION_SCHEMA_VERSION
+from .serato_stage import SERATO_INSTALL_SCHEMA_VERSION, SERATO_STAGE_SCHEMA_VERSION
 from .snapshot import SNAPSHOT_SCHEMA_VERSION
 from .verify import SCHEMA_VERSION as VERIFY_SCHEMA_VERSION
 
@@ -135,6 +136,28 @@ SCHEMAS: dict[str, dict[str, Any]] = {
             "warnings",
         ],
         "mode_values": ["dry_run_only"],
+    },
+    "serato-stage-manifest": {
+        "schema_version": SERATO_STAGE_SCHEMA_VERSION,
+        "format": "json",
+        "top_level_fields": [
+            "schema_version",
+            "mode",
+            "safety",
+            "source_port_manifest",
+            "live_targets",
+            "staged_files",
+            "summary",
+            "crates",
+            "hashes",
+            "install_token",
+        ],
+        "mode_values": ["staged_serato_install"],
+    },
+    "serato-install-report": {
+        "schema_version": SERATO_INSTALL_SCHEMA_VERSION,
+        "format": "json",
+        "top_level_fields": ["schema_version", "passed", "stage_manifest", "backup_dir", "installed_files"],
     },
 }
 

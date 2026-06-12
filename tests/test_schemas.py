@@ -18,6 +18,8 @@ class SchemaTests(unittest.TestCase):
         self.assertIn("apply-manifest", schema_names())
         self.assertIn("serato-inspection", schema_names())
         self.assertIn("port-manifest", schema_names())
+        self.assertIn("serato-stage-manifest", schema_names())
+        self.assertIn("serato-install-report", schema_names())
         self.assertEqual(get_schema("plan")["schema_version"], "1.0")
 
     def test_schema_cli_prints_all_schemas(self):

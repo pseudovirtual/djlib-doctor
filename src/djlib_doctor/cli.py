@@ -4,6 +4,7 @@ import argparse
 import json
 from pathlib import Path
 import sqlite3
+import subprocess
 import sys
 import xml.etree.ElementTree as ET
 
@@ -37,6 +38,7 @@ from .rekordbox_xml import parse_rekordbox_xml
 from .reviewer import load_review_log, run_interactive_review
 from .schemas import render_schema
 from .serato_sqlite import inspect_serato_root_sqlite, write_serato_inspection
+from .serato_stage import install_serato_stage, stage_serato_from_port_manifest
 from .snapshot import create_snapshot
 from .verify import SCHEMA_VERSION as VERIFY_SCHEMA_VERSION
 from .verify import verify_library
@@ -160,6 +162,23 @@ def main(argv: list[str] | None = None) -> int:
     inspect_serato_parser = inspect_subparsers.add_parser("serato", help="Inspect Serato root.sqlite schema and row counts.")
     inspect_serato_parser.add_argument("--library-dir", required=True, type=Path, help="Serato Library directory containing root.sqlite.")
     inspect_serato_parser.add_argument("--out", required=True, type=Path)
+
+    stage_parser = subparsers.add_parser("stage", help="Create staged changes from reviewed dry-run manifests.")
+    stage_subparsers = stage_parser.add_subparsers(dest="stage_command", required=True)
+    stage_serato_parser = stage_subparsers.add_parser("serato", help="Stage a Serato library update from a port manifest.")
+    stage_serato_parser.add_argument("--port-manifest", required=True, type=Path)
+    stage_serato_parser.add_argument("--serato-library-dir", required=True, type=Path, help="Live Serato Library directory containing root.sqlite.")
+    stage_serato_parser.add_argument("--serato-music-dir", required=True, type=Path, help="Live _Serato_ directory.")
+    stage_serato_parser.add_argument("--stage-dir", required=True, type=Path)
+
+    install_parser = subparsers.add_parser("install", help="Install a verified stage with explicit confirmation.")
+    install_subparsers = install_parser.add_subparsers(dest="install_command", required=True)
+    install_serato_parser = install_subparsers.add_parser("serato-stage", help="Install a verified Serato stage into live Serato paths.")
+    install_serato_parser.add_argument("--stage-dir", required=True, type=Path)
+    install_serato_parser.add_argument("--serato-library-dir", required=True, type=Path)
+    install_serato_parser.add_argument("--serato-music-dir", required=True, type=Path)
+    install_serato_parser.add_argument("--confirm-token", required=True)
+    install_serato_parser.add_argument("--skip-process-check", action="store_true", help="Skip local pgrep app-closed check; intended for synthetic tests only.")
 
     port_parser = subparsers.add_parser("port", help="Build dry-run migration plans between DJ library platforms.")
     port_subparsers = port_parser.add_subparsers(dest="port_command", required=True)
@@ -351,6 +370,43 @@ def main(argv: list[str] | None = None) -> int:
             print(f"Serato inspection written: {out_path}")
             return 0
 
+    if args.command == "stage":
+        if args.stage_command == "serato":
+            try:
+                report = stage_serato_from_port_manifest(
+                    args.port_manifest,
+                    args.serato_library_dir,
+                    args.serato_music_dir,
+                    args.stage_dir,
+                )
+            except (OSError, sqlite3.Error, ValueError, RuntimeError, json.JSONDecodeError) as exc:
+                print(f"djlib-doctor stage: ERROR\n{exc}", file=sys.stderr)
+                return 3
+            print(f"Serato stage written: {report.stage_manifest_path}")
+            print(f"Staged root.sqlite: {report.staged_root_sqlite}")
+            for crate_path in report.crate_paths:
+                print(f"Staged crate: {crate_path}")
+            print(f"Install token: {report.install_token}")
+            return 0
+
+    if args.command == "install":
+        if args.install_command == "serato-stage":
+            try:
+                process_lines = () if args.skip_process_check else _serato_process_lines()
+                report = install_serato_stage(
+                    args.stage_dir,
+                    args.serato_library_dir,
+                    args.serato_music_dir,
+                    confirm_token=args.confirm_token,
+                    process_lines=process_lines,
+                )
+            except (OSError, sqlite3.Error, ValueError, RuntimeError, json.JSONDecodeError) as exc:
+                print(f"djlib-doctor install: ERROR\n{exc}", file=sys.stderr)
+                return 3
+            print(f"Serato stage installed: {report.report_path}")
+            print(f"Backup directory: {report.backup_dir}")
+            return 0
+
     if args.command == "port":
         if args.port_command == "rb-to-serato":
             if bool(args.playlist) == bool(args.playlists_file):
@@ -408,6 +464,21 @@ def main(argv: list[str] | None = None) -> int:
 
     parser.error(f"unknown command: {args.command}")
     return 2
+
+
+def _serato_process_lines() -> tuple[str, ...]:
+    try:
+        result = subprocess.run(
+            ["pgrep", "-fl", "Serato|serato"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except OSError:
+        return ()
+    if result.returncode not in (0, 1):
+        return ()
+    return tuple(line for line in result.stdout.splitlines() if line.strip())
 
 
 if __name__ == "__main__":

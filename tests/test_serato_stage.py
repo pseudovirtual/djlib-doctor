@@ -1,0 +1,223 @@
+from pathlib import Path
+from tempfile import TemporaryDirectory
+import contextlib
+import io
+import json
+import sqlite3
+import unittest
+
+from djlib_doctor.cli import main
+from djlib_doctor.port_serato import build_rekordbox_to_serato_plan, write_rekordbox_to_serato_plan
+from djlib_doctor.serato_crate import read_serato_crate
+from djlib_doctor.serato_stage import (
+    install_serato_stage,
+    stage_serato_from_port_manifest,
+    verify_serato_stage,
+)
+
+
+FIXTURE = Path(__file__).parent / "fixtures" / "rekordbox" / "simple.xml"
+
+
+def make_serato_root(path: Path) -> None:
+    conn = sqlite3.connect(path)
+    try:
+        conn.executescript(
+            """
+            CREATE TABLE serato(revision INT DEFAULT 0);
+            INSERT INTO serato(revision) VALUES(10);
+            CREATE TABLE asset(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                revision INTEGER NOT NULL,
+                portable_id TEXT NOT NULL DEFAULT '',
+                file_name TEXT DEFAULT NULL,
+                file_size INTEGER,
+                type TEXT NOT NULL DEFAULT '',
+                format TEXT NOT NULL DEFAULT '',
+                artist TEXT NOT NULL DEFAULT '',
+                comments TEXT NOT NULL DEFAULT '',
+                name TEXT NOT NULL DEFAULT '',
+                album TEXT NOT NULL DEFAULT '',
+                genre TEXT NOT NULL DEFAULT '',
+                key TEXT NOT NULL DEFAULT '',
+                bpm REAL,
+                length_ms INTEGER,
+                time_added INTEGER NOT NULL DEFAULT 0,
+                time_modified INTEGER NOT NULL DEFAULT 0,
+                analysis_flags INTEGER NOT NULL DEFAULT 0,
+                architectures INTEGER NOT NULL DEFAULT 0
+            );
+            CREATE UNIQUE INDEX asset__unique_portable_id ON asset(portable_id COLLATE NOCASE);
+            CREATE TABLE space_asset(id INTEGER PRIMARY KEY, asset_id INTEGER NOT NULL, space_id INTEGER NOT NULL, UNIQUE(asset_id, space_id));
+            CREATE TABLE container(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                revision INTEGER NOT NULL,
+                parent_id INTEGER,
+                name TEXT NOT NULL,
+                type INTEGER DEFAULT 1,
+                list_order INTEGER NOT NULL,
+                space_id INTEGER DEFAULT NULL,
+                time_added INTEGER NOT NULL DEFAULT 0,
+                expanded INTEGER NOT NULL DEFAULT 0,
+                portable_id TEXT NOT NULL DEFAULT '',
+                UNIQUE(parent_id, name COLLATE NOCASE, type)
+            );
+            INSERT INTO container(id, revision, parent_id, name, type, list_order, space_id, time_added, portable_id)
+            VALUES(3, 10, 0, 'Serato Library root', 0, 1, 2, 1, '');
+            CREATE TABLE container_asset(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                revision INTEGER NOT NULL,
+                container_id INTEGER NOT NULL,
+                space_asset_id INTEGER NOT NULL,
+                list_order INTEGER DEFAULT NULL,
+                time_added INTEGER NOT NULL DEFAULT 0
+            );
+            """
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+class SeratoStageTests(unittest.TestCase):
+    def test_stage_from_port_manifest_modifies_only_stage_copy(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            live_library = tmp / "Library"
+            live_music = tmp / "_Serato_"
+            live_library.mkdir()
+            live_music.mkdir()
+            make_serato_root(live_library / "root.sqlite")
+            port_dir = tmp / "port"
+            port_outputs = write_rekordbox_to_serato_plan(
+                build_rekordbox_to_serato_plan(FIXTURE, "ROOT / Fixture Playlist"),
+                port_dir,
+            )
+
+            stage_report = stage_serato_from_port_manifest(
+                Path(port_outputs["manifest"]),
+                live_library,
+                live_music,
+                tmp / "stage",
+            )
+
+            live_conn = sqlite3.connect(live_library / "root.sqlite")
+            stage_conn = sqlite3.connect(stage_report.staged_root_sqlite)
+            try:
+                self.assertEqual(live_conn.execute("SELECT COUNT(*) FROM asset").fetchone()[0], 0)
+                self.assertEqual(stage_conn.execute("SELECT COUNT(*) FROM asset").fetchone()[0], 1)
+                self.assertEqual(stage_conn.execute("SELECT COUNT(*) FROM container_asset").fetchone()[0], 1)
+            finally:
+                live_conn.close()
+                stage_conn.close()
+            self.assertTrue(stage_report.stage_manifest_path.is_file())
+            self.assertTrue(stage_report.install_token.startswith("INSTALL_SERATO_STAGE:"))
+            self.assertTrue(verify_serato_stage(tmp / "stage").passed)
+
+    def test_install_stage_requires_confirmation_token_and_hash_verifies(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            live_library = tmp / "Library"
+            live_music = tmp / "_Serato_"
+            live_library.mkdir()
+            live_music.mkdir()
+            make_serato_root(live_library / "root.sqlite")
+            port_outputs = write_rekordbox_to_serato_plan(
+                build_rekordbox_to_serato_plan(FIXTURE, "ROOT / Fixture Playlist"),
+                tmp / "port",
+            )
+            stage_report = stage_serato_from_port_manifest(Path(port_outputs["manifest"]), live_library, live_music, tmp / "stage")
+
+            with self.assertRaises(ValueError):
+                install_serato_stage(tmp / "stage", live_library, live_music, confirm_token="wrong", process_lines=())
+
+            install_report = install_serato_stage(
+                tmp / "stage",
+                live_library,
+                live_music,
+                confirm_token=stage_report.install_token,
+                process_lines=(),
+            )
+
+            self.assertTrue(install_report.passed)
+            self.assertTrue((live_music / "Subcrates" / "RB - ROOT - Fixture Playlist.crate").is_file())
+            self.assertEqual(read_serato_crate(live_music / "Subcrates" / "RB - ROOT - Fixture Playlist.crate").tracks[0], "private/tmp/djlib-doctor-fixture-present.aiff")
+
+    def test_install_stage_refuses_when_serato_process_is_running(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            live_library = tmp / "Library"
+            live_music = tmp / "_Serato_"
+            live_library.mkdir()
+            live_music.mkdir()
+            make_serato_root(live_library / "root.sqlite")
+            port_outputs = write_rekordbox_to_serato_plan(
+                build_rekordbox_to_serato_plan(FIXTURE, "ROOT / Fixture Playlist"),
+                tmp / "port",
+            )
+            stage_report = stage_serato_from_port_manifest(Path(port_outputs["manifest"]), live_library, live_music, tmp / "stage")
+
+            with self.assertRaises(RuntimeError):
+                install_serato_stage(
+                    tmp / "stage",
+                    live_library,
+                    live_music,
+                    confirm_token=stage_report.install_token,
+                    process_lines=("123 Serato DJ Pro",),
+                )
+
+    def test_stage_and_install_cli_are_agent_friendly(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            live_library = tmp / "Library"
+            live_music = tmp / "_Serato_"
+            live_library.mkdir()
+            live_music.mkdir()
+            make_serato_root(live_library / "root.sqlite")
+            port_outputs = write_rekordbox_to_serato_plan(
+                build_rekordbox_to_serato_plan(FIXTURE, "ROOT / Fixture Playlist"),
+                tmp / "port",
+            )
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(
+                    [
+                        "stage",
+                        "serato",
+                        "--port-manifest",
+                        str(port_outputs["manifest"]),
+                        "--serato-library-dir",
+                        str(live_library),
+                        "--serato-music-dir",
+                        str(live_music),
+                        "--stage-dir",
+                        str(tmp / "stage"),
+                    ]
+                )
+            token = json.loads((tmp / "stage" / "serato-stage-manifest.json").read_text(encoding="utf-8"))["install_token"]
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                install_exit = main(
+                    [
+                        "install",
+                        "serato-stage",
+                        "--stage-dir",
+                        str(tmp / "stage"),
+                        "--serato-library-dir",
+                        str(live_library),
+                        "--serato-music-dir",
+                        str(live_music),
+                        "--confirm-token",
+                        token,
+                        "--skip-process-check",
+                    ]
+                )
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(install_exit, 0)
+        self.assertIn("Serato stage written:", stdout.getvalue())
+
+
+if __name__ == "__main__":
+    unittest.main()
