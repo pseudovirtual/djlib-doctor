@@ -42,6 +42,13 @@ class SchemaTests(unittest.TestCase):
         self.assertEqual(data["format"], "csv")
         self.assertIn("decision", data["fields"])
 
+    def test_port_manifest_schema_documents_batch_fields(self):
+        schema = get_schema("port-manifest")
+
+        self.assertIn("crates", schema["top_level_fields"])
+        self.assertIn("warnings", schema["top_level_fields"])
+        self.assertIn("cue_counts", schema["summary_fields"])
+
 
 if __name__ == "__main__":
     unittest.main()

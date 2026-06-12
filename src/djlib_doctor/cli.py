@@ -25,7 +25,14 @@ from .plan import (
     load_plan,
     write_plan,
 )
-from .port_serato import build_rekordbox_to_serato_plan, write_rekordbox_to_serato_plan
+from .port_serato import (
+    build_rekordbox_to_serato_plan,
+    build_rekordbox_to_serato_plans,
+    read_playlist_names,
+    render_rekordbox_to_serato_summary,
+    verify_rekordbox_to_serato_plan,
+    write_rekordbox_to_serato_plan,
+)
 from .rekordbox_xml import parse_rekordbox_xml
 from .reviewer import load_review_log, run_interactive_review
 from .schemas import render_schema
@@ -158,9 +165,12 @@ def main(argv: list[str] | None = None) -> int:
     port_subparsers = port_parser.add_subparsers(dest="port_command", required=True)
     rb_to_serato_parser = port_subparsers.add_parser("rb-to-serato", help="Plan a Rekordbox XML playlist as a Serato crate preview.")
     rb_to_serato_parser.add_argument("--rekordbox-xml", required=True, type=Path)
-    rb_to_serato_parser.add_argument("--playlist", required=True)
+    rb_to_serato_parser.add_argument("--playlist", help="Rekordbox playlist path/name to plan.")
+    rb_to_serato_parser.add_argument("--playlists-file", type=Path, help="Text file with one Rekordbox playlist path/name per line.")
     rb_to_serato_parser.add_argument("--out", required=True, type=Path)
     rb_to_serato_parser.add_argument("--crate-prefix", default="RB - ")
+    rb_to_serato_parser.add_argument("--summary-only", action="store_true", help="Print a dry-run summary without writing files.")
+    rb_to_serato_parser.add_argument("--verify-preview", action="store_true", help="Verify generated single-crate preview order against the manifest.")
 
     compare_parser = subparsers.add_parser("compare", help="Compare two Rekordbox XML exports without writing to either.")
     compare_subparsers = compare_parser.add_subparsers(dest="compare_command", required=True)
@@ -343,15 +353,40 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "port":
         if args.port_command == "rb-to-serato":
+            if bool(args.playlist) == bool(args.playlists_file):
+                rb_to_serato_parser.error("exactly one of --playlist or --playlists-file is required")
             try:
-                plan = build_rekordbox_to_serato_plan(args.rekordbox_xml, args.playlist, crate_prefix=args.crate_prefix)
+                if args.playlists_file:
+                    playlist_names = read_playlist_names(args.playlists_file)
+                    if not playlist_names:
+                        raise ValueError(f"No playlist names found in {args.playlists_file}")
+                    plan = build_rekordbox_to_serato_plans(args.rekordbox_xml, playlist_names, crate_prefix=args.crate_prefix)
+                else:
+                    plan = build_rekordbox_to_serato_plan(args.rekordbox_xml, args.playlist, crate_prefix=args.crate_prefix)
+                if args.summary_only:
+                    print(render_rekordbox_to_serato_summary(plan))
+                    return 0
                 outputs = write_rekordbox_to_serato_plan(plan, args.out)
+                verification = None
+                if args.verify_preview:
+                    crate_preview = outputs.get("crate_preview")
+                    if crate_preview is None:
+                        raise ValueError("--verify-preview currently supports single-playlist manifests")
+                    verification = verify_rekordbox_to_serato_plan(Path(outputs["manifest"]), Path(crate_preview))
             except (ET.ParseError, OSError, ValueError) as exc:
                 print(f"djlib-doctor port: ERROR\n{exc}", file=sys.stderr)
                 return 3
             print(f"Port manifest written: {outputs['manifest']}")
-            print(f"Serato crate preview written: {outputs['crate_preview']}")
+            if "crate_preview" in outputs:
+                print(f"Serato crate preview written: {outputs['crate_preview']}")
+            else:
+                for crate_path in json.loads(outputs["crate_previews"]):
+                    print(f"Serato crate preview written: {crate_path}")
             print(f"Unsupported report written: {outputs['unsupported_csv']}")
+            if verification is not None:
+                status = "passed" if verification["passed"] else "failed"
+                print(f"Preview verification: {status}")
+                return 0 if verification["passed"] else 1
             return 0
 
     if args.command == "compare":

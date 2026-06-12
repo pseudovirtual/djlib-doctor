@@ -43,6 +43,33 @@ def all_checks_passed(checks: tuple[SafetyCheck, ...]) -> bool:
     return all(check.passed for check in checks)
 
 
+def check_app_processes_closed(
+    process_lines: list[str] | tuple[str, ...],
+    app_patterns: dict[str, tuple[str, ...]],
+) -> tuple[SafetyCheck, ...]:
+    normalized_lines = tuple(line.lower() for line in process_lines)
+    checks = []
+    for app_name, patterns in app_patterns.items():
+        normalized_patterns = tuple(pattern.lower() for pattern in patterns)
+        matches = [
+            line
+            for line in normalized_lines
+            if any(pattern in line for pattern in normalized_patterns)
+        ]
+        checks.append(
+            SafetyCheck(
+                code=f"{app_name}_app_closed",
+                passed=not matches,
+                message=(
+                    f"{app_name} appears to be running"
+                    if matches
+                    else f"{app_name} does not appear to be running"
+                ),
+            )
+        )
+    return tuple(checks)
+
+
 def timestamped_backup_path(source: Path, label: str, now: datetime | None = None) -> Path:
     stamp = (now or datetime.now()).strftime("%Y%m%d-%H%M%S")
     return source.with_name(f"{source.stem}.{label}.{stamp}{source.suffix}")
