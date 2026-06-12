@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-import hashlib
 import json
 from pathlib import Path
 import shutil
@@ -12,6 +11,7 @@ from typing import Any
 
 from .safety import all_checks_passed, check_app_processes_closed, check_serato_sqlite_sidecars
 from .serato_crate import safe_crate_filename, write_serato_crate
+from .stage_common import install_token, sha256_file
 
 
 SERATO_STAGE_SCHEMA_VERSION = "1.0"
@@ -107,7 +107,7 @@ def stage_serato_from_port_manifest(
         conn.close()
 
     stage_hashes = _stage_hashes(staged_root, tuple(crate_paths))
-    install_token = _install_token(stage_hashes)
+    token = install_token("INSTALL_SERATO_STAGE", stage_hashes)
     stage_manifest = {
         "schema_version": SERATO_STAGE_SCHEMA_VERSION,
         "mode": "staged_serato_install",
@@ -133,7 +133,7 @@ def stage_serato_from_port_manifest(
         },
         "crates": per_crate_reports,
         "hashes": stage_hashes,
-        "install_token": install_token,
+        "install_token": token,
     }
     stage_manifest_path = stage_dir / "serato-stage-manifest.json"
     stage_manifest_path.write_text(json.dumps(stage_manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -147,7 +147,7 @@ def stage_serato_from_port_manifest(
         stage_manifest_path=stage_manifest_path,
         staged_root_sqlite=staged_root,
         crate_paths=tuple(crate_paths),
-        install_token=install_token,
+        install_token=token,
         summary=stage_manifest["summary"],
     )
 
@@ -421,20 +421,15 @@ def _dynamic_update(
 
 def _stage_hashes(root: Path, crate_paths: tuple[Path, ...]) -> dict[str, Any]:
     return {
-        "root_sqlite": _sha256(root),
-        "crates": {str(path): _sha256(path) for path in crate_paths},
+        "root_sqlite": sha256_file(root),
+        "crates": {str(path): sha256_file(path) for path in crate_paths},
     }
-
-
-def _install_token(stage_hashes: dict[str, Any]) -> str:
-    payload = json.dumps(stage_hashes, sort_keys=True).encode("utf-8")
-    return f"INSTALL_SERATO_STAGE:{hashlib.sha256(payload).hexdigest()[:16]}"
 
 
 def _file_hash_check(code: str, path: Path, expected_hash: str) -> dict[str, Any]:
     if not path.is_file():
         return {"code": code, "passed": False, "message": f"missing file: {path}"}
-    actual = _sha256(path)
+    actual = sha256_file(path)
     return {"code": code, "passed": actual == expected_hash, "message": str(path)}
 
 
@@ -442,17 +437,9 @@ def _installed_file_record(source: Path, target: Path) -> dict[str, str]:
     return {
         "source": str(source),
         "target": str(target),
-        "source_sha256": _sha256(source),
-        "target_sha256": _sha256(target),
+        "source_sha256": sha256_file(source),
+        "target_sha256": sha256_file(target),
     }
-
-
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def _unique_crate_path(out_dir: Path, crate_name: str, existing_paths: list[Path]) -> Path:

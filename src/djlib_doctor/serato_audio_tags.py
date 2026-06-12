@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import hashlib
 import json
 from pathlib import Path
 import shutil
 import struct
 from typing import Any
+
+from .stage_common import backup_name, install_token, sha256_file
 
 
 SERATO_AUDIO_TAG_STAGE_SCHEMA_VERSION = "1.0"
@@ -70,7 +71,7 @@ def build_serato_audio_tag_stage(port_manifest_path: Path, stage_dir: Path) -> S
         for row in rows
         if row.get("staged_path") and row.get("staged_sha256")
     }
-    install_token = _install_token(hashes)
+    token = install_token("INSTALL_SERATO_TAGS", hashes)
     summary = {
         "tracks": len(rows),
         "tagged_copies": sum(1 for row in rows if row["status"] == "tagged_copy"),
@@ -88,11 +89,11 @@ def build_serato_audio_tag_stage(port_manifest_path: Path, stage_dir: Path) -> S
         "summary": summary,
         "tracks": rows,
         "hashes": hashes,
-        "install_token": install_token,
+        "install_token": token,
     }
     stage_manifest_path = stage_dir / "serato-audio-tag-stage-manifest.json"
     stage_manifest_path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    return SeratoAudioTagStageReport(stage_dir, stage_manifest_path, install_token, summary)
+    return SeratoAudioTagStageReport(stage_dir, stage_manifest_path, token, summary)
 
 
 def install_serato_audio_tag_stage(stage_dir: Path, confirm_token: str) -> dict[str, Any]:
@@ -108,9 +109,9 @@ def install_serato_audio_tag_stage(stage_dir: Path, confirm_token: str) -> dict[
             continue
         source = Path(row["source_path"])
         staged = Path(row["staged_path"])
-        if _sha256(staged) != row["staged_sha256"]:
+        if sha256_file(staged) != row["staged_sha256"]:
             raise RuntimeError(f"Staged tagged audio hash mismatch: {staged}")
-        backup = backup_dir / _backup_name(source)
+        backup = backup_dir / backup_name(source)
         if not backup.exists():
             shutil.copy2(source, backup)
         shutil.copy2(staged, source)
@@ -119,7 +120,7 @@ def install_serato_audio_tag_stage(stage_dir: Path, confirm_token: str) -> dict[
                 "source_path": str(source),
                 "backup_path": str(backup),
                 "staged_path": str(staged),
-                "installed_sha256": _sha256(source),
+                "installed_sha256": sha256_file(source),
             }
         )
     report = {
@@ -147,7 +148,7 @@ def _stage_track_tag_copy(track: dict[str, Any], tagged_dir: Path) -> dict[str, 
     suffix = source.suffix.lower()
     if suffix not in {".aiff", ".aif", ".m4a", ".mp4", ".mp3"}:
         return {**base, "status": f"unsupported_format:{suffix.lstrip('.') or 'unknown'}"}
-    staged = tagged_dir / _backup_name(source)
+    staged = tagged_dir / backup_name(source)
     shutil.copy2(source, staged)
     try:
         _write_tags(staged, track)
@@ -157,7 +158,7 @@ def _stage_track_tag_copy(track: dict[str, Any], tagged_dir: Path) -> dict[str, 
         **base,
         "status": "tagged_copy",
         "staged_path": str(staged),
-        "staged_sha256": _sha256(staged),
+        "staged_sha256": sha256_file(staged),
     }
 
 
@@ -250,20 +251,3 @@ def _loop_entry(index: int, start_ms: int, end_ms: int, label: str) -> bytes:
 def _named_entry(name: str, payload: bytes) -> bytes:
     return name.encode("utf-8") + b"\x00" + struct.pack(">I", len(payload)) + payload
 
-
-def _install_token(hashes: dict[str, str]) -> str:
-    payload = json.dumps(hashes, sort_keys=True).encode("utf-8")
-    return f"INSTALL_SERATO_TAGS:{hashlib.sha256(payload).hexdigest()[:16]}"
-
-
-def _backup_name(path: Path) -> str:
-    safe_parent = "__".join(path.parent.parts[-3:])
-    return f"{safe_parent}__{path.name}"
-
-
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
