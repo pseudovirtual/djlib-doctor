@@ -11,7 +11,7 @@ from typing import Any
 
 from .safety import all_checks_passed, check_app_processes_closed, check_serato_sqlite_sidecars
 from .serato_crate import safe_crate_filename, write_serato_crate
-from .stage_common import install_token, sha256_file
+from .stage_common import install_token, require_install_token, require_sha256, sha256_file
 
 
 SERATO_STAGE_SCHEMA_VERSION = "1.0"
@@ -106,8 +106,9 @@ def stage_serato_from_port_manifest(
     finally:
         conn.close()
 
+    source_hashes = {"root_sqlite": sha256_file(live_root)}
     stage_hashes = _stage_hashes(staged_root, tuple(crate_paths))
-    token = install_token("INSTALL_SERATO_STAGE", stage_hashes)
+    token = install_token("INSTALL_SERATO_STAGE", _install_token_payload(stage_hashes, source_hashes))
     stage_manifest = {
         "schema_version": SERATO_STAGE_SCHEMA_VERSION,
         "mode": "staged_serato_install",
@@ -133,6 +134,7 @@ def stage_serato_from_port_manifest(
         },
         "crates": per_crate_reports,
         "hashes": stage_hashes,
+        "source_hashes": source_hashes,
         "install_token": token,
     }
     stage_manifest_path = stage_dir / "serato-stage-manifest.json"
@@ -180,14 +182,18 @@ def install_serato_stage(
     process_lines: tuple[str, ...] | list[str] | None = None,
 ) -> SeratoInstallReport:
     manifest = json.loads((stage_dir / "serato-stage-manifest.json").read_text(encoding="utf-8"))
-    expected_token = manifest["install_token"]
-    if confirm_token != expected_token:
-        raise ValueError("Confirmation token does not match staged install token")
+    require_install_token(
+        "INSTALL_SERATO_STAGE",
+        _install_token_payload(manifest["hashes"], manifest["source_hashes"]),
+        manifest["install_token"],
+        confirm_token,
+    )
     stage_verification = verify_serato_stage(stage_dir)
     if not stage_verification.passed:
         raise RuntimeError("Refusing to install because staged verification failed")
 
     live_root = live_serato_library_dir / "root.sqlite"
+    require_sha256(live_root, manifest["source_hashes"]["root_sqlite"], "Live Serato root.sqlite source")
     sidecar_checks = check_serato_sqlite_sidecars(live_root)
     if not all_checks_passed(sidecar_checks):
         raise RuntimeError("Refusing to install while Serato SQLite sidecars exist")
@@ -424,6 +430,10 @@ def _stage_hashes(root: Path, crate_paths: tuple[Path, ...]) -> dict[str, Any]:
         "root_sqlite": sha256_file(root),
         "crates": {str(path): sha256_file(path) for path in crate_paths},
     }
+
+
+def _install_token_payload(stage_hashes: dict[str, Any], source_hashes: dict[str, str]) -> dict[str, Any]:
+    return {"hashes": stage_hashes, "source_hashes": source_hashes}
 
 
 def _file_hash_check(code: str, path: Path, expected_hash: str) -> dict[str, Any]:

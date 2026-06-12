@@ -7,7 +7,7 @@ import shutil
 import struct
 from typing import Any
 
-from .stage_common import backup_name, install_token, sha256_file
+from .stage_common import backup_name, install_token, require_install_token, require_sha256, sha256_file
 
 
 SERATO_AUDIO_TAG_STAGE_SCHEMA_VERSION = "1.0"
@@ -71,7 +71,12 @@ def build_serato_audio_tag_stage(port_manifest_path: Path, stage_dir: Path) -> S
         for row in rows
         if row.get("staged_path") and row.get("staged_sha256")
     }
-    token = install_token("INSTALL_SERATO_TAGS", hashes)
+    source_hashes = {
+        row["source_path"]: row["source_sha256"]
+        for row in rows
+        if row.get("source_path") and row.get("source_sha256")
+    }
+    token = install_token("INSTALL_SERATO_TAGS", _install_token_payload(hashes, source_hashes))
     summary = {
         "tracks": len(rows),
         "tagged_copies": sum(1 for row in rows if row["status"] == "tagged_copy"),
@@ -89,6 +94,7 @@ def build_serato_audio_tag_stage(port_manifest_path: Path, stage_dir: Path) -> S
         "summary": summary,
         "tracks": rows,
         "hashes": hashes,
+        "source_hashes": source_hashes,
         "install_token": token,
     }
     stage_manifest_path = stage_dir / "serato-audio-tag-stage-manifest.json"
@@ -99,8 +105,12 @@ def build_serato_audio_tag_stage(port_manifest_path: Path, stage_dir: Path) -> S
 def install_serato_audio_tag_stage(stage_dir: Path, confirm_token: str) -> dict[str, Any]:
     manifest_path = stage_dir / "serato-audio-tag-stage-manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    if confirm_token != manifest["install_token"]:
-        raise ValueError("Confirmation token does not match staged audio-tag install token")
+    require_install_token(
+        "INSTALL_SERATO_TAGS",
+        _install_token_payload(manifest["hashes"], manifest["source_hashes"]),
+        manifest["install_token"],
+        confirm_token,
+    )
     backup_dir = stage_dir / "audio-tag-backups"
     backup_dir.mkdir(parents=True, exist_ok=True)
     installed = []
@@ -109,8 +119,8 @@ def install_serato_audio_tag_stage(stage_dir: Path, confirm_token: str) -> dict[
             continue
         source = Path(row["source_path"])
         staged = Path(row["staged_path"])
-        if sha256_file(staged) != row["staged_sha256"]:
-            raise RuntimeError(f"Staged tagged audio hash mismatch: {staged}")
+        require_sha256(staged, row["staged_sha256"], "Staged tagged audio")
+        require_sha256(source, row["source_sha256"], "Live audio source")
         backup = backup_dir / backup_name(source)
         if not backup.exists():
             shutil.copy2(source, backup)
@@ -158,6 +168,7 @@ def _stage_track_tag_copy(track: dict[str, Any], tagged_dir: Path) -> dict[str, 
         **base,
         "status": "tagged_copy",
         "staged_path": str(staged),
+        "source_sha256": sha256_file(source),
         "staged_sha256": sha256_file(staged),
     }
 
@@ -226,6 +237,10 @@ def _manifest_tracks(manifest: dict[str, Any]) -> tuple[dict[str, Any], ...]:
     return tuple(manifest.get("tracks", ()))
 
 
+def _install_token_payload(hashes: dict[str, str], source_hashes: dict[str, str]) -> dict[str, Any]:
+    return {"hashes": hashes, "source_hashes": source_hashes}
+
+
 def _cue_entry(index: int, position_ms: int, label: str) -> bytes:
     color = _CUE_COLORS[index % len(_CUE_COLORS)]
     return b"".join(
@@ -250,4 +265,3 @@ def _loop_entry(index: int, start_ms: int, end_ms: int, label: str) -> bytes:
 
 def _named_entry(name: str, payload: bytes) -> bytes:
     return name.encode("utf-8") + b"\x00" + struct.pack(">I", len(payload)) + payload
-

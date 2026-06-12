@@ -55,7 +55,7 @@ Implemented now:
 - dry-run Rekordbox XML playlist and playlist-file batch planning to Serato crate previews
 - Serato legacy crate preview generation in an output folder
 - staged Serato SQLite/crate updates from reviewed port manifests
-- guarded Serato stage install with backups, hashes, sidecar checks, app-closed checks, and explicit confirmation tokens
+- guarded Serato stage install with backups, staged/source hashes, sidecar checks, app-closed checks, and explicit confirmation tokens
 - staged Serato audio tag writes for AIFF/AIF, M4A/MP4, and MP3 with backup/token install flow
 - staged file copy, move, delete, and ffmpeg conversion operations from explicit manifests
 - staged structured SQLite row operations for Rekordbox DB workflows
@@ -70,7 +70,7 @@ Not implemented yet:
 
 ## Safety Promise
 
-The current project must not write to a Rekordbox database or real music library except through explicit staged install/apply commands with manifest files, backups, hashes, and confirmation tokens.
+The current project must not write to a Rekordbox database or real music library except through explicit staged install/apply commands with manifest files, backups, staged/source hashes, and confirmation tokens.
 
 Future write-capable features must be built behind:
 

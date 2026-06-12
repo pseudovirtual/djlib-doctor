@@ -4,6 +4,7 @@ import contextlib
 import io
 import json
 import unittest
+from unittest import mock
 
 from djlib_doctor.cli import main
 from djlib_doctor.port_serato import build_rekordbox_to_serato_plan, write_rekordbox_to_serato_plan
@@ -53,6 +54,35 @@ class SeratoAudioTagsTests(unittest.TestCase):
 
             with self.assertRaises(ValueError):
                 install_serato_audio_tag_stage(tmp / "tag-stage", confirm_token="wrong")
+
+    def test_install_audio_tag_stage_refuses_when_source_changed_after_stage(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            source = tmp / "track.aiff"
+            source.write_bytes(b"audio")
+            manifest = tmp / "port-manifest.json"
+            manifest.write_text(
+                json.dumps(
+                    {
+                        "tracks": [
+                            {
+                                "source_id": "1",
+                                "artist": "Artist",
+                                "title": "Title",
+                                "path": str(source),
+                                "cue_intents": [],
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            with mock.patch("djlib_doctor.serato_audio_tags._write_tags", side_effect=lambda path, track: path.write_bytes(b"tagged")):
+                report = build_serato_audio_tag_stage(manifest, tmp / "tag-stage")
+            source.write_bytes(b"changed")
+
+            with self.assertRaises(RuntimeError):
+                install_serato_audio_tag_stage(tmp / "tag-stage", confirm_token=report.install_token)
 
     def test_audio_tag_stage_cli_writes_manifest(self):
         with TemporaryDirectory() as tmpdir:

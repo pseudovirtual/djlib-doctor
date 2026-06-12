@@ -40,6 +40,8 @@ The Serato install workflow is intentionally narrow:
 The install command must:
 
 - require the exact `install_token` from `serato-stage-manifest.json`
+- recompute the install token from the manifest contents before writing
+- refuse if the live `root.sqlite` hash changed after staging
 - refuse if Serato appears to be running
 - refuse if SQLite sidecars exist beside live `root.sqlite`
 - back up live `root.sqlite` and overwritten crate files

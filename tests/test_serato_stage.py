@@ -143,6 +143,35 @@ class SeratoStageTests(unittest.TestCase):
             self.assertTrue((live_music / "Subcrates" / "RB - ROOT - Fixture Playlist.crate").is_file())
             self.assertEqual(read_serato_crate(live_music / "Subcrates" / "RB - ROOT - Fixture Playlist.crate").tracks[0], "private/tmp/djlib-doctor-fixture-present.aiff")
 
+    def test_install_stage_refuses_when_live_root_changed_after_stage(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            live_library = tmp / "Library"
+            live_music = tmp / "_Serato_"
+            live_library.mkdir()
+            live_music.mkdir()
+            make_serato_root(live_library / "root.sqlite")
+            port_outputs = write_rekordbox_to_serato_plan(
+                build_rekordbox_to_serato_plan(FIXTURE, "ROOT / Fixture Playlist"),
+                tmp / "port",
+            )
+            stage_report = stage_serato_from_port_manifest(Path(port_outputs["manifest"]), live_library, live_music, tmp / "stage")
+            conn = sqlite3.connect(live_library / "root.sqlite")
+            try:
+                conn.execute("UPDATE serato SET revision = revision + 1")
+                conn.commit()
+            finally:
+                conn.close()
+
+            with self.assertRaises(RuntimeError):
+                install_serato_stage(
+                    tmp / "stage",
+                    live_library,
+                    live_music,
+                    confirm_token=stage_report.install_token,
+                    process_lines=(),
+                )
+
     def test_install_stage_refuses_when_serato_process_is_running(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)

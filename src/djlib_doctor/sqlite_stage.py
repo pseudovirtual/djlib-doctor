@@ -8,7 +8,7 @@ import sqlite3
 from typing import Any
 
 from .safety import all_checks_passed, check_sqlite_sidecars
-from .stage_common import install_token, sha256_file
+from .stage_common import install_token, require_install_token, require_sha256, sha256_file
 
 
 SQLITE_STAGE_SCHEMA_VERSION = "1.0"
@@ -43,7 +43,7 @@ def stage_sqlite_operations(live_db: Path, operations_manifest: Path, stage_dir:
         raise
     finally:
         conn.close()
-    hashes = {"staged_db": sha256_file(staged_db)}
+    hashes = {"source_db": sha256_file(live_db), "staged_db": sha256_file(staged_db)}
     token = install_token("INSTALL_SQLITE_STAGE", hashes)
     manifest = {
         "schema_version": SQLITE_STAGE_SCHEMA_VERSION,
@@ -64,11 +64,10 @@ def stage_sqlite_operations(live_db: Path, operations_manifest: Path, stage_dir:
 def install_sqlite_stage(stage_dir: Path, live_db: Path, confirm_token: str, label: str = "sqlite") -> dict[str, Any]:
     manifest_path = stage_dir / f"{label}-sqlite-stage-manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    if confirm_token != manifest["install_token"]:
-        raise ValueError("Confirmation token does not match staged SQLite token")
+    require_install_token("INSTALL_SQLITE_STAGE", manifest["hashes"], manifest["install_token"], confirm_token)
     staged_db = Path(manifest["staged_db"])
-    if sha256_file(staged_db) != manifest["hashes"]["staged_db"]:
-        raise RuntimeError("Staged SQLite hash mismatch")
+    require_sha256(staged_db, manifest["hashes"]["staged_db"], "Staged SQLite")
+    require_sha256(live_db, manifest["hashes"]["source_db"], "Live SQLite source")
     sidecar_checks = check_sqlite_sidecars(live_db, code=f"{label}_sqlite_sidecar_absent")
     if not all_checks_passed(sidecar_checks):
         raise RuntimeError("Refusing to install SQLite stage while sidecars exist")
