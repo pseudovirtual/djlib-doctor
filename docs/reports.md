@@ -194,6 +194,8 @@ Answers:
 - what tables are present in Serato `root.sqlite`?
 - how many rows are in each table?
 - what schema fingerprint should later staged writers verify?
+- does the `asset` table expose path-like `portable_id` identity values?
+- are duplicate Serato asset identity values present?
 
 Command:
 

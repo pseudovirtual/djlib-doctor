@@ -35,8 +35,12 @@ class SeratoSqliteTests(unittest.TestCase):
             make_serato_root(root)
 
             inspection = inspect_serato_root_sqlite(root)
+            data = inspection.to_dict()
 
-        self.assertEqual(inspection.to_dict()["summary"]["tables"], 3)
+        self.assertEqual(data["summary"]["tables"], 3)
+        self.assertEqual(data["asset_identity"]["identity_field"], "asset.portable_id")
+        self.assertEqual(data["asset_identity"]["assets_with_identity"], 1)
+        self.assertEqual(data["asset_identity"]["duplicate_identity_values"], 0)
         self.assertEqual(len(inspection.schema_fingerprint), 64)
         self.assertIn("asset", {table.name for table in inspection.tables})
 

@@ -103,7 +103,7 @@ SCHEMAS: dict[str, dict[str, Any]] = {
     "serato-inspection": {
         "schema_version": SERATO_INSPECTION_SCHEMA_VERSION,
         "format": "json",
-        "top_level_fields": ["schema_version", "source", "summary", "schema_fingerprint", "tables"],
+        "top_level_fields": ["schema_version", "source", "summary", "schema_fingerprint", "tables", "asset_identity"],
     },
     "port-manifest": {
         "schema_version": PORT_MANIFEST_SCHEMA_VERSION,

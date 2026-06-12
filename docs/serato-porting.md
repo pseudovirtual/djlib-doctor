@@ -35,7 +35,7 @@ This writes:
 
 - `serato-inspection.json`
 
-The inspection includes table names, columns, row counts, and a schema fingerprint.
+The inspection includes table names, columns, row counts, a schema fingerprint, and optional asset identity counts when `asset.portable_id` is present.
 
 ## Plan Rekordbox XML To Serato
 

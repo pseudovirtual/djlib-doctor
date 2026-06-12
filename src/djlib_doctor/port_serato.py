@@ -241,7 +241,7 @@ def build_rekordbox_to_serato_plans(
 def write_rekordbox_to_serato_plan(
     plan: RekordboxToSeratoPlan | RekordboxToSeratoBatchPlan,
     out_dir: Path,
-) -> dict[str, str]:
+) -> dict[str, str | list[str]]:
     out_dir.mkdir(parents=True, exist_ok=True)
     manifest_path = out_dir / "port-manifest.json"
     unsupported_path = out_dir / "unsupported.csv"
@@ -256,7 +256,7 @@ def write_rekordbox_to_serato_plan(
         _write_unsupported_csv(unsupported_path, plan)
         return {
             "manifest": str(manifest_path),
-            "crate_previews": json.dumps([str(path) for path in crate_paths]),
+            "crate_previews": [str(path) for path in crate_paths],
             "unsupported_csv": str(unsupported_path),
         }
 

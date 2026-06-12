@@ -74,6 +74,14 @@ class PortSeratoTests(unittest.TestCase):
         self.assertEqual(manifest["summary"]["tracks"], 1)
         self.assertEqual(len(crate.tracks), 1)
 
+    def test_write_batch_plan_returns_crate_preview_paths_as_list(self):
+        with TemporaryDirectory() as tmpdir:
+            plan = build_rekordbox_to_serato_plans(FIXTURE, ["ROOT / Fixture Playlist"])
+            outputs = write_rekordbox_to_serato_plan(plan, Path(tmpdir))
+
+        self.assertIsInstance(outputs["crate_previews"], list)
+        self.assertEqual(len(outputs["crate_previews"]), 1)
+
     def test_port_cli_writes_outputs(self):
         with TemporaryDirectory() as tmpdir:
             stdout = io.StringIO()

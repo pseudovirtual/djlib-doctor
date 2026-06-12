@@ -380,7 +380,7 @@ def main(argv: list[str] | None = None) -> int:
             if "crate_preview" in outputs:
                 print(f"Serato crate preview written: {outputs['crate_preview']}")
             else:
-                for crate_path in json.loads(outputs["crate_previews"]):
+                for crate_path in outputs["crate_previews"]:
                     print(f"Serato crate preview written: {crate_path}")
             print(f"Unsupported report written: {outputs['unsupported_csv']}")
             if verification is not None:
