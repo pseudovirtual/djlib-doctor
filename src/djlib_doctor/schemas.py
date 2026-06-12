@@ -6,11 +6,14 @@ from typing import Any
 from .apply_manifest import APPLY_MANIFEST_SCHEMA_VERSION
 from .compare import COMPARE_SCHEMA_VERSION
 from .decision_sheet import DECISION_SHEET_FIELDS
+from .file_operations import FILE_OPS_INSTALL_SCHEMA_VERSION, FILE_OPS_STAGE_SCHEMA_VERSION
 from .plan import PLAN_SCHEMA_VERSION
 from .port_serato import PORT_MANIFEST_SCHEMA_VERSION
 from .reviewer import REVIEW_SCHEMA_VERSION
+from .serato_audio_tags import SERATO_AUDIO_TAG_INSTALL_SCHEMA_VERSION, SERATO_AUDIO_TAG_STAGE_SCHEMA_VERSION
 from .serato_sqlite import SERATO_INSPECTION_SCHEMA_VERSION
 from .serato_stage import SERATO_INSTALL_SCHEMA_VERSION, SERATO_STAGE_SCHEMA_VERSION
+from .sqlite_stage import SQLITE_INSTALL_SCHEMA_VERSION, SQLITE_STAGE_SCHEMA_VERSION
 from .snapshot import SNAPSHOT_SCHEMA_VERSION
 from .verify import SCHEMA_VERSION as VERIFY_SCHEMA_VERSION
 
@@ -158,6 +161,48 @@ SCHEMAS: dict[str, dict[str, Any]] = {
         "schema_version": SERATO_INSTALL_SCHEMA_VERSION,
         "format": "json",
         "top_level_fields": ["schema_version", "passed", "stage_manifest", "backup_dir", "installed_files"],
+    },
+    "serato-audio-tag-stage-manifest": {
+        "schema_version": SERATO_AUDIO_TAG_STAGE_SCHEMA_VERSION,
+        "format": "json",
+        "top_level_fields": [
+            "schema_version",
+            "mode",
+            "safety",
+            "source_port_manifest",
+            "summary",
+            "tracks",
+            "hashes",
+            "install_token",
+        ],
+        "mode_values": ["staged_serato_audio_tags"],
+    },
+    "serato-audio-tag-install-report": {
+        "schema_version": SERATO_AUDIO_TAG_INSTALL_SCHEMA_VERSION,
+        "format": "json",
+        "top_level_fields": ["schema_version", "passed", "stage_manifest", "backup_dir", "installed"],
+    },
+    "file-operations-stage-manifest": {
+        "schema_version": FILE_OPS_STAGE_SCHEMA_VERSION,
+        "format": "json",
+        "top_level_fields": ["schema_version", "mode", "source_manifest", "operations", "install_token", "safety"],
+        "mode_values": ["staged_file_operations"],
+    },
+    "file-operations-install-report": {
+        "schema_version": FILE_OPS_INSTALL_SCHEMA_VERSION,
+        "format": "json",
+        "top_level_fields": ["schema_version", "passed", "stage_manifest", "backup_dir", "applied"],
+    },
+    "sqlite-stage-manifest": {
+        "schema_version": SQLITE_STAGE_SCHEMA_VERSION,
+        "format": "json",
+        "top_level_fields": ["schema_version", "mode", "label", "source_db", "operations_manifest", "staged_db", "operations", "hashes", "install_token"],
+        "mode_values": ["staged_sqlite_operations"],
+    },
+    "sqlite-install-report": {
+        "schema_version": SQLITE_INSTALL_SCHEMA_VERSION,
+        "format": "json",
+        "top_level_fields": ["schema_version", "passed", "stage_manifest", "backup", "installed_db"],
     },
 }
 

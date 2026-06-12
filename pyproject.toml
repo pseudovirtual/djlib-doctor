@@ -21,6 +21,7 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
+audio-tags = ["mutagen>=1.47"]
 dev = ["pytest>=7"]
 
 [project.scripts]

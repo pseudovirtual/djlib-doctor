@@ -17,6 +17,7 @@ from .compatibility import (
 from .collision_policy import get_duplicate_collision_policy
 from .compare import compare_exports, write_compare_report
 from .decision_sheet import write_decision_sheet
+from .file_operations import apply_file_operations_stage, stage_file_operations
 from .plan import (
     build_audio_compatibility_plan,
     build_bad_paths_plan,
@@ -37,8 +38,10 @@ from .port_serato import (
 from .rekordbox_xml import parse_rekordbox_xml
 from .reviewer import load_review_log, run_interactive_review
 from .schemas import render_schema
+from .serato_audio_tags import build_serato_audio_tag_stage, install_serato_audio_tag_stage
 from .serato_sqlite import inspect_serato_root_sqlite, write_serato_inspection
 from .serato_stage import install_serato_stage, stage_serato_from_port_manifest
+from .sqlite_stage import install_sqlite_stage, stage_sqlite_operations
 from .snapshot import create_snapshot
 from .verify import SCHEMA_VERSION as VERIFY_SCHEMA_VERSION
 from .verify import verify_library
@@ -170,6 +173,16 @@ def main(argv: list[str] | None = None) -> int:
     stage_serato_parser.add_argument("--serato-library-dir", required=True, type=Path, help="Live Serato Library directory containing root.sqlite.")
     stage_serato_parser.add_argument("--serato-music-dir", required=True, type=Path, help="Live _Serato_ directory.")
     stage_serato_parser.add_argument("--stage-dir", required=True, type=Path)
+    stage_tags_parser = stage_subparsers.add_parser("serato-tags", help="Stage Serato audio tag writes from a port manifest.")
+    stage_tags_parser.add_argument("--port-manifest", required=True, type=Path)
+    stage_tags_parser.add_argument("--stage-dir", required=True, type=Path)
+    stage_file_ops_parser = stage_subparsers.add_parser("file-ops", help="Stage file copy/move/delete/convert operations from a manifest.")
+    stage_file_ops_parser.add_argument("--operations", required=True, type=Path)
+    stage_file_ops_parser.add_argument("--stage-dir", required=True, type=Path)
+    stage_rb_db_parser = stage_subparsers.add_parser("rekordbox-db", help="Stage structured Rekordbox SQLite row operations.")
+    stage_rb_db_parser.add_argument("--db", required=True, type=Path)
+    stage_rb_db_parser.add_argument("--operations", required=True, type=Path)
+    stage_rb_db_parser.add_argument("--stage-dir", required=True, type=Path)
 
     install_parser = subparsers.add_parser("install", help="Install a verified stage with explicit confirmation.")
     install_subparsers = install_parser.add_subparsers(dest="install_command", required=True)
@@ -179,6 +192,16 @@ def main(argv: list[str] | None = None) -> int:
     install_serato_parser.add_argument("--serato-music-dir", required=True, type=Path)
     install_serato_parser.add_argument("--confirm-token", required=True)
     install_serato_parser.add_argument("--skip-process-check", action="store_true", help="Skip local pgrep app-closed check; intended for synthetic tests only.")
+    install_tags_parser = install_subparsers.add_parser("serato-tags", help="Install staged Serato audio tag file copies.")
+    install_tags_parser.add_argument("--stage-dir", required=True, type=Path)
+    install_tags_parser.add_argument("--confirm-token", required=True)
+    install_file_ops_parser = install_subparsers.add_parser("file-ops", help="Apply a staged file operation manifest.")
+    install_file_ops_parser.add_argument("--stage-dir", required=True, type=Path)
+    install_file_ops_parser.add_argument("--confirm-token", required=True)
+    install_rb_db_parser = install_subparsers.add_parser("rekordbox-db", help="Install a staged Rekordbox SQLite DB copy.")
+    install_rb_db_parser.add_argument("--stage-dir", required=True, type=Path)
+    install_rb_db_parser.add_argument("--db", required=True, type=Path)
+    install_rb_db_parser.add_argument("--confirm-token", required=True)
 
     port_parser = subparsers.add_parser("port", help="Build dry-run migration plans between DJ library platforms.")
     port_subparsers = port_parser.add_subparsers(dest="port_command", required=True)
@@ -388,6 +411,35 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"Staged crate: {crate_path}")
             print(f"Install token: {report.install_token}")
             return 0
+        if args.stage_command == "serato-tags":
+            try:
+                report = build_serato_audio_tag_stage(args.port_manifest, args.stage_dir)
+            except (OSError, ValueError, RuntimeError, json.JSONDecodeError) as exc:
+                print(f"djlib-doctor stage: ERROR\n{exc}", file=sys.stderr)
+                return 3
+            print(f"Serato audio tag stage written: {report.stage_manifest_path}")
+            print(f"Tagged copies: {report.summary['tagged_copies']}")
+            print(f"Install token: {report.install_token}")
+            return 0
+        if args.stage_command == "file-ops":
+            try:
+                report = stage_file_operations(args.operations, args.stage_dir)
+            except (OSError, ValueError, RuntimeError, json.JSONDecodeError) as exc:
+                print(f"djlib-doctor stage: ERROR\n{exc}", file=sys.stderr)
+                return 3
+            print(f"File operations stage written: {report.stage_manifest_path}")
+            print(f"Install token: {report.install_token}")
+            return 0
+        if args.stage_command == "rekordbox-db":
+            try:
+                report = stage_sqlite_operations(args.db, args.operations, args.stage_dir, label="rekordbox")
+            except (OSError, sqlite3.Error, ValueError, RuntimeError, json.JSONDecodeError) as exc:
+                print(f"djlib-doctor stage: ERROR\n{exc}", file=sys.stderr)
+                return 3
+            print(f"Rekordbox DB stage written: {report.stage_manifest_path}")
+            print(f"Staged DB: {report.staged_db}")
+            print(f"Install token: {report.install_token}")
+            return 0
 
     if args.command == "install":
         if args.install_command == "serato-stage":
@@ -405,6 +457,33 @@ def main(argv: list[str] | None = None) -> int:
                 return 3
             print(f"Serato stage installed: {report.report_path}")
             print(f"Backup directory: {report.backup_dir}")
+            return 0
+        if args.install_command == "serato-tags":
+            try:
+                report = install_serato_audio_tag_stage(args.stage_dir, confirm_token=args.confirm_token)
+            except (OSError, ValueError, RuntimeError, json.JSONDecodeError) as exc:
+                print(f"djlib-doctor install: ERROR\n{exc}", file=sys.stderr)
+                return 3
+            print(f"Serato audio tags installed: {args.stage_dir / 'serato-audio-tag-install-report.json'}")
+            print(f"Tagged files installed: {len(report['installed'])}")
+            return 0
+        if args.install_command == "file-ops":
+            try:
+                report = apply_file_operations_stage(args.stage_dir, confirm_token=args.confirm_token)
+            except (OSError, ValueError, RuntimeError, json.JSONDecodeError) as exc:
+                print(f"djlib-doctor install: ERROR\n{exc}", file=sys.stderr)
+                return 3
+            print(f"File operations applied: {args.stage_dir / 'file-operations-install-report.json'}")
+            print(f"Operations applied: {len(report['applied'])}")
+            return 0
+        if args.install_command == "rekordbox-db":
+            try:
+                report = install_sqlite_stage(args.stage_dir, args.db, confirm_token=args.confirm_token, label="rekordbox")
+            except (OSError, sqlite3.Error, ValueError, RuntimeError, json.JSONDecodeError) as exc:
+                print(f"djlib-doctor install: ERROR\n{exc}", file=sys.stderr)
+                return 3
+            print(f"Rekordbox DB stage installed: {args.stage_dir / 'rekordbox-sqlite-install-report.json'}")
+            print(f"Backup: {report['backup']}")
             return 0
 
     if args.command == "port":
