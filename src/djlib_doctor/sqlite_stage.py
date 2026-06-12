@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import json
 from pathlib import Path
 import shutil
 import sqlite3
 from typing import Any
 
+from .io_utils import read_json, write_json
 from .safety import all_checks_passed, check_sqlite_sidecars
+from .sqlite_utils import quote_identifier, require_integrity
 from .stage_common import install_token, require_install_token, require_sha256, sha256_file
 
 
@@ -30,13 +31,13 @@ def stage_sqlite_operations(live_db: Path, operations_manifest: Path, stage_dir:
     stage_dir.mkdir(parents=True, exist_ok=True)
     staged_db = stage_dir / live_db.name
     shutil.copy2(live_db, staged_db)
-    operations = json.loads(operations_manifest.read_text(encoding="utf-8")).get("operations", ())
+    operations = read_json(operations_manifest).get("operations", ())
     conn = sqlite3.connect(staged_db)
     try:
-        _require_integrity(conn, "before staged SQLite operations")
+        require_integrity(conn, "before staged SQLite operations")
         for operation in operations:
             _apply_sqlite_operation(conn, operation)
-        _require_integrity(conn, "after staged SQLite operations")
+        require_integrity(conn, "after staged SQLite operations")
         conn.commit()
     except Exception:
         conn.rollback()
@@ -57,13 +58,13 @@ def stage_sqlite_operations(live_db: Path, operations_manifest: Path, stage_dir:
         "install_token": token,
     }
     stage_manifest_path = stage_dir / f"{label}-sqlite-stage-manifest.json"
-    stage_manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    write_json(stage_manifest_path, manifest)
     return SqliteStage(stage_dir, stage_manifest_path, staged_db, token)
 
 
 def install_sqlite_stage(stage_dir: Path, live_db: Path, confirm_token: str, label: str = "sqlite") -> dict[str, Any]:
     manifest_path = stage_dir / f"{label}-sqlite-stage-manifest.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest = read_json(manifest_path)
     require_install_token("INSTALL_SQLITE_STAGE", manifest["hashes"], manifest["install_token"], confirm_token)
     staged_db = Path(manifest["staged_db"])
     require_sha256(staged_db, manifest["hashes"]["staged_db"], "Staged SQLite")
@@ -84,7 +85,7 @@ def install_sqlite_stage(stage_dir: Path, live_db: Path, confirm_token: str, lab
         "backup": str(backup),
         "installed_db": str(live_db),
     }
-    (stage_dir / f"{label}-sqlite-install-report.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    write_json(stage_dir / f"{label}-sqlite-install-report.json", report)
     if not passed:
         raise RuntimeError("Installed SQLite hash verification failed")
     return report
@@ -92,12 +93,12 @@ def install_sqlite_stage(stage_dir: Path, live_db: Path, confirm_token: str, lab
 
 def _apply_sqlite_operation(conn: sqlite3.Connection, operation: dict[str, Any]) -> None:
     kind = operation["operation"]
-    table = _quote_identifier(operation["table"])
+    table = quote_identifier(operation["table"])
     if kind == "update":
         values = operation["values"]
         where = operation["where"]
-        assignments = ", ".join(f"{_quote_identifier(column)} = ?" for column in values)
-        predicates = " AND ".join(f"{_quote_identifier(column)} = ?" for column in where)
+        assignments = ", ".join(f"{quote_identifier(column)} = ?" for column in values)
+        predicates = " AND ".join(f"{quote_identifier(column)} = ?" for column in where)
         conn.execute(
             f"UPDATE {table} SET {assignments} WHERE {predicates}",
             tuple(values.values()) + tuple(where.values()),
@@ -105,23 +106,13 @@ def _apply_sqlite_operation(conn: sqlite3.Connection, operation: dict[str, Any])
         return
     if kind == "insert":
         values = operation["values"]
-        columns = ", ".join(_quote_identifier(column) for column in values)
+        columns = ", ".join(quote_identifier(column) for column in values)
         placeholders = ", ".join("?" for _ in values)
         conn.execute(f"INSERT INTO {table} ({columns}) VALUES ({placeholders})", tuple(values.values()))
         return
     if kind == "delete":
         where = operation["where"]
-        predicates = " AND ".join(f"{_quote_identifier(column)} = ?" for column in where)
+        predicates = " AND ".join(f"{quote_identifier(column)} = ?" for column in where)
         conn.execute(f"DELETE FROM {table} WHERE {predicates}", tuple(where.values()))
         return
     raise ValueError(f"Unsupported SQLite operation: {kind}")
-
-
-def _require_integrity(conn: sqlite3.Connection, phase: str) -> None:
-    integrity = conn.execute("PRAGMA integrity_check").fetchone()[0]
-    if integrity != "ok":
-        raise RuntimeError(f"SQLite integrity check failed {phase}: {integrity}")
-
-
-def _quote_identifier(value: str) -> str:
-    return '"' + value.replace('"', '""') + '"'

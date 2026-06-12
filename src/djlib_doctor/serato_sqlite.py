@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import hashlib
-import json
 from pathlib import Path
 import sqlite3
 from typing import Any
+
+from .io_utils import render_json, write_json
+from .sqlite_utils import quote_identifier
 
 
 SERATO_INSPECTION_SCHEMA_VERSION = "1.0"
@@ -51,9 +53,7 @@ class SeratoInspection:
         return data
 
     def render_json(self, pretty: bool = False) -> str:
-        if pretty:
-            return json.dumps(self.to_dict(), indent=2, sort_keys=True)
-        return json.dumps(self.to_dict(), sort_keys=True)
+        return render_json(self.to_dict(), pretty=pretty)
 
 
 def inspect_serato_root_sqlite(path: Path) -> SeratoInspection:
@@ -68,8 +68,8 @@ def inspect_serato_root_sqlite(path: Path) -> SeratoInspection:
         tables = []
         schema_parts = []
         for name in table_names:
-            columns = tuple(row[1] for row in conn.execute(f"PRAGMA table_info({_quote_identifier(name)})"))
-            row_count = int(conn.execute(f"SELECT COUNT(*) FROM {_quote_identifier(name)}").fetchone()[0])
+            columns = tuple(row[1] for row in conn.execute(f"PRAGMA table_info({quote_identifier(name)})"))
+            row_count = int(conn.execute(f"SELECT COUNT(*) FROM {quote_identifier(name)}").fetchone()[0])
             tables.append(SeratoTableInspection(name=name, columns=columns, row_count=row_count))
             schema_parts.append(f"{name}:{','.join(columns)}")
         fingerprint = hashlib.sha256("\n".join(schema_parts).encode("utf-8")).hexdigest()
@@ -87,12 +87,8 @@ def inspect_serato_root_sqlite(path: Path) -> SeratoInspection:
 def write_serato_inspection(inspection: SeratoInspection, out_dir: Path) -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / "serato-inspection.json"
-    path.write_text(inspection.render_json(pretty=True) + "\n", encoding="utf-8")
+    write_json(path, inspection.to_dict())
     return path
-
-
-def _quote_identifier(value: str) -> str:
-    return '"' + value.replace('"', '""') + '"'
 
 
 def _inspect_asset_identity(
@@ -102,8 +98,8 @@ def _inspect_asset_identity(
     asset_table = next((table for table in tables if table.name == "asset"), None)
     if asset_table is None or "portable_id" not in asset_table.columns:
         return None
-    asset_name = _quote_identifier(asset_table.name)
-    portable_id = _quote_identifier("portable_id")
+    asset_name = quote_identifier(asset_table.name)
+    portable_id = quote_identifier("portable_id")
     total_assets = int(conn.execute(f"SELECT COUNT(*) FROM {asset_name}").fetchone()[0])
     assets_with_identity = int(
         conn.execute(

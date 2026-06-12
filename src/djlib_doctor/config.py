@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import Any
+
+from .io_utils import read_json, write_json
 
 
 CONFIG_SCHEMA_VERSION = "1.0"
@@ -34,7 +35,7 @@ def default_config(
 
 
 def load_config(path: Path) -> dict[str, Any]:
-    data = json.loads(path.read_text(encoding="utf-8"))
+    data = read_json(path)
     unknown = sorted(set(data) - CONFIG_KEYS)
     if unknown:
         raise ValueError(f"Unknown config keys: {', '.join(unknown)}")
@@ -47,5 +48,4 @@ def write_config(path: Path, config: dict[str, Any]) -> None:
     unknown = sorted(set(config) - CONFIG_KEYS)
     if unknown:
         raise ValueError(f"Unknown config keys: {', '.join(unknown)}")
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(config, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    write_json(path, config)

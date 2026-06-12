@@ -2,21 +2,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
-import json
 from pathlib import Path
 import sys
 from typing import Callable, TextIO
 
+from .io_utils import read_json, write_json
 from .plan import PlanAction, PlanReport
+from .reviewer_choices import ReviewChoice, choices_for_action
 
 
 REVIEW_SCHEMA_VERSION = "1.0"
-
-
-@dataclass(frozen=True)
-class ReviewChoice:
-    value: str
-    label: str
 
 
 @dataclass(frozen=True)
@@ -81,7 +76,7 @@ def run_interactive_review(
 
 
 def load_review_log(path: Path) -> ReviewLog:
-    data = json.loads(path.read_text(encoding="utf-8"))
+    data = read_json(path)
     decisions = []
     for row in data.get("decisions", []):
         action_data = row.get("action", {})
@@ -97,7 +92,6 @@ def load_review_log(path: Path) -> ReviewLog:
 
 
 def write_review_log(report: PlanReport, decisions: tuple[ReviewDecision, ...], out_path: Path) -> None:
-    out_path.parent.mkdir(parents=True, exist_ok=True)
     data = {
         "schema_version": REVIEW_SCHEMA_VERSION,
         "source_plan_type": report.plan_type,
@@ -109,51 +103,7 @@ def write_review_log(report: PlanReport, decisions: tuple[ReviewDecision, ...], 
         },
         "decisions": [decision.to_dict() for decision in decisions],
     }
-    out_path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-
-
-def choices_for_action(plan_type: str, action: PlanAction) -> tuple[ReviewChoice, ...]:
-    if plan_type == "missing-files":
-        return (
-            ReviewChoice("reacquire", "Reacquire the track later"),
-            ReviewChoice("manual_match", "Manually find or relink a replacement"),
-            ReviewChoice("remove_dead_record_later", "Approve reviewing/removing the dead record later"),
-            ReviewChoice("keep_for_now", "Keep the record for now"),
-            ReviewChoice("needs_listening", "Needs listening or manual investigation"),
-        )
-    if plan_type == "duplicates":
-        return (
-            ReviewChoice("keep_recommended", "Keep the recommended record"),
-            ReviewChoice("keep_both", "Keep both duplicate records"),
-            ReviewChoice("prefer_quality", "Prefer the higher-quality file"),
-            ReviewChoice("prefer_cues", "Prefer the better cue-bearing record"),
-            ReviewChoice("needs_listening", "Needs listening or cue review"),
-        )
-    if plan_type == "bad-paths":
-        return (
-            ReviewChoice("find_clean_keeper", "Find or create a clean keeper path later"),
-            ReviewChoice("keep_for_now", "Keep this path for now"),
-            ReviewChoice("remove_or_relink_later", "Review removal or relink later"),
-            ReviewChoice("needs_investigation", "Needs manual investigation"),
-        )
-    if plan_type == "audio-compatibility":
-        return (
-            ReviewChoice("accept_for_target", "Accept this file for the target setup"),
-            ReviewChoice("convert_later", "Convert or replace later"),
-            ReviewChoice("exclude_from_usb", "Exclude from USB/export target"),
-            ReviewChoice("needs_probe_review", "Needs probe/listening review"),
-        )
-    if plan_type == "cues":
-        return (
-            ReviewChoice("preserve_or_add_cue_later", "Preserve or add this cue later"),
-            ReviewChoice("accept_difference", "Accept the cue difference"),
-            ReviewChoice("needs_listening", "Needs listening/cue review"),
-        )
-    return (
-        ReviewChoice("approve", "Approve this recommendation for future planning"),
-        ReviewChoice("skip", "Skip this row"),
-        ReviewChoice("needs_review", "Needs review"),
-    )
+    write_json(out_path, data)
 
 
 def _print_action(

@@ -1,65 +1,22 @@
 from __future__ import annotations
-
 from dataclasses import dataclass
-import json
 from pathlib import Path
 import shutil
-import struct
 from typing import Any
-
+from .io_utils import read_json, write_json
+from .serato_markers import build_markers2_payload
 from .stage_common import backup_name, install_token, require_install_token, require_sha256, sha256_file
-
-
 SERATO_AUDIO_TAG_STAGE_SCHEMA_VERSION = "1.0"
 SERATO_AUDIO_TAG_INSTALL_SCHEMA_VERSION = "1.0"
 MP4_MARKERS2_KEY = "----:com.serato.dj:markersv2"
-
-_VERSION = (2, 1)
-_VERSION_FORMAT = ">2B"
-_CUE_COLORS = (
-    b"\xcc\x00\x00",
-    b"\xcc\x88\x00",
-    b"\xcc\xcc\x00",
-    b"\x00\xcc\x00",
-    b"\x00\xcc\xcc",
-    b"\x00\x00\xcc",
-    b"\x88\x00\xcc",
-    b"\xcc\x00\x88",
-)
-
-
 @dataclass(frozen=True)
 class SeratoAudioTagStageReport:
     stage_dir: Path
     stage_manifest_path: Path
     install_token: str
     summary: dict[str, Any]
-
-
-def build_markers2_payload(cue_intents: list[dict[str, Any]] | tuple[dict[str, Any], ...]) -> bytes:
-    contents = [struct.pack(_VERSION_FORMAT, *_VERSION)]
-    for intent in cue_intents:
-        slot = int(intent.get("slot") or 0)
-        label = str(intent.get("label") or "")
-        if intent.get("intent") == "serato_hotcue":
-            contents.append(_named_entry("CUE", _cue_entry(slot, int(intent["start_ms"]), label)))
-        elif intent.get("intent") == "serato_saved_loop":
-            contents.append(
-                _named_entry(
-                    "LOOP",
-                    _loop_entry(
-                        slot,
-                        int(intent["start_ms"]),
-                        int(intent.get("end_ms") or intent["start_ms"]),
-                        label,
-                    ),
-                )
-            )
-    return b"".join(contents)
-
-
 def build_serato_audio_tag_stage(port_manifest_path: Path, stage_dir: Path) -> SeratoAudioTagStageReport:
-    manifest = json.loads(port_manifest_path.read_text(encoding="utf-8"))
+    manifest = read_json(port_manifest_path)
     tracks = _manifest_tracks(manifest)
     tagged_dir = stage_dir / "tagged-audio"
     tagged_dir.mkdir(parents=True, exist_ok=True)
@@ -98,13 +55,11 @@ def build_serato_audio_tag_stage(port_manifest_path: Path, stage_dir: Path) -> S
         "install_token": token,
     }
     stage_manifest_path = stage_dir / "serato-audio-tag-stage-manifest.json"
-    stage_manifest_path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    write_json(stage_manifest_path, data)
     return SeratoAudioTagStageReport(stage_dir, stage_manifest_path, token, summary)
-
-
 def install_serato_audio_tag_stage(stage_dir: Path, confirm_token: str) -> dict[str, Any]:
     manifest_path = stage_dir / "serato-audio-tag-stage-manifest.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest = read_json(manifest_path)
     require_install_token(
         "INSTALL_SERATO_TAGS",
         _install_token_payload(manifest["hashes"], manifest["source_hashes"]),
@@ -141,10 +96,8 @@ def install_serato_audio_tag_stage(stage_dir: Path, confirm_token: str) -> dict[
         "installed": installed,
     }
     report_path = stage_dir / "serato-audio-tag-install-report.json"
-    report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    write_json(report_path, report)
     return report
-
-
 def _stage_track_tag_copy(track: dict[str, Any], tagged_dir: Path) -> dict[str, Any]:
     source = Path(str(track.get("path", "")))
     base = {
@@ -171,8 +124,6 @@ def _stage_track_tag_copy(track: dict[str, Any], tagged_dir: Path) -> dict[str, 
         "source_sha256": sha256_file(source),
         "staged_sha256": sha256_file(staged),
     }
-
-
 def _write_tags(path: Path, track: dict[str, Any]) -> None:
     try:
         from mutagen.aiff import AIFF
@@ -181,7 +132,6 @@ def _write_tags(path: Path, track: dict[str, Any]) -> None:
         from mutagen.mp4 import MP4, MP4FreeForm, AtomDataType
     except ImportError as exc:
         raise ImportError("Install djlib-doctor[audio-tags] to stage Serato audio tags") from exc
-
     payload = build_markers2_payload(track.get("cue_intents", ()))
     suffix = path.suffix.lower()
     if suffix in {".aiff", ".aif"}:
@@ -207,8 +157,6 @@ def _write_tags(path: Path, track: dict[str, Any]) -> None:
             audio.tags["\xa9ART"] = [str(track.get("artist", ""))]
         audio.tags[MP4_MARKERS2_KEY] = [MP4FreeForm(payload, dataformat=AtomDataType.IMPLICIT)]
         audio.save()
-
-
 def _write_id3_standard(tags: Any, track: dict[str, Any], TALB: Any, TBPM: Any, TCON: Any, TKEY: Any, TIT2: Any, TPE1: Any) -> None:
     tags.setall("TIT2", [TIT2(encoding=3, text=str(track.get("title", "")))])
     if track.get("artist"):
@@ -221,8 +169,6 @@ def _write_id3_standard(tags: Any, track: dict[str, Any], TALB: Any, TBPM: Any, 
         tags.setall("TBPM", [TBPM(encoding=3, text=str(track.get("bpm", "")))])
     if track.get("key"):
         tags.setall("TKEY", [TKEY(encoding=3, text=str(track.get("key", "")))])
-
-
 def _manifest_tracks(manifest: dict[str, Any]) -> tuple[dict[str, Any], ...]:
     if "crates" in manifest:
         tracks: list[dict[str, Any]] = []
@@ -235,33 +181,5 @@ def _manifest_tracks(manifest: dict[str, Any]) -> tuple[dict[str, Any], ...]:
                     seen_paths.add(path)
         return tuple(tracks)
     return tuple(manifest.get("tracks", ()))
-
-
 def _install_token_payload(hashes: dict[str, str], source_hashes: dict[str, str]) -> dict[str, Any]:
     return {"hashes": hashes, "source_hashes": source_hashes}
-
-
-def _cue_entry(index: int, position_ms: int, label: str) -> bytes:
-    color = _CUE_COLORS[index % len(_CUE_COLORS)]
-    return b"".join(
-        (
-            struct.pack(">cBIc3s2s", b"\x00", index, position_ms, b"\x00", color, b"\x00\x00"),
-            label[:51].encode("utf-8"),
-            b"\x00",
-        )
-    )
-
-
-def _loop_entry(index: int, start_ms: int, end_ms: int, label: str) -> bytes:
-    color = b"\xff" + _CUE_COLORS[index % len(_CUE_COLORS)]
-    return b"".join(
-        (
-            struct.pack(">cBII4s4s3s?", b"\x00", index, start_ms, end_ms, b"\x00\x00\x00\x00", color, b"\x00\x00\x00", False),
-            label[:51].encode("utf-8"),
-            b"\x00",
-        )
-    )
-
-
-def _named_entry(name: str, payload: bytes) -> bytes:
-    return name.encode("utf-8") + b"\x00" + struct.pack(">I", len(payload)) + payload

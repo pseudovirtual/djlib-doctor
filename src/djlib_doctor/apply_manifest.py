@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import json
 from pathlib import Path
 from typing import Any
 
+from .io_utils import render_json
 from .plan import PlanReport
 from .reviewer import ReviewLog
 
@@ -41,9 +41,7 @@ class ApplyManifest:
         }
 
     def render_json(self, pretty: bool = False) -> str:
-        if pretty:
-            return json.dumps(self.to_dict(), indent=2, sort_keys=True)
-        return json.dumps(self.to_dict(), sort_keys=True)
+        return render_json(self.to_dict(), pretty=pretty)
 
 
 def build_apply_manifest(

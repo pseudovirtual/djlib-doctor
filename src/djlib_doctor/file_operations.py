@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import json
 from pathlib import Path
 import shutil
 import subprocess
 from typing import Any
 
+from .io_utils import read_json, write_json
 from .stage_common import backup_name, install_token, require_install_token, require_sha256, sha256_file
 
 
@@ -22,7 +22,7 @@ class FileOperationsStage:
 
 
 def stage_file_operations(operations_manifest: Path, stage_dir: Path) -> FileOperationsStage:
-    data = json.loads(operations_manifest.read_text(encoding="utf-8"))
+    data = read_json(operations_manifest)
     staged_dir = stage_dir / "staged-files"
     staged_dir.mkdir(parents=True, exist_ok=True)
     staged_ops = []
@@ -38,13 +38,13 @@ def stage_file_operations(operations_manifest: Path, stage_dir: Path) -> FileOpe
         "safety": {"requires_install_command": True, "backs_up_targets": True},
     }
     stage_manifest_path = stage_dir / "file-operations-stage-manifest.json"
-    stage_manifest_path.write_text(json.dumps(stage_manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    write_json(stage_manifest_path, stage_manifest)
     return FileOperationsStage(stage_dir, stage_manifest_path, token)
 
 
 def apply_file_operations_stage(stage_dir: Path, confirm_token: str) -> dict[str, Any]:
     manifest_path = stage_dir / "file-operations-stage-manifest.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest = read_json(manifest_path)
     require_install_token("INSTALL_FILE_OPS", manifest["operations"], manifest["install_token"], confirm_token)
     backup_dir = stage_dir / "file-operation-backups"
     backup_dir.mkdir(parents=True, exist_ok=True)
@@ -59,7 +59,7 @@ def apply_file_operations_stage(stage_dir: Path, confirm_token: str) -> dict[str
         "applied": applied,
     }
     report_path = stage_dir / "file-operations-install-report.json"
-    report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    write_json(report_path, report)
     return report
 
 

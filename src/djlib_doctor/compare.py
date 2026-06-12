@@ -1,81 +1,16 @@
 from __future__ import annotations
 
 from collections import Counter
-from dataclasses import dataclass
-import json
 from pathlib import Path
-from typing import Any
 
+from .compare_models import COMPARE_SCHEMA_VERSION, CompareIssue, CompareReport
 from .cues import CueKind
 from .locations import LocationKind
 from .matching import normalize_text
 from .path_hygiene import find_bad_path_marker
 from .rekordbox_xml import RekordboxLibrary, Track, parse_rekordbox_xml
 
-
-COMPARE_SCHEMA_VERSION = "1.0"
 CUE_TOLERANCE_SECONDS = 0.11
-
-
-@dataclass(frozen=True)
-class CompareIssue:
-    code: str
-    message: str
-    artist: str = ""
-    title: str = ""
-    playlist: str = ""
-    path: str = ""
-
-    def to_dict(self) -> dict[str, str]:
-        data = {"code": self.code, "message": self.message}
-        if self.artist:
-            data["artist"] = self.artist
-        if self.title:
-            data["title"] = self.title
-        if self.playlist:
-            data["playlist"] = self.playlist
-        if self.path:
-            data["path"] = self.path
-        return data
-
-
-@dataclass(frozen=True)
-class CompareReport:
-    issues: tuple[CompareIssue, ...]
-
-    @property
-    def passed(self) -> bool:
-        return not self.issues
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "schema_version": COMPARE_SCHEMA_VERSION,
-            "status": "pass" if self.passed else "fail",
-            "summary": {
-                "issues": len(self.issues),
-                "missing_material": sum(1 for issue in self.issues if issue.code == "missing_material"),
-                "cue_not_covered": sum(1 for issue in self.issues if issue.code == "cue_not_covered"),
-                "hotcue_regression": sum(1 for issue in self.issues if issue.code == "hotcue_regression"),
-                "playlist_order_or_entry_diff": sum(1 for issue in self.issues if issue.code == "playlist_order_or_entry_diff"),
-                "final_missing_local_file": sum(1 for issue in self.issues if issue.code == "final_missing_local_file"),
-                "final_bad_path": sum(1 for issue in self.issues if issue.code == "final_bad_path"),
-            },
-            "issues": [issue.to_dict() for issue in self.issues],
-        }
-
-    def render_json(self, pretty: bool = False) -> str:
-        if pretty:
-            return json.dumps(self.to_dict(), indent=2, sort_keys=True)
-        return json.dumps(self.to_dict(), sort_keys=True)
-
-    def render_text(self) -> str:
-        lines = [
-            f"djlib-doctor compare: {'PASS' if self.passed else 'FAIL'}",
-            f"Issues: {len(self.issues)}",
-        ]
-        for issue in self.issues:
-            lines.append(f"- {issue.code}: {issue.message}")
-        return "\n".join(lines)
 
 
 def compare_exports(baseline_xml: Path, final_xml: Path, check_files: bool = False) -> CompareReport:

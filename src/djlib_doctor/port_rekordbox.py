@@ -1,19 +1,13 @@
 from __future__ import annotations
-
 from dataclasses import dataclass
-import json
 from pathlib import Path
 import sqlite3
 from typing import Any
 from urllib.parse import quote
 import xml.etree.ElementTree as ET
-
+from .io_utils import render_json, write_json
 from .serato_crate import read_serato_crate
-
-
 REKORDBOX_PORT_SCHEMA_VERSION = "1.0"
-
-
 @dataclass(frozen=True)
 class RekordboxPortTrack:
     track_id: str
@@ -26,7 +20,6 @@ class RekordboxPortTrack:
     key: str = ""
     bpm: float | None = None
     length_ms: int | None = None
-
     def to_dict(self) -> dict[str, Any]:
         return {
             "track_id": self.track_id,
@@ -40,19 +33,15 @@ class RekordboxPortTrack:
             "bpm": self.bpm,
             "length_ms": self.length_ms,
         }
-
-
 @dataclass(frozen=True)
 class SeratoToRekordboxPlan:
     source_crate: str
     target_playlist: str
     tracks: tuple[RekordboxPortTrack, ...]
     skipped: tuple[dict[str, str], ...]
-
     @property
     def summary(self) -> dict[str, int]:
         return {"tracks": len(self.tracks), "skipped": len(self.skipped)}
-
     def to_dict(self) -> dict[str, Any]:
         return {
             "schema_version": REKORDBOX_PORT_SCHEMA_VERSION,
@@ -65,13 +54,8 @@ class SeratoToRekordboxPlan:
             "tracks": [track.to_dict() for track in self.tracks],
             "skipped": list(self.skipped),
         }
-
     def render_json(self, pretty: bool = False) -> str:
-        if pretty:
-            return json.dumps(self.to_dict(), indent=2, sort_keys=True)
-        return json.dumps(self.to_dict(), sort_keys=True)
-
-
+        return render_json(self.to_dict(), pretty=pretty)
 def build_serato_to_rekordbox_plan(
     serato_library_dir: Path,
     crate_path: Path,
@@ -109,17 +93,13 @@ def build_serato_to_rekordbox_plan(
         tracks=tuple(tracks),
         skipped=tuple(skipped),
     )
-
-
 def write_serato_to_rekordbox_plan(plan: SeratoToRekordboxPlan, out_dir: Path) -> dict[str, str]:
     out_dir.mkdir(parents=True, exist_ok=True)
     manifest_path = out_dir / "port-manifest.json"
     xml_path = out_dir / "rekordbox-preview.xml"
-    manifest_path.write_text(plan.render_json(pretty=True) + "\n", encoding="utf-8")
+    write_json(manifest_path, plan.to_dict())
     xml_path.write_text(render_rekordbox_xml_preview(plan) + "\n", encoding="utf-8")
     return {"manifest": str(manifest_path), "rekordbox_xml_preview": str(xml_path)}
-
-
 def render_rekordbox_xml_preview(plan: SeratoToRekordboxPlan) -> str:
     root = ET.Element("DJ_PLAYLISTS", {"Version": "1.0.0"})
     ET.SubElement(root, "PRODUCT", {"Name": "djlib-doctor", "Version": "0.1.0", "Company": "djlib-doctor"})
@@ -149,8 +129,6 @@ def render_rekordbox_xml_preview(plan: SeratoToRekordboxPlan) -> str:
         ET.SubElement(playlist, "TRACK", {"Key": track.track_id})
     _indent(root)
     return '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(root, encoding="unicode")
-
-
 def _read_assets_by_portable_id(root_sqlite: Path) -> dict[str, dict[str, Any]]:
     conn = sqlite3.connect(f"file:{root_sqlite}?mode=ro", uri=True)
     try:
@@ -168,37 +146,23 @@ def _read_assets_by_portable_id(root_sqlite: Path) -> dict[str, dict[str, Any]]:
         return assets
     finally:
         conn.close()
-
-
 def _is_local_portable_id(value: str) -> bool:
     lowered = value.lower()
     return bool(value) and ":" not in lowered and not lowered.startswith(("soundcloud", "spotify", "tidal", "beatport"))
-
-
 def _file_url(path: str) -> str:
     return "file://localhost" + quote(path)
-
-
 def _table_columns(conn: sqlite3.Connection, table: str) -> tuple[str, ...]:
     return tuple(row[1] for row in conn.execute(f"PRAGMA table_info({_quote_identifier(table)})"))
-
-
 def _quote_identifier(value: str) -> str:
     return '"' + value.replace('"', '""') + '"'
-
-
 def _optional_float(value: Any) -> float | None:
     if value is None:
         return None
     return float(value)
-
-
 def _optional_int(value: Any) -> int | None:
     if value is None:
         return None
     return int(value)
-
-
 def _indent(element: ET.Element, level: int = 0) -> None:
     indentation = "\n" + level * "  "
     if len(element):
