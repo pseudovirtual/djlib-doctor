@@ -12,6 +12,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_plan(sub)
     _add_review(sub)
     _add_schema_config_inspect(sub)
+    _add_fingerprint(sub)
     _add_stage_install(sub)
     _add_migrate_port_compare(sub)
     sub.add_parser("self-test", help="Run a fast built-in smoke test using synthetic fixtures.")
@@ -91,6 +92,19 @@ def _add_schema_config_inspect(sub: argparse._SubParsersAction) -> None:
     serato = inspect.add_parser("serato")
     serato.add_argument("--library-dir", required=True, type=Path)
     serato.add_argument("--out", required=True, type=Path)
+
+
+def _add_fingerprint(sub: argparse._SubParsersAction) -> None:
+    fp = sub.add_parser("fingerprint", help="Fingerprint or compare local audio files.").add_subparsers(
+        dest="fingerprint_command", required=True
+    )
+    one = fp.add_parser("file")
+    one.add_argument("path", type=Path)
+    one.add_argument("--out", type=Path)
+    cmp = fp.add_parser("compare")
+    cmp.add_argument("left", type=Path)
+    cmp.add_argument("right", type=Path)
+    cmp.add_argument("--out", type=Path)
 
 
 def _add_stage_install(sub: argparse._SubParsersAction) -> None:

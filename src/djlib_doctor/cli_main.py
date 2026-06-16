@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 
 from .cli_parser import build_parser
+from .cli_fingerprint import handle_fingerprint
 from .cli_port import handle_migrate, handle_port
 from .cli_read import (
     handle_apply_manifest,
@@ -32,6 +33,7 @@ HANDLERS = {
     "schema": handle_schema,
     "config": handle_config,
     "inspect": handle_inspect,
+    "fingerprint": handle_fingerprint,
     "stage": handle_stage,
     "install": handle_install,
     "migrate": handle_migrate,
