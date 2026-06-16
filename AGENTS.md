@@ -15,7 +15,7 @@
 - Keep collection `<TRACK>` records separate from playlist `<TRACK Key="...">` references.
 - Treat streaming placeholders as placeholders, not missing local files.
 - Preserve cue semantics: memory cues, hotcue slots, cue vs loop type, loop end times.
-- Prefer read-only commands and reports until a future milestone defines dry-run manifests and approval boundaries.
+- Prefer read-only commands first. Use write-capable commands only when an explicit staged/install workflow exists and the user approves that path.
 
 ## Expected Commands
 
@@ -54,7 +54,7 @@ PYTHONPATH=src PYTHONPYCACHEPREFIX=work/pycache python3 -m compileall -q src tes
 
 ## Milestone Focus
 
-The current milestone is read-only verification, snapshots, comparisons, and cleanup plans:
+The current milestone is safe verification, planning, staged writes, and migration workflows:
 
 - parse Rekordbox XML collection records
 - parse playlist references separately
@@ -70,5 +70,6 @@ The current milestone is read-only verification, snapshots, comparisons, and cle
 - support single-track, playlist/crate, multi-playlist, and whole-collection port scopes
 - support `full`, `cues-only`, and `match-only` transfer modes in port manifests
 - stage and install Serato SQLite/crate changes only through token-gated manifests with backups, sidecar checks, app-closed checks, and hash verification
+- for Serato-to-Rekordbox, do not present XML preview as the final write workflow; the intended target flow is port manifest/XML representation, staged copied `master.db`, then `install rekordbox-db`
 
-Do not start with DB writes. The verifier is the foundation.
+Do not write live DBs directly. The verifier and port manifest are the foundation; staged DB installs are the only approved DB write path.

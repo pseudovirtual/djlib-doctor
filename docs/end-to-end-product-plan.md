@@ -26,7 +26,8 @@ The project should be:
 - [x] Generic staged SQLite operations
 - [x] Workflow API for Rekordbox to Serato
 - [x] Serato to Rekordbox dry-run manifest
-- [x] Serato to Rekordbox XML preview
+- [x] Serato to Rekordbox port manifest and XML representation
+- [ ] High-level Serato-to-Rekordbox staged `master.db` import wrapper
 - [ ] Serato cue/tag reader into the core model
 - [ ] Higher-level interactive review/prompt flow for migrations
 - [x] User config file for local paths and defaults
@@ -61,7 +62,7 @@ Every write-capable workflow must have:
 ## Agent Experience Checklist
 
 - [x] `AGENTS.md`
-- [x] `CLAUDE.md`
+- [x] `AGENTS.md`
 - [x] `llms.txt`
 - [x] report schemas via `djlib-doctor schema`
 - [ ] agent recipe: inspect, plan one playlist, stage, ask user, install
@@ -70,7 +71,7 @@ Every write-capable workflow must have:
 
 ## Near-Term Implementation Order
 
-1. Add Serato-to-Rekordbox dry-run manifest and XML preview.
+1. Add high-level Serato-to-Rekordbox staged `master.db` import wrapper.
 2. Add a small config system for path/default discovery.
 3. Refactor repeated staging hash/token helpers into shared utilities.
 4. Add migration recipe docs for human and agent workflows.

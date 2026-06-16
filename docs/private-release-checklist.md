@@ -1,6 +1,8 @@
 # Private Release Checklist
 
-Use this before pushing to the private GitHub repository.
+Historical note: this checklist predates the public GitHub repo. Keep it only for privacy-scrub context; do not use the private repo creation steps as current setup guidance.
+
+Use this only as a privacy-scrub checklist before public releases or large documentation updates.
 
 ## Local Checks
 
@@ -15,7 +17,6 @@ Review any matches before committing.
 
 - [ ] `README.md` explains current status.
 - [ ] `AGENTS.md` exists.
-- [ ] `CLAUDE.md` exists.
 - [ ] `CONTRIBUTING.md` exists.
 - [ ] `SECURITY.md` exists.
 - [ ] `CHANGELOG.md` exists.
@@ -36,14 +37,4 @@ Review any matches before committing.
 
 ## GitHub
 
-Planned repository:
-
-```text
-pseudovirtual/djlib-doctor
-```
-
-Create privately when ready:
-
-```bash
-gh repo create pseudovirtual/djlib-doctor --private --source . --remote origin --push
-```
+Current repository: `pseudovirtual/djlib-doctor`

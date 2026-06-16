@@ -1,22 +1,18 @@
 # GitHub Launch Plan
 
+Historical note: this was the pre-public launch checklist. The repository is now public, so use it only as historical context and do not follow the private-repo setup commands as current instructions.
+
 This project should eventually live at:
 
 ```text
 https://github.com/pseudovirtual/djlib-doctor
 ```
 
-It should stay private until the read-only foundation, docs, and safety story are strong.
+The repo is now public at that location.
 
-## Private Repo Setup
+## Repository Setup Checks
 
-When ready, create the private repo:
-
-```bash
-gh repo create pseudovirtual/djlib-doctor --private --source . --remote origin --push
-```
-
-Before running that command:
+Before publishing or changing repository settings:
 
 - confirm `gh auth status`
 - confirm no private music data is present

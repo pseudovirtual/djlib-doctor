@@ -15,7 +15,7 @@ Explicitly out of near-term scope:
 
 - standalone MCP server
 - generalized MCP API
-- write-capable agent tools
+- direct live-write agent tools
 
 Claude Desktop extensions may still require extension-specific packaging mechanics, but the project should not design around MCP as the core product yet. The CLI and report schemas should remain the source of truth.
 
@@ -70,8 +70,9 @@ Skill behavior:
 - read `AGENTS.md`
 - run verifier commands
 - explain reports in DJ language
-- suggest only read-only next steps during early milestones
-- refuse DB writes and file operations unless a later approved workflow exists
+- suggest read-only analysis first
+- use write-capable commands only when an implemented stage/install workflow exists and the user approves it
+- never present XML preview as the final Serato-to-Rekordbox write workflow; use staged `master.db` import/install language
 
 ## Claude Desktop Discovery
 
@@ -93,7 +94,7 @@ Future extension workflow:
 - extension runs the read-only verifier workflow
 - Claude explains the saved report
 
-The extension should not expose file moves, conversion, quarantine, deletion, XML writing, or DB writing until those features are mature and approval-bound.
+The extension should expose write-capable actions only through mature approval-bound stage/install commands. It should never expose direct live file, XML, or DB mutation.
 
 Current repo status:
 

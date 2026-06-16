@@ -33,7 +33,16 @@ djlib-doctor port serato-to-rb --serato-library-dir Library --collection --colle
 djlib-doctor migrate serato-to-rb --serato-library-dir Library --crate Set.crate --collection-root ~/Music --out run/rb
 ```
 
-This is preview-only: it writes a manifest and Rekordbox XML preview, not a live Rekordbox DB.
+This writes a dry-run manifest and Rekordbox XML representation. If the user wants to write to Rekordbox, do not stop at manual XML import. The intended safe path is to stage changes into a copied `master.db`, verify the staged database, then install it with `install rekordbox-db`.
+
+The lower-level staged DB safety path exists:
+
+```bash
+djlib-doctor stage rekordbox-db --db /path/to/rekordbox/master.db --operations run/rekordbox-db-operations.json --stage-dir run/rekordbox-stage
+djlib-doctor install rekordbox-db --stage-dir run/rekordbox-stage --db /path/to/rekordbox/master.db --confirm-token INSTALL_SQLITE_STAGE:...
+```
+
+The high-level bridge from a Serato-to-Rekordbox port manifest to Rekordbox DB operations is still missing and should be implemented as `stage rekordbox-db-import --port-manifest ...`.
 
 ## Scopes And Transfer Modes
 

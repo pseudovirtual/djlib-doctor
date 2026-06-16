@@ -9,16 +9,16 @@ The current code must not:
 - write to a Rekordbox database except through staged SQLite operations with exact confirmation tokens
 - write to a live Serato database except through `install serato-stage` after a verified stage, backup, sidecar check, app-closed check, and exact confirmation token
 - modify a Rekordbox XML export
-- modify Serato audio tags
+- modify Serato audio tags except through `install serato-tags` after a verified stage and exact confirmation token
 - move music files except through staged file operations with exact confirmation tokens
 - rename music files
 - convert audio files except through staged file operations with exact confirmation tokens
 - quarantine files
 - delete files except through staged file operations with exact confirmation tokens
 
-## Future Write-Capable Rule
+## Write-Capable Rule
 
-Future write-capable features must require:
+Write-capable features must require:
 
 - explicit command names
 - dry-run output first
@@ -35,7 +35,7 @@ The Serato install workflow is intentionally narrow:
 - `port rb-to-serato` writes dry-run manifests and preview crates
 - `stage serato` copies live `root.sqlite` into a stage folder and modifies only the staged copy
 - `install serato-stage` installs the staged `root.sqlite` and staged crate files only after the stage verifies
-- live audio files and Serato audio tags are never modified
+- live audio files and Serato audio tags are modified only by explicit token-gated install commands
 
 The install command must:
 
@@ -48,17 +48,30 @@ The install command must:
 - hash-check installed files against staged files
 - write `serato-install-report.json`
 
+## Current Rekordbox DB Install Rule
+
+The Rekordbox DB workflow is intentionally staged:
+
+- never write a live `master.db` directly
+- copy `master.db` into a stage directory first
+- apply only manifest-described operations to the staged copy
+- verify SQLite integrity before and after staged operations
+- install only through `install rekordbox-db`
+- require token, source hash, staged hash, backup, and sidecar checks
+
+Serato-to-Rekordbox should use that staged DB path. XML preview is a representation and inspection artifact, not the final write workflow.
+
 ## Implemented Guard Utilities
 
 The codebase includes safety utilities for future write-capable milestones:
 
 - detect Rekordbox SQLite sidecars such as `master.db-wal` and `master.db-shm`
 - detect Serato SQLite sidecars such as `root.sqlite-wal`, `root.sqlite-shm`, and `root.sqlite-journal`
-- check mocked or captured process listings for running Rekordbox or Serato apps before future staged installs
+- check mocked or captured process listings for running Rekordbox or Serato apps before staged installs
 - generate timestamped backup paths
 - aggregate safety check status
 
-These utilities do not write to the database and do not enable DB patching. They exist so future write modules reuse tested guard logic.
+These utilities support staged write modules; they do not justify bypassing stage/install boundaries.
 
 ## Naming Rule
 

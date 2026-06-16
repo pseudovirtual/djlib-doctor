@@ -16,13 +16,13 @@
 - Baseline/final export comparison.
 - Read-only Serato `root.sqlite` inspection.
 - Dry-run Rekordbox-to-Serato crate manifests and preview crates.
-- Dry-run Serato-to-Rekordbox XML preview manifests.
+- Dry-run Serato-to-Rekordbox port manifests with Rekordbox XML representation for staged DB import work.
 - Migration scopes for single tracks, playlists/crates, multiple playlists, and whole collections.
 - Transfer modes for `full`, `cues-only`, and `match-only` workflows.
 - Staged Serato library installs through `stage serato` and `install serato-stage`.
 - Staged Serato audio tag writes through `stage serato-tags` and `install serato-tags`.
 - Staged file copy, move, delete, and conversion operations through `stage file-ops` and `install file-ops`.
-- Staged SQLite row operations for future Rekordbox DB workflows.
+- Staged Rekordbox DB operations through copied `master.db`, staged hashes, backups, and `install rekordbox-db`.
 - Config files for common user paths.
 - Codex skill, Claude guidance, and plugin-template metadata.
 
@@ -52,7 +52,7 @@ djlib-doctor migrate rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / 
 
 ## Not Yet Public-Release Ready
 
-- Rekordbox XML writing is still preview-only.
+- The high-level Serato-to-Rekordbox `stage rekordbox-db-import --port-manifest ...` wrapper is not complete yet.
 - Claude Desktop extension packaging is still a template.
 - PyPI release automation is not complete.
 - More real-world Serato fixture validation is needed before broad public claims.

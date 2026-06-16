@@ -33,6 +33,8 @@ djlib-doctor verify export.xml
 djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / Test" --out run/port
 djlib-doctor stage serato --port-manifest run/port/port-manifest.json --serato-library-dir ~/serato-library --serato-music-dir ~/_Serato_ --stage-dir run/serato-stage
 djlib-doctor stage serato-tags --port-manifest run/port/port-manifest.json --stage-dir run/serato-tags
+djlib-doctor port serato-to-rb --serato-library-dir ~/serato-library --crate ~/Music/_Serato_/Subcrates/Test.crate --collection-root ~/Music --out run/serato-to-rb
+djlib-doctor stage rekordbox-db --db ~/Library/Pioneer/rekordbox/master.db --operations run/rekordbox-db-operations.json --stage-dir run/rekordbox-stage
 ```
 
 Workflow shortcut:
@@ -41,6 +43,8 @@ Workflow shortcut:
 djlib-doctor migrate rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / Test" --out run/migrate --stage-library --stage-tags --serato-library-dir ~/serato-library --serato-music-dir ~/_Serato_
 djlib-doctor migrate serato-to-rb --serato-library-dir ~/serato-library --crate ~/Music/_Serato_/Subcrates/Test.crate --collection-root ~/Music --out run/serato-to-rb
 ```
+
+Serato-to-Rekordbox currently produces a port manifest and Rekordbox XML representation. The final target architecture is a high-level stage command that imports that manifest/XML representation into a copied Rekordbox `master.db`, then installs it through the existing token-gated `install rekordbox-db` path.
 
 Fast smoke test:
 
@@ -57,4 +61,4 @@ Add platforms by implementing adapters, not by copying workflows:
 - stage platform-specific writes from the manifest
 - install staged files with shared safety helpers
 
-The next major adapter should be Serato-to-Rekordbox. It should reuse the core model and staged SQLite workflow rather than introducing parallel migration code.
+The next major gap is the Serato-to-Rekordbox staged DB import wrapper. It should reuse the core model and staged SQLite workflow rather than introducing parallel migration code.

@@ -70,7 +70,7 @@ Future extension workflow:
 4. Claude uses the packaged read-only workflow.
 5. Claude returns a plain-English summary and points to the saved report.
 
-The extension should not expose write-capable actions until dry-run planning and approval flows exist.
+The extension should expose write-capable actions only through implemented dry-run, stage, and token-gated install flows.
 
 ## Developer Contributor
 

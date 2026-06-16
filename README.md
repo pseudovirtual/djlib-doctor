@@ -151,13 +151,15 @@ djlib-doctor port serato-to-rb --serato-library-dir /path/to/serato-library --co
 
 `full` plans tracks plus cue intent where the source adapter can read it. `cues-only` marks the manifest for cue migration onto existing matched tracks. `match-only` creates track matching/playlist structure with no cue writes.
 
-### 7. Dry-Run A Serato To Rekordbox XML Preview
+### 7. Port A Serato Crate Toward Rekordbox
 
 ```bash
 djlib-doctor port serato-to-rb --serato-library-dir /path/to/serato-library --crate /path/to/_Serato_/Subcrates/MySet.crate --collection-root ~/Music --out run/serato-to-rb
 ```
 
-This writes a dry-run manifest and `rekordbox-preview.xml` for inspection.
+This writes a dry-run manifest and `rekordbox-preview.xml` representation for inspection. The intended write path is not manual XML import as the final step. Rekordbox writes should be staged against a copied `master.db`, then installed only through `install rekordbox-db` after token, hash, sidecar, and backup checks pass.
+
+The high-level `stage rekordbox-db-import --port-manifest ...` wrapper is still a missing integration layer. Until it exists, treat Serato-to-Rekordbox as plan/preview plus lower-level staged DB operations, not as a direct live Rekordbox write.
 
 ### 8. Let An Agent Help, Safely
 
@@ -173,7 +175,7 @@ The repo includes [AGENTS.md](AGENTS.md) and a packaged skill under `.agents/ski
 
 Implemented: verification, snapshots, cleanup plans, review logs, schema output, export comparison, Serato inspection, two-way dry-run porting, and staged/token-gated install workflows.
 
-Still pre-release: production Rekordbox XML writing/import workflows, polished package distribution, CI/release automation, and broader real-world Serato cue/tag fixture validation.
+Still pre-release: the high-level Serato-to-Rekordbox staged `master.db` import wrapper, polished package distribution, CI/release automation, and broader real-world Serato cue/tag fixture validation.
 
 ## More Docs
 
