@@ -41,6 +41,12 @@ Cue source rule:
 - Serato catalog files and crates provide track identity, metadata, and ordering.
 - The file-tag reader is optional-dependency backed; install audio-tag support before expecting real file cue reads.
 
+Markers2 codec coverage:
+
+- Supported today: `CUE` hotcues and `LOOP` saved loops, including slot, position, loop end, label, and raw color bytes.
+- Dropped today: `COLOR`, `BPMLOCK`, `FLIP`, and unknown entry types. They are ignored rather than guessed.
+- BeatGrid parsing is a planned follow-up and should be reported separately until implemented.
+
 The lower-level staged DB safety path exists:
 
 ```bash

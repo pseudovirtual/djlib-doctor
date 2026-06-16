@@ -10,15 +10,37 @@ CUE_COLORS = (b"\xcc\x00\x00", b"\xcc\x88\x00", b"\xcc\xcc\x00", b"\x00\xcc\x00"
 
 
 def build_markers2_payload(cue_intents: list[dict[str, Any]] | tuple[dict[str, Any], ...]) -> bytes:
-    contents = [struct.pack(VERSION_FORMAT, *VERSION)]
+    markers = []
     for intent in cue_intents:
-        slot = int(intent.get("slot") or 0)
-        label = str(intent.get("label") or "")
         if intent.get("intent") == "serato_hotcue":
-            contents.append(_named_entry("CUE", _cue_entry(slot, int(intent["start_ms"]), label)))
+            markers.append(_marker(intent, "hotcue", "cue"))
         elif intent.get("intent") == "serato_saved_loop":
-            contents.append(_named_entry("LOOP", _loop_entry(slot, int(intent["start_ms"]), int(intent.get("end_ms") or intent["start_ms"]), label)))
+            markers.append(_marker(intent, "loop", "loop"))
+    return encode_markers2_payload(tuple(markers))
+
+
+def encode_markers2_payload(markers: list[dict[str, Any]] | tuple[dict[str, Any], ...]) -> bytes:
+    contents = [struct.pack(VERSION_FORMAT, *VERSION)]
+    for marker in markers:
+        slot = int(marker.get("slot") or 0)
+        label = str(marker.get("label") or "")
+        if marker.get("cue_type") == "loop":
+            contents.append(_named_entry("LOOP", _loop_entry(slot, int(marker["start_ms"]), int(marker.get("end_ms") or marker["start_ms"]), label, str(marker.get("color") or ""))))
+        else:
+            contents.append(_named_entry("CUE", _cue_entry(slot, int(marker["start_ms"]), label, str(marker.get("color") or ""))))
     return b"".join(contents)
+
+
+def _marker(intent: dict[str, Any], kind: str, cue_type: str) -> dict[str, Any]:
+    return {
+        "kind": kind,
+        "cue_type": cue_type,
+        "start_ms": int(intent["start_ms"]),
+        "end_ms": None if cue_type == "cue" else int(intent.get("end_ms") or intent["start_ms"]),
+        "slot": int(intent.get("slot") or 0),
+        "label": str(intent.get("label") or ""),
+        "color": str(intent.get("color") or ""),
+    }
 
 
 def parse_markers2_payload(payload: bytes | None) -> tuple[dict[str, Any], ...]:
@@ -67,13 +89,13 @@ def _parse_marker(name: str, payload: bytes) -> dict[str, Any] | None:
     return None
 
 
-def _cue_entry(index: int, position_ms: int, label: str) -> bytes:
-    color = CUE_COLORS[index % len(CUE_COLORS)]
+def _cue_entry(index: int, position_ms: int, label: str, color_hex: str = "") -> bytes:
+    color = _cue_color(index, color_hex)
     return b"".join((struct.pack(">cBIc3s2s", b"\x00", index, position_ms, b"\x00", color, b"\x00\x00"), label[:51].encode("utf-8"), b"\x00"))
 
 
-def _loop_entry(index: int, start_ms: int, end_ms: int, label: str) -> bytes:
-    color = CUE_COLORS[index % len(CUE_COLORS)][0]
+def _loop_entry(index: int, start_ms: int, end_ms: int, label: str, color_hex: str = "") -> bytes:
+    color = _loop_color(index, color_hex)
     return b"".join((struct.pack(">cBII4s4sB?", b"\x00", index, start_ms, end_ms, b"\x00\x00\x00\x00", LOOP_PREFIX, color, False), label[:51].encode("utf-8"), b"\x00"))
 
 
@@ -83,3 +105,15 @@ def _named_entry(name: str, payload: bytes) -> bytes:
 
 def _label(payload: bytes) -> str:
     return payload.split(b"\x00", 1)[0].decode("utf-8", errors="replace")
+
+
+def _cue_color(index: int, color_hex: str) -> bytes:
+    if len(color_hex) == 6:
+        return bytes.fromhex(color_hex)
+    return CUE_COLORS[index % len(CUE_COLORS)]
+
+
+def _loop_color(index: int, color_hex: str) -> int:
+    if len(color_hex) >= 2:
+        return int(color_hex[:2], 16)
+    return CUE_COLORS[index % len(CUE_COLORS)][0]
