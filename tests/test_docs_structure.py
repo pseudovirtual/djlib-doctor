@@ -20,6 +20,15 @@ class DocsStructureTests(unittest.TestCase):
         self.assertTrue((ROOT / "docs" / "archive" / "github-launch-plan.md").exists())
         self.assertTrue((ROOT / "docs" / "archive" / "private-release-checklist.md").exists())
 
+    def test_readme_separates_available_and_limited_coverage_claims(self):
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        available = readme.split("## Safety Model", 1)[0]
+
+        self.assertIn("## Experimental / Limited Coverage", readme)
+        self.assertNotIn("fixture-backed", available)
+        self.assertNotIn("Serato audio tags", available)
+        self.assertIn("No real Rekordbox DB version is certified yet", readme)
+
 
 if __name__ == "__main__":
     unittest.main()

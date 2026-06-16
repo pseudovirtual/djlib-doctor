@@ -21,14 +21,19 @@ This is an open-source project from [@pseudovirtual](https://github.com/pseudovi
 - compares baseline/final exports for lost material or cue regressions
 - dry-runs Rekordbox-to-Serato and Serato-to-Rekordbox migrations
 - certifies migration previews and staged artifacts with machine-readable scorecards
-- carries fixture-backed Serato Markers2 cue/loop data into supported Rekordbox imports
 - scopes migration plans to one track, one playlist/crate, many playlists, or a whole collection
 - supports transfer modes: `full`, `cues-only`, and `match-only`
-- stages Serato library updates, Serato audio tags, file operations, and Rekordbox DB operations behind explicit install tokens
+- stages implemented write workflows behind explicit install tokens
+
+## Experimental / Limited Coverage
+
+- Serato audio tag writes and Serato Markers2 cue import are fixture-tested and need broader real-world validation.
+- No real Rekordbox DB version is certified yet; only tested plain-SQLite `master.db` schemas are supported.
+- Acoustic fingerprinting is planned behind an optional backend; current fingerprinting is byte-level only.
 
 ## Safety Model
 
-Planning commands do not write to live libraries. Write-capable flows are split into explicit `stage ...` and `install ...` commands. Install commands verify:
+Planning commands do not write to live libraries. Write-capable flows are split into explicit `stage ...` and `install ...` commands that verify:
 
 - exact confirmation token
 - token recomputed from manifest contents
@@ -36,8 +41,6 @@ Planning commands do not write to live libraries. Write-capable flows are split 
 - live source hashes from staging time
 - backups
 - app/SQLite sidecar checks where relevant
-
-There is no vague `fix my library` command.
 
 ## Quick Start
 
@@ -180,7 +183,7 @@ In Codex, Claude Desktop, or another local coding agent, ask for read-only help 
 Use djlib-doctor to inspect my Rekordbox XML export. Stay read-only, explain the findings in DJ language, and do not modify my library.
 ```
 
-The repo includes [AGENTS.md](AGENTS.md) and a packaged skill under `.agents/skills/djlib-doctor/` so agents can discover the safety rules and call the CLI directly.
+The repo includes [AGENTS.md](AGENTS.md) and a packaged skill under `.agents/skills/djlib-doctor/`.
 
 ## Project Status
 
@@ -188,11 +191,4 @@ Implemented: verification, snapshots, cleanup plans, review logs, schema output,
 
 Still pre-release: polished package distribution, CI/release automation, broader real-world Serato cue/tag fixture validation, certified Rekordbox DB version coverage, and broader playlist/cue table coverage.
 
-## More Docs
-
-- [Docs Index](docs/README.md)
-- [Feature List](docs/feature-list.md)
-- [Human Workflows](docs/human-workflows.md)
-- [Serato Porting](docs/serato-porting.md)
-- [Agent Friendliness](docs/agent-friendliness-and-discovery.md)
-- [Architecture](docs/product-architecture.md)
+More docs: [index](docs/README.md), [features](docs/feature-list.md), [workflows](docs/human-workflows.md), [Serato porting](docs/serato-porting.md), [architecture](docs/product-architecture.md).
