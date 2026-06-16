@@ -23,6 +23,7 @@ class RekordboxPortCue:
     end_ms: int | None = None
     slot: int | None = None
     label: str = ""
+    color: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         return self.__dict__.copy()

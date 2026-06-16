@@ -3,8 +3,9 @@ from __future__ import annotations
 import struct
 from typing import Any
 
-VERSION = (2, 1)
+VERSION = (1, 1)
 VERSION_FORMAT = ">2B"
+LOOP_PREFIX = b"\x00\x00\x00\xff"
 CUE_COLORS = (b"\xcc\x00\x00", b"\xcc\x88\x00", b"\xcc\xcc\x00", b"\x00\xcc\x00", b"\x00\xcc\xcc", b"\x00\x00\xcc", b"\x88\x00\xcc", b"\xcc\x00\x88")
 
 
@@ -51,15 +52,17 @@ def _parse_marker(name: str, payload: bytes) -> dict[str, Any] | None:
             "end_ms": None,
             "slot": payload[1],
             "label": _label(payload[12:]),
+            "color": payload[7:10].hex(),
         }
-    if name == "LOOP" and len(payload) >= 22:
+    if name == "LOOP" and len(payload) >= 20:
         return {
             "kind": "loop",
             "cue_type": "loop",
             "start_ms": struct.unpack(">I", payload[2:6])[0],
             "end_ms": struct.unpack(">I", payload[6:10])[0],
             "slot": payload[1],
-            "label": _label(payload[22:]),
+            "label": _label(payload[20:]),
+            "color": payload[18:19].hex(),
         }
     return None
 
@@ -70,8 +73,8 @@ def _cue_entry(index: int, position_ms: int, label: str) -> bytes:
 
 
 def _loop_entry(index: int, start_ms: int, end_ms: int, label: str) -> bytes:
-    color = b"\xff" + CUE_COLORS[index % len(CUE_COLORS)]
-    return b"".join((struct.pack(">cBII4s4s3s?", b"\x00", index, start_ms, end_ms, b"\x00\x00\x00\x00", color, b"\x00\x00\x00", False), label[:51].encode("utf-8"), b"\x00"))
+    color = CUE_COLORS[index % len(CUE_COLORS)][0]
+    return b"".join((struct.pack(">cBII4s4sB?", b"\x00", index, start_ms, end_ms, b"\x00\x00\x00\x00", LOOP_PREFIX, color, False), label[:51].encode("utf-8"), b"\x00"))
 
 
 def _named_entry(name: str, payload: bytes) -> bytes:
