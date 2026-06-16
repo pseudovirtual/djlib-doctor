@@ -50,11 +50,11 @@ Future plugin workflow:
 
 Goal: use a friendly desktop chat interface.
 
-Near-term private workflow:
+Local workflow:
 
-1. Install the project locally.
+1. Clone and install the project locally.
 2. Open the repo or docs with Claude.
-3. Ask Claude to follow `CLAUDE.md`.
+3. Ask Claude to follow `AGENTS.md`.
 4. Have Claude explain commands to run, or run them if it has local tool access.
 
 Future extension workflow:
@@ -78,7 +78,7 @@ Goal: add behavior safely.
 
 Workflow:
 
-1. Clone the private repo.
+1. Clone the repo.
 2. Create a branch.
 3. Run:
 
@@ -126,16 +126,16 @@ Workflow:
 
 ## Maintainer
 
-Goal: move toward public open source without surprising users.
+Goal: improve the public project without surprising users.
 
 Workflow:
 
-1. Keep the repo private until the docs, license, tests, and safety language are ready.
+1. Keep docs, license, tests, and safety language current.
 2. Cut internal milestones with changelog entries.
 3. Use synthetic fixtures only.
 4. Review every new command for safety language.
 5. Prefer one boring release over many flashy claims.
-6. Make the first public release read-only.
+6. Keep the default first-run experience read-only.
 
 The first public impression should be:
 

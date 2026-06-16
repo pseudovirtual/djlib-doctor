@@ -4,7 +4,7 @@ Read-only-first, cue-safe DJ library verification and migration planning for Rek
 
 `djlib-doctor` helps DJs and coding agents inspect messy libraries, plan cleanup, compare exports, and stage migrations without silently rewriting creative metadata. It treats hotcues, memory cues, loops, playlist order, and source files as things to verify before touching.
 
-This repo is currently private and being prepared for eventual open-source release under [@pseudovirtual](https://github.com/pseudovirtual).
+This is an open-source project from [@pseudovirtual](https://github.com/pseudovirtual) for DJs who want safer, inspectable alternatives to opaque library cleanup and migration tools.
 
 ## What It Does
 
@@ -36,6 +36,8 @@ There is no vague `fix my library` command.
 ## Quick Start
 
 ```bash
+git clone https://github.com/pseudovirtual/djlib-doctor.git
+cd djlib-doctor
 python3 -m pip install -e .
 djlib-doctor verify tests/fixtures/rekordbox/simple.xml --no-file-check
 djlib-doctor self-test
@@ -48,45 +50,113 @@ PYTHONPATH=src python3 -m unittest discover -s tests
 PYTHONPATH=src PYTHONPYCACHEPREFIX=work/pycache python3 -m compileall -q src tests
 ```
 
-## Common Workflows
+## Human Workflows
+
+These examples use `run/` as a scratch folder. Planning commands are read-only. Commands that can touch live libraries are split into `stage ...` and `install ...` with explicit confirmation tokens.
+
+### 1. Check A Rekordbox XML Export
+
+Export your collection from Rekordbox, then verify the XML:
 
 ```bash
-djlib-doctor snapshot --rekordbox-xml export.xml --music-root ~/Music --out run/
-djlib-doctor plan missing-files --snapshot run/snapshot.json --out run/missing.json
-djlib-doctor plan duplicates --snapshot run/snapshot.json --out run/dupes.json --collision-policy cue-safe
-djlib-doctor review --plan run/missing.json --out run/review.json
-djlib-doctor compare exports --baseline before.xml --final after.xml --out run/compare.json
+djlib-doctor verify ~/Desktop/rekordbox-export.xml
 ```
 
-Rekordbox to Serato dry-run:
+For a shareable diagnostic bundle:
 
 ```bash
-djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / Set" --out run/port --verify-preview
+djlib-doctor snapshot --rekordbox-xml ~/Desktop/rekordbox-export.xml --music-root ~/Music --out run/check
+djlib-doctor snapshot --rekordbox-xml ~/Desktop/rekordbox-export.xml --music-root ~/Music --out run/check-redacted --redact-paths
 ```
 
-Serato to Rekordbox dry-run:
+Use the redacted snapshot when asking for help publicly.
+
+### 2. Find Missing Files Without Treating Streaming Tracks As Broken
 
 ```bash
-djlib-doctor port serato-to-rb --serato-library-dir Library --crate Set.crate --collection-root ~/Music --out run/rb
+djlib-doctor snapshot --rekordbox-xml ~/Desktop/rekordbox-export.xml --music-root ~/Music --out run/missing
+djlib-doctor plan missing-files --snapshot run/missing/snapshot.json --out run/missing/plan.json
+djlib-doctor review --plan run/missing/plan.json --out run/missing/review.json
 ```
 
-Staged Serato install:
+The interactive review walks you through the plan one decision at a time and saves your choices as JSON for later steps.
+
+### 3. Review Duplicates With A Collision Policy
+
+Start with the conservative default:
 
 ```bash
-djlib-doctor stage serato --port-manifest run/port/port-manifest.json --serato-library-dir Library --serato-music-dir _Serato_ --stage-dir run/stage
-djlib-doctor install serato-stage --stage-dir run/stage --serato-library-dir Library --serato-music-dir _Serato_ --confirm-token INSTALL_SERATO_STAGE:...
+djlib-doctor snapshot --rekordbox-xml ~/Desktop/rekordbox-export.xml --music-root ~/Music --out run/dupes
+djlib-doctor plan duplicates --snapshot run/dupes/snapshot.json --out run/dupes/plan.json --collision-policy cue-safe
+djlib-doctor review --plan run/dupes/plan.json --out run/dupes/review.json
 ```
+
+Other policies are available when you know what you want:
+
+```bash
+djlib-doctor plan duplicates --snapshot run/dupes/snapshot.json --out run/dupes/quality.json --collision-policy quality
+djlib-doctor plan duplicates --snapshot run/dupes/snapshot.json --out run/dupes/keep-both.json --collision-policy keep-both
+```
+
+### 4. Compare Before And After Exports
+
+After a manual cleanup or migration attempt, export XML again and compare:
+
+```bash
+djlib-doctor compare exports --baseline ~/Desktop/rekordbox-before.xml --final ~/Desktop/rekordbox-after.xml --out run/compare.json
+```
+
+This checks for missing material, cue regressions, playlist differences, and bad final paths.
+
+### 5. Dry-Run A Rekordbox To Serato Playlist Port
+
+Start with a preview before staging anything:
+
+```bash
+djlib-doctor port rb-to-serato --rekordbox-xml ~/Desktop/rekordbox-export.xml --playlist "ROOT / My Set" --out run/rb-to-serato --verify-preview
+```
+
+Inspect `run/rb-to-serato/port-manifest.json`, the crate preview, and `unsupported.csv`. If it looks right and you intentionally want a staged Serato install:
+
+```bash
+djlib-doctor stage serato --port-manifest run/rb-to-serato/port-manifest.json --serato-library-dir /path/to/serato-library --serato-music-dir /path/to/_Serato_ --stage-dir run/serato-stage
+```
+
+Then close Serato, read the printed install token, and install only when you are comfortable:
+
+```bash
+djlib-doctor install serato-stage --stage-dir run/serato-stage --serato-library-dir /path/to/serato-library --serato-music-dir /path/to/_Serato_ --confirm-token INSTALL_SERATO_STAGE:...
+```
+
+### 6. Dry-Run A Serato To Rekordbox XML Preview
+
+```bash
+djlib-doctor port serato-to-rb --serato-library-dir /path/to/serato-library --crate /path/to/_Serato_/Subcrates/MySet.crate --collection-root ~/Music --out run/serato-to-rb
+```
+
+This writes a dry-run manifest and `rekordbox-preview.xml` for inspection.
+
+### 7. Let An Agent Help, Safely
+
+In Codex, Claude Desktop, or another local coding agent, ask for read-only help first:
+
+```text
+Use djlib-doctor to inspect my Rekordbox XML export. Stay read-only, explain the findings in DJ language, and do not modify my library.
+```
+
+The repo includes [AGENTS.md](AGENTS.md) and a packaged skill under `.agents/skills/djlib-doctor/` so agents can discover the safety rules and call the CLI directly.
 
 ## Project Status
 
 Implemented: verification, snapshots, cleanup plans, review logs, schema output, export comparison, Serato inspection, two-way dry-run porting, and staged/token-gated install workflows.
 
-Still pre-release: Rekordbox XML writing, public packaging, CI/release automation, and broader real-world Serato cue/tag fixture validation.
+Still pre-release: Rekordbox XML writing, polished package distribution, CI/release automation, and broader real-world Serato cue/tag fixture validation.
 
 ## More Docs
 
 - [Safety](docs/safety.md)
 - [Feature List](docs/feature-list.md)
+- [Human Workflows](docs/human-workflows.md)
 - [Serato Porting](docs/serato-porting.md)
 - [Agent Friendliness](docs/agent-friendliness-and-discovery.md)
 - [Architecture](docs/product-architecture.md)

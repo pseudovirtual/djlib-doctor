@@ -53,7 +53,7 @@ Recommended staged approach:
 1. Keep root `AGENTS.md` accurate.
 2. Add `.agents/skills/djlib-doctor/SKILL.md` once the workflow stabilizes. (done)
 3. Package that skill as a Codex plugin when the public workflow is useful. (repo skeleton done)
-4. Add a repo or personal marketplace entry for private testing. (repo marketplace skeleton done)
+4. Add a repo or personal marketplace entry for testing. (repo marketplace skeleton done)
 5. Later, share the plugin with selected users or publish through the appropriate Codex distribution path.
 
 Skill description should front-load trigger terms:
@@ -77,18 +77,18 @@ Skill behavior:
 
 Claude users should get two layers:
 
-1. `CLAUDE.md` for project context when working in the repo.
+1. `AGENTS.md` and the README for project context when working in the repo.
 2. A Claude Desktop extension package later, once the CLI and JSON reports are stable.
 
 Near-term Claude workflow:
 
 - user opens repo or docs in Claude
-- Claude reads `CLAUDE.md`
+- Claude reads `AGENTS.md`
 - Claude helps run or interpret CLI output
 
 Future extension workflow:
 
-- user installs a private `.mcpb` package
+- user installs a local or published `.mcpb` package
 - user configures allowed folders
 - extension runs the read-only verifier workflow
 - Claude explains the saved report
@@ -120,7 +120,7 @@ Agents should inspect JSON reports instead of scraping human prose.
 
 Use ordinary open-source distribution first:
 
-- private GitHub repo now, public later under `pseudovirtual/djlib-doctor`
+- public GitHub repo under `pseudovirtual/djlib-doctor`
 - GitHub topics: `rekordbox`, `dj`, `music-library`, `hotcues`, `agent-tools`, `codex`, `claude-desktop`
 - PyPI package eventually: `djlib-doctor`
 - short demo report
