@@ -54,7 +54,7 @@ def _parse_marker(name: str, payload: bytes) -> dict[str, Any] | None:
         }
     if name == "LOOP" and len(payload) >= 22:
         return {
-            "kind": "hotcue",
+            "kind": "loop",
             "cue_type": "loop",
             "start_ms": struct.unpack(">I", payload[2:6])[0],
             "end_ms": struct.unpack(">I", payload[6:10])[0],

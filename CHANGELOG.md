@@ -7,6 +7,7 @@
 - [x] Backlog 3: Documented Rekordbox DB import support boundaries and added a clear encrypted SQLCipher refusal.
 - [x] Backlog 4: Moved limited-coverage claims out of README present-tense feature lists.
 - [x] Backlog 5: Consolidated directional port workflow modules into their public modules.
+- [x] Backlog 6: Added Serato Markers2 fidelity coverage for cue/loop positions, slots, and playlist order.
 - Added read-only Rekordbox XML parser.
 - Added cue parsing for memory cues, hotcues, and loops.
 - Added verification report counts.
