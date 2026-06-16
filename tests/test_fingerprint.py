@@ -6,7 +6,7 @@ import json
 import unittest
 
 from djlib_doctor.cli import main
-from djlib_doctor.fingerprint import compare_tracks, fingerprint_file
+from djlib_doctor.fingerprint import compare_tracks, fingerprint_file, scan_fingerprints
 
 
 class FingerprintTests(unittest.TestCase):
@@ -82,6 +82,37 @@ class FingerprintTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 3)
         self.assertIn("djlib-doctor fingerprint: ERROR", stderr.getvalue())
+
+    def test_scan_fingerprints_only_audio_files_in_stable_order(self):
+        with TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / "b.wav").write_bytes(b"bbb")
+            (root / "a.txt").write_text("not audio", encoding="utf-8")
+            nested = root / "Nested"
+            nested.mkdir()
+            (nested / "a.mp3").write_bytes(b"aaa")
+
+            manifest = scan_fingerprints(root)
+
+        self.assertEqual(manifest.root, str(root))
+        self.assertEqual([Path(track.path).name for track in manifest.tracks], ["a.mp3", "b.wav"])
+
+    def test_scan_cli_redacts_paths(self):
+        with TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            secret = root / "Private Artist - Secret Track.aiff"
+            secret.write_bytes(b"secret")
+            out = root / "fingerprints.json"
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(["fingerprint", "scan", str(root), "--out", str(out), "--redact-paths"])
+
+            data = json.loads(out.read_text(encoding="utf-8"))
+
+        self.assertEqual(exit_code, 0)
+        self.assertTrue(data["redacted_paths"])
+        self.assertEqual(data["tracks"][0]["path"], "<redacted>/track-000001.aiff")
+        self.assertNotIn("Secret", json.dumps(data))
 
 
 if __name__ == "__main__":

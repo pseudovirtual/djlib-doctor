@@ -6,6 +6,8 @@ from math import sqrt
 from pathlib import Path
 from typing import Any
 
+from .audio import iter_audio_files
+
 
 SCHEMA_VERSION = "1.0"
 BUCKETS = 16
@@ -45,6 +47,22 @@ class TrackComparison:
         }
 
 
+@dataclass(frozen=True)
+class FingerprintManifest:
+    root: str
+    tracks: tuple[TrackFingerprint, ...]
+    redacted_paths: bool = False
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "root": self.root,
+            "redacted_paths": self.redacted_paths,
+            "track_count": len(self.tracks),
+            "tracks": [track.to_dict() for track in self.tracks],
+        }
+
+
 def fingerprint_file(path: Path) -> TrackFingerprint:
     data = path.read_bytes()
     return TrackFingerprint(
@@ -55,11 +73,27 @@ def fingerprint_file(path: Path) -> TrackFingerprint:
     )
 
 
+def scan_fingerprints(root: Path, redact_paths: bool = False) -> FingerprintManifest:
+    if not root.exists() or not root.is_dir():
+        raise ValueError(f"Fingerprint scan root is not a directory: {root}")
+    paths = sorted(iter_audio_files(root), key=lambda path: (path.name.lower(), str(path).lower()))
+    tracks = tuple(_with_path(fingerprint_file(path), _scan_path(path, index, redact_paths)) for index, path in enumerate(paths, 1))
+    return FingerprintManifest("<redacted>" if redact_paths else str(root), tracks, redacted_paths=redact_paths)
+
+
 def compare_tracks(left: Path, right: Path) -> TrackComparison:
     left_fp = fingerprint_file(left)
     right_fp = fingerprint_file(right)
     similarity = 1.0 if left_fp.sha256 == right_fp.sha256 else _cosine(left_fp.byte_histogram, right_fp.byte_histogram)
     return TrackComparison(left_fp, right_fp, similarity, _classify(similarity, left_fp.sha256 == right_fp.sha256))
+
+
+def _with_path(fingerprint: TrackFingerprint, path: str) -> TrackFingerprint:
+    return TrackFingerprint(path, fingerprint.size, fingerprint.sha256, fingerprint.byte_histogram)
+
+
+def _scan_path(path: Path, index: int, redact_paths: bool) -> str:
+    return f"<redacted>/track-{index:06d}{path.suffix.lower()}" if redact_paths else str(path)
 
 
 def _byte_histogram(data: bytes) -> tuple[float, ...]:
