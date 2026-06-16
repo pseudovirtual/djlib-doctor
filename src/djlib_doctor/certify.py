@@ -105,7 +105,7 @@ def _artifact_issues(base: Path, manifest: dict[str, Any]) -> list[Certification
     if target == "serato":
         return _serato_artifact_issues(base, manifest)
     if str(target).startswith("rekordbox"):
-        return _required_files(base, ("rekordbox-preview.xml",), "rekordbox.preview")
+        return _rekordbox_artifact_issues(base)
     return [CertificationIssue("warning", "manifest.target", f"Unknown target platform: {target}")]
 
 
@@ -115,6 +115,14 @@ def _serato_artifact_issues(base: Path, manifest: dict[str, Any]) -> list[Certif
         crate_names = [manifest.get("target_crate_name", "")]
     crate_files = tuple(f"{safe_crate_filename(name)}.crate" for name in crate_names if name)
     return _required_files(base, crate_files + ("unsupported.csv",), "serato.preview")
+
+
+def _rekordbox_artifact_issues(base: Path) -> list[CertificationIssue]:
+    issues = _required_files(base, ("rekordbox-preview.xml",), "rekordbox.preview")
+    stage_manifest = base / "rekordbox-stage" / "rekordbox-db-stage-manifest.json"
+    if stage_manifest.exists():
+        issues.append(CertificationIssue("info", "rekordbox.stage", "Staged Rekordbox DB import manifest is present."))
+    return issues
 
 
 def _required_files(base: Path, names: tuple[str, ...], code: str) -> list[CertificationIssue]:
