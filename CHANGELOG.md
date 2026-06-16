@@ -6,6 +6,7 @@
 - [x] Backlog 2: Added adversarial Serato install refusal tests and hardened stage manifest/backup verification.
 - [x] Backlog 3: Documented Rekordbox DB import support boundaries and added a clear encrypted SQLCipher refusal.
 - [x] Backlog 4: Moved limited-coverage claims out of README present-tense feature lists.
+- [x] Backlog 5: Consolidated directional port workflow modules into their public modules.
 - Added read-only Rekordbox XML parser.
 - Added cue parsing for memory cues, hotcues, and loops.
 - Added verification report counts.

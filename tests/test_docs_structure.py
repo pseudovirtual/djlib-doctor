@@ -29,6 +29,12 @@ class DocsStructureTests(unittest.TestCase):
         self.assertNotIn("Serato audio tags", available)
         self.assertIn("No real Rekordbox DB version is certified yet", readme)
 
+    def test_port_workflow_modules_are_consolidated(self):
+        src = ROOT / "src" / "djlib_doctor"
+        leftovers = sorted(src.glob("port_rekordbox_serato_*.py")) + sorted(src.glob("port_serato_rekordbox_*.py"))
+
+        self.assertEqual(leftovers, [])
+
 
 if __name__ == "__main__":
     unittest.main()
