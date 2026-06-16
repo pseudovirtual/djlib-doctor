@@ -191,4 +191,6 @@ Implemented: verification, snapshots, cleanup plans, review logs, schema output,
 
 Still pre-release: polished package distribution, CI/release automation, broader real-world Serato cue/tag fixture validation, certified Rekordbox DB version coverage, and broader playlist/cue table coverage.
 
+Serato support boundary: fixture-backed parsing covers crates, `root.sqlite` inspection, and `_Serato_/database V2` track extraction. No specific real Serato version is certified until anonymized real fixtures are added.
+
 More docs: [index](docs/README.md), [features](docs/feature-list.md), [workflows](docs/human-workflows.md), [Serato porting](docs/serato-porting.md), [architecture](docs/product-architecture.md).
