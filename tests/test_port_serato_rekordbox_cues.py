@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 
 from djlib_doctor.port_serato_rekordbox import build_serato_to_rekordbox_plan, write_serato_to_rekordbox_plan
 from djlib_doctor.serato_crate import write_serato_crate
-from djlib_doctor.serato_markers import build_markers2_payload
+from djlib_doctor.serato_markers import build_markers2_payload, parse_markers2_payload
 
 
 def make_serato_root_with_markers(path: Path) -> None:
@@ -36,6 +36,11 @@ def make_serato_root_with_markers(path: Path) -> None:
         conn.commit()
     finally:
         conn.close()
+
+
+def markers2_reader(intents: tuple[dict[str, object], ...]):
+    markers = parse_markers2_payload(build_markers2_payload(intents))
+    return lambda path: markers
 
 
 def make_serato_root_with_ordered_marker_tracks(path: Path) -> None:
@@ -83,7 +88,17 @@ class PortSeratoRekordboxCueTests(unittest.TestCase):
             crate = tmp / "Test.crate"
             write_serato_crate(crate, ("Music/Track One.aiff",))
 
-            plan = build_serato_to_rekordbox_plan(library, crate, collection_root=Path("/Users/test"))
+            plan = build_serato_to_rekordbox_plan(
+                library,
+                crate,
+                collection_root=Path("/Users/test"),
+                tag_reader=markers2_reader(
+                    (
+                        {"intent": "serato_hotcue", "slot": 0, "start_ms": 12345, "label": "Cue A"},
+                        {"intent": "serato_saved_loop", "slot": 1, "start_ms": 48000, "end_ms": 56000, "label": "Loop B"},
+                    )
+                ),
+            )
             outputs = write_serato_to_rekordbox_plan(plan, tmp / "out")
             manifest = json.loads(Path(outputs["manifest"]).read_text(encoding="utf-8"))
             xml = Path(outputs["rekordbox_xml_preview"]).read_text(encoding="utf-8")
@@ -104,7 +119,30 @@ class PortSeratoRekordboxCueTests(unittest.TestCase):
             crate = tmp / "Ordered.crate"
             write_serato_crate(crate, ("Music/Track Two.aiff", "Music/Track One.aiff"))
 
-            plan = build_serato_to_rekordbox_plan(library, crate, collection_root=Path("/Users/test"))
+            tag_markers = {
+                "Track Two.aiff": parse_markers2_payload(
+                    build_markers2_payload(
+                        (
+                            {"intent": "serato_hotcue", "slot": 2, "start_ms": 22222, "label": "Cue C"},
+                            {"intent": "serato_saved_loop", "slot": 3, "start_ms": 64000, "end_ms": 80000, "label": "Loop D"},
+                        )
+                    )
+                ),
+                "Track One.aiff": parse_markers2_payload(
+                    build_markers2_payload(
+                        (
+                            {"intent": "serato_hotcue", "slot": 0, "start_ms": 12345, "label": "Cue A"},
+                            {"intent": "serato_saved_loop", "slot": 1, "start_ms": 48000, "end_ms": 56000, "label": "Loop B"},
+                        )
+                    )
+                ),
+            }
+            plan = build_serato_to_rekordbox_plan(
+                library,
+                crate,
+                collection_root=Path("/Users/test"),
+                tag_reader=lambda path: tag_markers[path.name],
+            )
             outputs = write_serato_to_rekordbox_plan(plan, tmp / "out")
             manifest = json.loads(Path(outputs["manifest"]).read_text(encoding="utf-8"))
             xml_root = ET.fromstring(Path(outputs["rekordbox_xml_preview"]).read_text(encoding="utf-8"))
@@ -130,6 +168,35 @@ class PortSeratoRekordboxCueTests(unittest.TestCase):
         self.assertEqual(track_marks["1"][1].attrib, {"Type": "4", "Start": "64.000", "Num": "3", "Name": "Loop D", "End": "80.000"})
         self.assertEqual(track_marks["2"][0].attrib, {"Type": "0", "Start": "12.345", "Num": "0", "Name": "Cue A"})
         self.assertEqual(track_marks["2"][1].attrib, {"Type": "4", "Start": "48.000", "Num": "1", "Name": "Loop B", "End": "56.000"})
+
+    def test_serato_to_rekordbox_reads_cues_from_file_tags_not_sqlite(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            library = tmp / "Library"
+            library.mkdir()
+            make_serato_root_with_markers(library / "root.sqlite")
+            crate = tmp / "Test.crate"
+            write_serato_crate(crate, ("Music/Track One.aiff",))
+
+            plan = build_serato_to_rekordbox_plan(
+                library,
+                crate,
+                collection_root=tmp,
+                tag_reader=lambda path: (
+                    {
+                        "kind": "hotcue",
+                        "cue_type": "cue",
+                        "start_ms": 9000,
+                        "end_ms": None,
+                        "slot": 4,
+                        "label": "File Tag Cue",
+                        "color": "00cc00",
+                    },
+                ),
+            )
+
+        self.assertEqual(plan.tracks[0].cues[0].label, "File Tag Cue")
+        self.assertEqual(plan.tracks[0].cues[0].start_ms, 9000)
 
 
 def _cue_summary(track: dict[str, object]) -> list[tuple[object, ...]]:

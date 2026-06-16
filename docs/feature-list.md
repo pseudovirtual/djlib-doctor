@@ -19,6 +19,7 @@
 - Read-only Serato `root.sqlite` inspection.
 - Dry-run Rekordbox-to-Serato crate manifests and preview crates.
 - Dry-run Serato-to-Rekordbox port manifests with Rekordbox XML representation.
+- Serato-to-Rekordbox cue import reads `Serato Markers2` audio-file tags when optional audio-tag dependencies are installed.
 - Migration scopes for single tracks, playlists/crates, multiple playlists, and whole collections.
 - Transfer modes for `full`, `cues-only`, and `match-only` workflows.
 - Staged Serato library installs through `stage serato` and `install serato-stage`.

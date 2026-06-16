@@ -35,6 +35,12 @@ djlib-doctor migrate serato-to-rb --serato-library-dir Library --crate Set.crate
 
 This writes a dry-run manifest and Rekordbox XML representation. If the user wants to write to Rekordbox, do not stop at manual XML import. The intended safe path is to stage changes into a copied `master.db`, verify the staged database, then install it with `install rekordbox-db`.
 
+Cue source rule:
+
+- Serato cue and loop metadata comes from audio-file tags such as `Serato Markers2`, not from `root.sqlite` or `_Serato_/database V2`.
+- Serato catalog files and crates provide track identity, metadata, and ordering.
+- The file-tag reader is optional-dependency backed; install audio-tag support before expecting real file cue reads.
+
 The lower-level staged DB safety path exists:
 
 ```bash

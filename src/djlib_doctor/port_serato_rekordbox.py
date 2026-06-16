@@ -3,16 +3,17 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 import sqlite3
-from typing import Any
+from typing import Any, Callable
 from urllib.parse import quote
 import xml.etree.ElementTree as ET
 
 from .io_utils import render_json, write_json
 from .serato_crate import read_serato_crate
-from .serato_markers import parse_markers2_payload
+from .serato_file_tags import read_serato_markers2_file_tags
 from .sqlite_utils import quote_identifier
 
 REKORDBOX_PORT_SCHEMA_VERSION = "1.0"
+TagReader = Callable[[Path], tuple[dict[str, Any], ...]]
 
 
 @dataclass(frozen=True)
@@ -81,24 +82,24 @@ class SeratoToRekordboxPlan:
         return render_json(self.to_dict(), pretty=pretty)
 
 
-def build_serato_to_rekordbox_plan(serato_library_dir: Path, crate_path: Path, collection_root: Path, playlist_name: str | None = None) -> SeratoToRekordboxPlan:
+def build_serato_to_rekordbox_plan(serato_library_dir: Path, crate_path: Path, collection_root: Path, playlist_name: str | None = None, tag_reader: TagReader | None = None) -> SeratoToRekordboxPlan:
     crate = read_serato_crate(crate_path)
     assets = _read_assets_by_portable_id(serato_library_dir / "root.sqlite")
-    tracks, skipped = _build_tracks(crate.tracks, assets, collection_root)
+    tracks, skipped = _build_tracks(crate.tracks, assets, collection_root, tag_reader)
     return SeratoToRekordboxPlan(str(crate_path), playlist_name or crate_path.stem, tracks, skipped)
 
 
-def build_serato_track_to_rekordbox_plan(serato_library_dir: Path, portable_id: str, collection_root: Path, playlist_name: str | None = None, transfer_mode: str = "full") -> SeratoToRekordboxPlan:
+def build_serato_track_to_rekordbox_plan(serato_library_dir: Path, portable_id: str, collection_root: Path, playlist_name: str | None = None, transfer_mode: str = "full", tag_reader: TagReader | None = None) -> SeratoToRekordboxPlan:
     _validate_transfer_mode(transfer_mode)
     assets = _read_assets_by_portable_id(serato_library_dir / "root.sqlite")
-    tracks, skipped = _build_tracks((portable_id,), assets, collection_root)
+    tracks, skipped = _build_tracks((portable_id,), assets, collection_root, tag_reader)
     return SeratoToRekordboxPlan("TRACK", playlist_name or f"Track {Path(portable_id).stem}", tracks, skipped, "track", transfer_mode)
 
 
-def build_serato_collection_to_rekordbox_plan(serato_library_dir: Path, collection_root: Path, playlist_name: str | None = None, transfer_mode: str = "full") -> SeratoToRekordboxPlan:
+def build_serato_collection_to_rekordbox_plan(serato_library_dir: Path, collection_root: Path, playlist_name: str | None = None, transfer_mode: str = "full", tag_reader: TagReader | None = None) -> SeratoToRekordboxPlan:
     _validate_transfer_mode(transfer_mode)
     assets = _read_assets_by_portable_id(serato_library_dir / "root.sqlite")
-    tracks, skipped = _build_tracks(tuple(assets), assets, collection_root)
+    tracks, skipped = _build_tracks(tuple(assets), assets, collection_root, tag_reader)
     return SeratoToRekordboxPlan("COLLECTION", playlist_name or "Serato Collection", tracks, skipped, "collection", transfer_mode)
 
 
@@ -128,22 +129,23 @@ def render_rekordbox_xml_preview(plan: SeratoToRekordboxPlan) -> str:
     return '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(root, encoding="unicode")
 
 
-def _build_tracks(portable_ids: tuple[str, ...], assets: dict[str, dict[str, Any]], collection_root: Path) -> tuple[tuple[RekordboxPortTrack, ...], tuple[dict[str, str], ...]]:
+def _build_tracks(portable_ids: tuple[str, ...], assets: dict[str, dict[str, Any]], collection_root: Path, tag_reader: TagReader | None) -> tuple[tuple[RekordboxPortTrack, ...], tuple[dict[str, str], ...]]:
     tracks = []
     skipped = []
     for index, portable_id in enumerate(portable_ids, 1):
         if not _is_local_portable_id(portable_id):
             skipped.append({"portable_id": portable_id, "reason": "not_local_file"})
             continue
-        tracks.append(_track(index, portable_id, assets.get(portable_id.lower(), {}), collection_root))
+        tracks.append(_track(index, portable_id, assets.get(portable_id.lower(), {}), collection_root, tag_reader))
     return tuple(tracks), tuple(skipped)
 
 
-def _track(index: int, portable_id: str, asset: dict[str, Any], collection_root: Path) -> RekordboxPortTrack:
+def _track(index: int, portable_id: str, asset: dict[str, Any], collection_root: Path, tag_reader: TagReader | None) -> RekordboxPortTrack:
+    path = collection_root / portable_id
     return RekordboxPortTrack(
         str(index),
         portable_id,
-        str(collection_root / portable_id),
+        str(path),
         str(asset.get("name") or Path(portable_id).stem),
         str(asset.get("artist") or ""),
         str(asset.get("album") or ""),
@@ -151,20 +153,20 @@ def _track(index: int, portable_id: str, asset: dict[str, Any], collection_root:
         str(asset.get("key") or ""),
         _optional_float(asset.get("bpm")),
         _optional_int(asset.get("length_ms")),
-        _cues(asset),
+        _cues(path, tag_reader),
     )
 
 
-def _cues(asset: dict[str, Any]) -> tuple[RekordboxPortCue, ...]:
-    payload = asset.get("markers2") or asset.get("cue_data")
-    return tuple(RekordboxPortCue(**cue) for cue in parse_markers2_payload(payload))
+def _cues(path: Path, tag_reader: TagReader | None) -> tuple[RekordboxPortCue, ...]:
+    reader = tag_reader or read_serato_markers2_file_tags
+    return tuple(RekordboxPortCue(**cue) for cue in reader(path))
 
 
 def _read_assets_by_portable_id(root_sqlite: Path) -> dict[str, dict[str, Any]]:
     conn = sqlite3.connect(f"file:{root_sqlite}?mode=ro", uri=True)
     try:
         columns = _table_columns(conn, "asset")
-        wanted = [column for column in ("portable_id", "name", "artist", "album", "genre", "key", "bpm", "length_ms", "markers2", "cue_data") if column in columns]
+        wanted = [column for column in ("portable_id", "name", "artist", "album", "genre", "key", "bpm", "length_ms") if column in columns]
         if "portable_id" not in wanted:
             raise ValueError("Serato asset table does not include portable_id")
         rows = conn.execute(f"SELECT {', '.join(quote_identifier(column) for column in wanted)} FROM asset").fetchall()
