@@ -101,6 +101,27 @@ class PortRekordboxTests(unittest.TestCase):
         self.assertEqual(plan.summary["tracks"], 1)
         self.assertEqual(plan.summary["skipped"], 1)
 
+    def test_wav_tracks_record_explicit_cue_skip_reason(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            library = tmp / "Library"
+            library.mkdir()
+            root = library / "root.sqlite"
+            make_serato_root(root)
+            conn = sqlite3.connect(root)
+            try:
+                conn.execute("INSERT INTO asset(id, portable_id, name) VALUES(3, 'Music/Wav Track.wav', 'Wav Track')")
+                conn.commit()
+            finally:
+                conn.close()
+            crate = tmp / "Test.crate"
+            write_serato_crate(crate, ("Music/Wav Track.wav",))
+
+            plan = build_serato_to_rekordbox_plan(library, crate, collection_root=tmp)
+
+        self.assertEqual(plan.tracks[0].cue_status["status"], "unsupported_format")
+        self.assertEqual(plan.tracks[0].cue_status["reason"], "wav_has_no_serato_tag_container")
+
     def test_port_cli_serato_to_rb_writes_outputs(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)

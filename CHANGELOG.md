@@ -6,6 +6,7 @@
 - [x] P0.2: Added real-fixture capture documentation and skip-safe fixture layout.
 - [x] P1.3: Added optional-mutagen Serato Markers2 file-tag reading and rewired Serato-to-Rekordbox cues to file tags.
 - [x] P1.4: Added Markers2 decode/encode/decode golden-vector coverage for supported cue and loop entries.
+- [x] P1.5: Added explicit WAV cue skip status for Serato-to-Rekordbox plans.
 - [x] Backlog 1: Rescoped fingerprinting as exact-duplicate/raw-byte similarity instead of audio identity.
 - [x] Backlog 2: Added adversarial Serato install refusal tests and hardened stage manifest/backup verification.
 - [x] Backlog 3: Documented Rekordbox DB import support boundaries and added a clear encrypted SQLCipher refusal.

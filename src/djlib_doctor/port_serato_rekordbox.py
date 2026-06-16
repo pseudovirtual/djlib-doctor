@@ -43,6 +43,7 @@ class RekordboxPortTrack:
     bpm: float | None = None
     length_ms: int | None = None
     cues: tuple[RekordboxPortCue, ...] = ()
+    cue_status: dict[str, str] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         data = self.__dict__.copy()
@@ -142,6 +143,7 @@ def _build_tracks(portable_ids: tuple[str, ...], assets: dict[str, dict[str, Any
 
 def _track(index: int, portable_id: str, asset: dict[str, Any], collection_root: Path, tag_reader: TagReader | None) -> RekordboxPortTrack:
     path = collection_root / portable_id
+    cues, cue_status = _cue_data(path, tag_reader)
     return RekordboxPortTrack(
         str(index),
         portable_id,
@@ -153,8 +155,17 @@ def _track(index: int, portable_id: str, asset: dict[str, Any], collection_root:
         str(asset.get("key") or ""),
         _optional_float(asset.get("bpm")),
         _optional_int(asset.get("length_ms")),
-        _cues(path, tag_reader),
+        cues,
+        cue_status,
     )
+
+
+def _cue_data(path: Path, tag_reader: TagReader | None) -> tuple[tuple[RekordboxPortCue, ...], dict[str, str]]:
+    if path.suffix.lower() == ".wav":
+        return (), {"status": "unsupported_format", "reason": "wav_has_no_serato_tag_container"}
+    cues = _cues(path, tag_reader)
+    status = "read_from_audio_file_tags" if cues else "no_markers2_tag"
+    return cues, {"status": status}
 
 
 def _cues(path: Path, tag_reader: TagReader | None) -> tuple[RekordboxPortCue, ...]:
