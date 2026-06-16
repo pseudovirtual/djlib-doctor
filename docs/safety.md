@@ -57,7 +57,7 @@ The Rekordbox DB workflow is intentionally staged:
 - apply only manifest-described operations to the staged copy
 - verify SQLite integrity before and after staged operations
 - install only through `install rekordbox-db`
-- require token, source hash, staged hash, backup, and sidecar checks
+- require token, source hash, staged hash, backup, sidecar checks, and app-closed checks
 
 Serato-to-Rekordbox should use that staged DB path. XML preview is a representation and inspection artifact, not the final write workflow.
 

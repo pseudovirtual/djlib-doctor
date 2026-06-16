@@ -130,6 +130,7 @@ def _install_common(p: argparse.ArgumentParser, library: bool = False, db: bool 
         p.add_argument("--skip-process-check", action="store_true")
     if db:
         p.add_argument("--db", required=True, type=Path)
+        p.add_argument("--skip-process-check", action="store_true")
 
 
 def _add_migrate_port_compare(sub: argparse._SubParsersAction) -> None:

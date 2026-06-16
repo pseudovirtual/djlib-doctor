@@ -64,7 +64,8 @@ def handle_install(args: argparse.Namespace) -> int:
             print(f"File operations applied: {args.stage_dir / 'file-operations-install-report.json'}")
             print(f"Operations applied: {len(report['applied'])}")
         elif args.install_command == "rekordbox-db":
-            report = install_rekordbox_db_stage(args.stage_dir, args.db, args.confirm_token)
+            lines = () if args.skip_process_check else _app_process_lines("rekordbox|Rekordbox")
+            report = install_rekordbox_db_stage(args.stage_dir, args.db, args.confirm_token, lines)
             print(f"Rekordbox DB stage installed: {args.stage_dir / 'rekordbox-db-install-report.json'}")
             print(f"Backup: {report['backup']}")
         else:
@@ -75,8 +76,12 @@ def handle_install(args: argparse.Namespace) -> int:
 
 
 def _serato_process_lines() -> tuple[str, ...]:
+    return _app_process_lines("Serato|serato")
+
+
+def _app_process_lines(pattern: str) -> tuple[str, ...]:
     try:
-        result = subprocess.run(["pgrep", "-fl", "Serato|serato"], check=False, capture_output=True, text=True)
+        result = subprocess.run(["pgrep", "-fl", pattern], check=False, capture_output=True, text=True)
     except OSError:
         return ()
     return tuple(line for line in result.stdout.splitlines() if line.strip()) if result.returncode in (0, 1) else ()

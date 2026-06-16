@@ -80,6 +80,36 @@ class RekordboxDbStageTests(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 install_rekordbox_db_stage(tmp / "stage", db, confirm_token=stage.install_token)
 
+    def test_install_refuses_when_rekordbox_process_is_running(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            db = tmp / "master.db"
+            conn = sqlite3.connect(db)
+            conn.execute("CREATE TABLE tracks(id INTEGER PRIMARY KEY, name TEXT)")
+            conn.execute("INSERT INTO tracks(id, name) VALUES(1, 'Old')")
+            conn.commit()
+            conn.close()
+            ops = tmp / "ops.json"
+            ops.write_text(
+                json.dumps(
+                    {
+                        "operations": [
+                            {
+                                "operation": "update",
+                                "table": "tracks",
+                                "values": {"name": "New"},
+                                "where": {"id": 1},
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            stage = stage_rekordbox_db_operations(db, ops, tmp / "stage")
+
+            with self.assertRaises(RuntimeError):
+                install_rekordbox_db_stage(tmp / "stage", db, confirm_token=stage.install_token, process_lines=("123 rekordbox",))
+
 
 if __name__ == "__main__":
     unittest.main()
