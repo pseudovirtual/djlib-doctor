@@ -54,5 +54,5 @@ djlib-doctor migrate rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / 
 
 - More Rekordbox DB schema adapters and playlist/cue table variants are needed for broader real-world coverage.
 - Claude Desktop extension packaging is still a template.
-- PyPI release automation is not complete.
+- PyPI publishing uses tag-triggered GitHub Actions and still requires repository-side trusted publishing configuration.
 - More real-world Serato fixture validation is needed before broad public claims.

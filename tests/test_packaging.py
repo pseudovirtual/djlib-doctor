@@ -40,6 +40,14 @@ class PackagingTests(unittest.TestCase):
         self.assertIn("not installable yet", readme.read_text(encoding="utf-8"))
         self.assertEqual(json.loads(manifest.read_text(encoding="utf-8"))["name"], "djlib-doctor")
 
+    def test_release_workflow_builds_and_publishes_package(self):
+        workflow = ROOT / ".github" / "workflows" / "release.yml"
+        text = workflow.read_text(encoding="utf-8")
+
+        self.assertIn("pypa/gh-action-pypi-publish", text)
+        self.assertIn("python -m build", text)
+        self.assertIn("tags:", text)
+
 
 if __name__ == "__main__":
     unittest.main()

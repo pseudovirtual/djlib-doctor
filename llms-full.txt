@@ -32,7 +32,7 @@ The project is read-only-first. Write-capable workflows are explicit, staged, to
 ## Not Implemented
 
 - standalone MCP server
-- PyPI publishing and release automation
+- repository-side PyPI trusted publishing configuration
 - broad real-world Rekordbox DB schema adapter coverage
 
 ## Safety
