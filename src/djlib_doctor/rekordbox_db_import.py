@@ -19,10 +19,13 @@ def build_rekordbox_db_import_operations(live_db: Path, port_manifest: Path, out
     _require_serato_to_rekordbox_manifest(manifest)
     conn = sqlite3.connect(f"file:{live_db}?mode=ro", uri=True)
     try:
-        columns = table_columns(conn, CONTENT_TABLE)
-        _require_supported_content_schema(columns)
-        cue_columns = table_columns(conn, CUE_TABLE)
-        operations = _build_operations(conn, columns, cue_columns, manifest.get("tracks", ()))
+        try:
+            columns = table_columns(conn, CONTENT_TABLE)
+            _require_supported_content_schema(columns)
+            cue_columns = table_columns(conn, CUE_TABLE)
+            operations = _build_operations(conn, columns, cue_columns, manifest.get("tracks", ()))
+        except sqlite3.DatabaseError as exc:
+            raise ValueError(_unsupported_database_message(live_db)) from exc
     finally:
         conn.close()
     write_json(out_path, _operations_manifest(port_manifest, operations))
@@ -34,6 +37,14 @@ def _require_serato_to_rekordbox_manifest(manifest: dict[str, Any]) -> None:
         raise ValueError("Port manifest must have source_platform='serato'")
     if manifest.get("target_platform") != "rekordbox_xml":
         raise ValueError("Port manifest must have target_platform='rekordbox_xml'")
+
+
+def _unsupported_database_message(path: Path) -> str:
+    return (
+        f"Unsupported Rekordbox DB format for import: {path}. "
+        "This build supports only plain SQLite master.db fixtures/schemas with djmdContent "
+        "and optional djmdCue tables. encrypted SQLCipher Rekordbox databases are not supported."
+    )
 
 
 def _require_supported_content_schema(columns: tuple[str, ...]) -> None:

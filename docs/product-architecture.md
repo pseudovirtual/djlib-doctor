@@ -50,7 +50,7 @@ djlib-doctor migrate rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / 
 djlib-doctor migrate serato-to-rb --serato-library-dir ~/serato-library --crate ~/Music/_Serato_/Subcrates/Test.crate --collection-root ~/Music --out run/serato-to-rb --stage-db --rekordbox-db ~/Library/Pioneer/rekordbox/master.db
 ```
 
-Serato-to-Rekordbox produces a port manifest and Rekordbox XML representation, then can stage supported DB imports into a copied Rekordbox `master.db` for token-gated install.
+Serato-to-Rekordbox produces a port manifest and Rekordbox XML representation, then can stage supported plain-SQLite DB imports into a copied Rekordbox `master.db` for token-gated install. No real Rekordbox DB version is certified yet; encrypted SQLCipher databases are unsupported.
 
 Fast smoke test:
 
@@ -67,4 +67,4 @@ Add platforms by implementing adapters, not by copying workflows:
 - stage platform-specific writes from the manifest
 - install staged files with shared safety helpers
 
-The next major gap is real-world certification coverage: anonymized fixture bundles across app versions, more Rekordbox DB schemas, playlist table imports, additional Serato marker/tag fixtures, and an optional acoustic fingerprint backend. New support should extend the existing core model and staged workflow rather than introducing parallel migration code.
+The next major gap is real-world certification coverage: anonymized fixture bundles across app versions, real Rekordbox DB schema adapters, playlist table imports, additional Serato marker/tag fixtures, and an optional acoustic fingerprint backend. New support should extend the existing core model and staged workflow rather than introducing parallel migration code.

@@ -24,7 +24,7 @@
 - Staged Serato library installs through `stage serato` and `install serato-stage`.
 - Staged Serato audio tag writes through `stage serato-tags` and `install serato-tags`.
 - Staged file copy, move, delete, and conversion operations through `stage file-ops` and `install file-ops`.
-- Staged Rekordbox DB operations through copied `master.db`, staged hashes, backups, and `install rekordbox-db`.
+- Staged Rekordbox DB operations through copied plain-SQLite `master.db` fixtures/schemas, staged hashes, backups, and `install rekordbox-db`.
 - Config files for common user paths.
 - Codex skill, Claude guidance, and plugin-template metadata.
 
@@ -60,6 +60,7 @@ djlib-doctor migrate rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / 
 
 ## Not Yet Public-Release Ready
 
+- No real Rekordbox `master.db` version is certified yet; modern encrypted SQLCipher databases are unsupported.
 - More Rekordbox DB schema adapters and playlist/cue table variants are needed for broader real-world coverage.
 - Claude Desktop extension packaging is still a template.
 - PyPI publishing uses tag-triggered GitHub Actions and still requires repository-side trusted publishing configuration.

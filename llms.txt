@@ -39,7 +39,7 @@ Safety boundary:
 
 - planning and porting commands do not write live databases or music files
 - install commands require exact tokens and verify staged hashes, source hashes, sidecars, and backups where relevant
-- Rekordbox DB import stages into a copied `master.db` and fails closed for unsupported DB schemas
+- Rekordbox DB import stages into a copied plain-SQLite `master.db`; no real Rekordbox DB version is certified yet, and encrypted SQLCipher databases are unsupported
 - fingerprinting is byte-level only and certification is read-only
 - streaming placeholders are not missing local files
 - cue timing work must be preserved

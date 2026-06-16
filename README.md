@@ -170,7 +170,7 @@ djlib-doctor install rekordbox-db --stage-dir run/rekordbox-stage --db /path/to/
 djlib-doctor migrate serato-to-rb --serato-library-dir /path/to/serato-library --crate /path/to/_Serato_/Subcrates/MySet.crate --collection-root ~/Music --out run/serato-to-rb --stage-db --rekordbox-db /path/to/rekordbox/master.db
 ```
 
-The DB importer fails closed if the target Rekordbox schema is not supported.
+The DB importer currently supports only plain SQLite `master.db` files with the tested `djmdContent` columns and optional `djmdCue` cue table. Modern encrypted SQLCipher Rekordbox databases are not supported and fail closed with a specific error.
 
 ### 9. Let An Agent Help, Safely
 
@@ -186,7 +186,7 @@ The repo includes [AGENTS.md](AGENTS.md) and a packaged skill under `.agents/ski
 
 Implemented: verification, snapshots, cleanup plans, review logs, schema output, export comparison, byte fingerprinting, migration certification, Serato inspection, two-way dry-run porting, and staged/token-gated install workflows.
 
-Still pre-release: polished package distribution, CI/release automation, broader real-world Serato cue/tag fixture validation, more Rekordbox DB schema adapters, and broader playlist/cue table coverage.
+Still pre-release: polished package distribution, CI/release automation, broader real-world Serato cue/tag fixture validation, certified Rekordbox DB version coverage, and broader playlist/cue table coverage.
 
 ## More Docs
 

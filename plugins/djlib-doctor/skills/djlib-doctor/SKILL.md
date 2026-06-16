@@ -48,4 +48,4 @@ PYTHONPATH=src python3 -m djlib_doctor.cli migrate serato-to-rb --serato-library
 3. Generate and inspect a port manifest before staging.
 4. Use fingerprinting for exact duplicate or raw-byte similarity checks, and certify generated port artifacts before install.
 5. For staged writes, read the generated manifest and only install with the exact token after the user approves.
-6. If a Rekordbox DB schema is unsupported, stop and report that the importer failed closed.
+6. If a Rekordbox DB schema is unsupported or encrypted SQLCipher, stop and report that the importer failed closed.

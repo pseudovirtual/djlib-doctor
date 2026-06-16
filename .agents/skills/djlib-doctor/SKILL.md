@@ -89,6 +89,6 @@ PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline baseline.x
 11. Use `--transfer-mode full`, `--transfer-mode cues-only`, or `--transfer-mode match-only` to make migration intent explicit.
 12. Certify generated migration outputs with `certify rb-to-serato` or `certify serato-to-rb` before staging or installing.
 13. For Rekordbox-to-Serato, prefer `--summary-only` first for batch playlist files, then generate crate previews with `--verify-preview` for single-playlist checks.
-14. For Serato-to-Rekordbox, do not stop at “import the XML preview” when the user wants a write workflow. Use `stage rekordbox-db-import` or `migrate serato-to-rb --stage-db`, then `install rekordbox-db`; the DB importer fails closed for unsupported schemas.
+14. For Serato-to-Rekordbox, do not stop at “import the XML preview” when the user wants a write workflow. Use `stage rekordbox-db-import` or `migrate serato-to-rb --stage-db`, then `install rekordbox-db`; the DB importer currently supports only tested plain-SQLite schemas and fails closed for unsupported schemas or encrypted SQLCipher DBs.
 15. For Serato install, require the exact stage token, keep Serato closed, and verify the install report.
 16. Suggest only read-only next steps unless a write-capable command already exists with the required safety workflow.

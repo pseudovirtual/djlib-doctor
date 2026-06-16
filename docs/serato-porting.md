@@ -43,7 +43,15 @@ djlib-doctor stage rekordbox-db --db /path/to/rekordbox/master.db --operations r
 djlib-doctor install rekordbox-db --stage-dir run/rekordbox-stage --db /path/to/rekordbox/master.db --confirm-token INSTALL_SQLITE_STAGE:...
 ```
 
-`stage rekordbox-db-import` builds auditable Rekordbox DB operations from a Serato-to-Rekordbox port manifest, stages them in a copied `master.db`, and refuses unsupported DB schemas. `stage rekordbox-db` remains available for explicitly reviewed operation manifests.
+`stage rekordbox-db-import` builds auditable Rekordbox DB operations from a Serato-to-Rekordbox port manifest, stages them in a copied `master.db`, and refuses unsupported DB formats or schemas. `stage rekordbox-db` remains available for explicitly reviewed operation manifests.
+
+Supported DB boundary today:
+
+- certified real Rekordbox versions: none yet
+- supported format: plain SQLite `master.db`
+- required content table: `djmdContent` with `ID`, `FolderPath`, `FileNameL`, and `Title`
+- optional cue table: `djmdCue` with `ID`, `ContentID`, `InMsec`, `OutMsec`, `Kind`, `HotCue`, and `Name`
+- unsupported format: encrypted SQLCipher `master.db`
 
 ## Scopes And Transfer Modes
 

@@ -35,7 +35,7 @@ The project is read-only-first. Write-capable workflows are explicit, staged, to
 
 - standalone MCP server
 - repository-side PyPI trusted publishing configuration
-- broad real-world Rekordbox DB schema adapter coverage
+- certified real-world Rekordbox DB schema adapter coverage
 
 ## Safety
 
@@ -61,7 +61,7 @@ Or use the workflow shortcut:
 djlib-doctor migrate serato-to-rb --serato-library-dir "/path/to/serato-library" --crate "/path/to/_Serato_/Subcrates/My.crate" --collection-root ~/Music --out run/serato-to-rb --stage-db --rekordbox-db /path/to/rekordbox/master.db
 ```
 
-The Rekordbox DB importer fails closed if the target schema is unsupported.
+The Rekordbox DB importer currently supports only tested plain-SQLite `master.db` schemas. No real Rekordbox DB version is certified yet, and encrypted SQLCipher databases are unsupported.
 
 ## Good Agent Workflow
 

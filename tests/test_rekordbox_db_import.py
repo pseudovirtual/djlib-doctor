@@ -42,8 +42,6 @@ def make_port_manifest(path: Path) -> None:
             "skipped": [],
         },
     )
-
-
 def make_rekordbox_db(path: Path, supported: bool = True) -> None:
     conn = sqlite3.connect(path)
     try:
@@ -82,8 +80,6 @@ def make_rekordbox_db(path: Path, supported: bool = True) -> None:
         conn.commit()
     finally:
         conn.close()
-
-
 class RekordboxDbImportTests(unittest.TestCase):
     def test_stage_rekordbox_db_import_from_serato_port_manifest(self):
         with TemporaryDirectory() as tmpdir:
@@ -179,7 +175,16 @@ class RekordboxDbImportTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 stage_rekordbox_db_import(db, manifest, tmp / "stage")
 
+    def test_rekordbox_db_import_refuses_encrypted_sqlcipher_db_clearly(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            db = tmp / "master.db"
+            manifest = tmp / "port-manifest.json"
+            db.write_bytes(b"SQLCipher encrypted Rekordbox database placeholder")
+            make_port_manifest(manifest)
 
+            with self.assertRaisesRegex(ValueError, "encrypted SQLCipher.*not supported"):
+                stage_rekordbox_db_import(db, manifest, tmp / "stage")
 def _make_serato_root(path: Path) -> None:
     conn = sqlite3.connect(path)
     try:
@@ -188,7 +193,3 @@ def _make_serato_root(path: Path) -> None:
         conn.commit()
     finally:
         conn.close()
-
-
-if __name__ == "__main__":
-    unittest.main()

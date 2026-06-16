@@ -37,4 +37,4 @@ PYTHONPATH=src python3 -m djlib_doctor.cli migrate serato-to-rb --serato-library
 - Porting commands create manifests first; install commands apply only staged, token-verified artifacts.
 - Fingerprinting commands are read-only byte-level helpers; they do not claim acoustic identity.
 - Certification commands are read-only scorecards for migration artifacts.
-- Serato-to-Rekordbox DB import fails closed when the target `master.db` schema is unsupported.
+- Serato-to-Rekordbox DB import currently supports only tested plain-SQLite `master.db` schemas and fails closed for unsupported schemas or encrypted SQLCipher databases.
