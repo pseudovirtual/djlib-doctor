@@ -34,17 +34,18 @@ djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / Tes
 djlib-doctor stage serato --port-manifest run/port/port-manifest.json --serato-library-dir ~/serato-library --serato-music-dir ~/_Serato_ --stage-dir run/serato-stage
 djlib-doctor stage serato-tags --port-manifest run/port/port-manifest.json --stage-dir run/serato-tags
 djlib-doctor port serato-to-rb --serato-library-dir ~/serato-library --crate ~/Music/_Serato_/Subcrates/Test.crate --collection-root ~/Music --out run/serato-to-rb
-djlib-doctor stage rekordbox-db --db ~/Library/Pioneer/rekordbox/master.db --operations run/rekordbox-db-operations.json --stage-dir run/rekordbox-stage
+djlib-doctor stage rekordbox-db-import --db ~/Library/Pioneer/rekordbox/master.db --port-manifest run/serato-to-rb/port-manifest.json --stage-dir run/rekordbox-stage
+djlib-doctor install rekordbox-db --stage-dir run/rekordbox-stage --db ~/Library/Pioneer/rekordbox/master.db --confirm-token INSTALL_SQLITE_STAGE:...
 ```
 
 Workflow shortcut:
 
 ```bash
 djlib-doctor migrate rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / Test" --out run/migrate --stage-library --stage-tags --serato-library-dir ~/serato-library --serato-music-dir ~/_Serato_
-djlib-doctor migrate serato-to-rb --serato-library-dir ~/serato-library --crate ~/Music/_Serato_/Subcrates/Test.crate --collection-root ~/Music --out run/serato-to-rb
+djlib-doctor migrate serato-to-rb --serato-library-dir ~/serato-library --crate ~/Music/_Serato_/Subcrates/Test.crate --collection-root ~/Music --out run/serato-to-rb --stage-db --rekordbox-db ~/Library/Pioneer/rekordbox/master.db
 ```
 
-Serato-to-Rekordbox currently produces a port manifest and Rekordbox XML representation. The final target architecture is a high-level stage command that imports that manifest/XML representation into a copied Rekordbox `master.db`, then installs it through the existing token-gated `install rekordbox-db` path.
+Serato-to-Rekordbox produces a port manifest and Rekordbox XML representation, then can stage supported DB imports into a copied Rekordbox `master.db` for token-gated install.
 
 Fast smoke test:
 

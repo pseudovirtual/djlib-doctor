@@ -38,11 +38,12 @@ This writes a dry-run manifest and Rekordbox XML representation. If the user wan
 The lower-level staged DB safety path exists:
 
 ```bash
+djlib-doctor stage rekordbox-db-import --db /path/to/rekordbox/master.db --port-manifest run/serato-to-rb/port-manifest.json --stage-dir run/rekordbox-stage
 djlib-doctor stage rekordbox-db --db /path/to/rekordbox/master.db --operations run/rekordbox-db-operations.json --stage-dir run/rekordbox-stage
 djlib-doctor install rekordbox-db --stage-dir run/rekordbox-stage --db /path/to/rekordbox/master.db --confirm-token INSTALL_SQLITE_STAGE:...
 ```
 
-The high-level bridge from a Serato-to-Rekordbox port manifest to Rekordbox DB operations is still missing and should be implemented as `stage rekordbox-db-import --port-manifest ...`.
+`stage rekordbox-db-import` builds auditable Rekordbox DB operations from a Serato-to-Rekordbox port manifest, stages them in a copied `master.db`, and refuses unsupported DB schemas. `stage rekordbox-db` remains available for explicitly reviewed operation manifests.
 
 ## Scopes And Transfer Modes
 

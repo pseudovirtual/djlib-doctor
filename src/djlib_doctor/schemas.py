@@ -11,6 +11,7 @@ from .io_utils import render_json
 from .plan import PLAN_SCHEMA_VERSION
 from .port_serato_rekordbox import REKORDBOX_PORT_SCHEMA_VERSION
 from .port_rekordbox_serato import PORT_MANIFEST_SCHEMA_VERSION
+from .rekordbox_db_import import IMPORT_SCHEMA_VERSION
 from .reviewer import REVIEW_SCHEMA_VERSION
 from .rekordbox_db_stage import SQLITE_INSTALL_SCHEMA_VERSION, SQLITE_STAGE_SCHEMA_VERSION
 from .serato_audio_tags import SERATO_AUDIO_TAG_INSTALL_SCHEMA_VERSION, SERATO_AUDIO_TAG_STAGE_SCHEMA_VERSION
@@ -50,6 +51,7 @@ SCHEMAS: dict[str, dict[str, Any]] = {
     "serato-audio-tag-install-report": _json_schema(SERATO_AUDIO_TAG_INSTALL_SCHEMA_VERSION, ("schema_version", "passed", "stage_manifest", "backup_dir", "installed")),
     "file-operations-stage-manifest": _json_schema(FILE_OPS_STAGE_SCHEMA_VERSION, ("schema_version", "mode", "source_manifest", "operations", "install_token", "safety"), mode_values=["staged_file_operations"]),
     "file-operations-install-report": _json_schema(FILE_OPS_INSTALL_SCHEMA_VERSION, ("schema_version", "passed", "stage_manifest", "backup_dir", "applied")),
+    "rekordbox-db-import-operations": _json_schema(IMPORT_SCHEMA_VERSION, ("schema_version", "mode", "source_port_manifest", "target_table", "summary", "operations"), mode_values=["rekordbox_db_import_operations"]),
     "rekordbox-db-stage-manifest": _json_schema(SQLITE_STAGE_SCHEMA_VERSION, ("schema_version", "mode", "label", "source_db", "operations_manifest", "staged_db", "operations", "hashes", "install_token"), mode_values=["staged_sqlite_operations"]),
     "rekordbox-db-install-report": _json_schema(SQLITE_INSTALL_SCHEMA_VERSION, ("schema_version", "passed", "stage_manifest", "backup", "installed_db")),
 }

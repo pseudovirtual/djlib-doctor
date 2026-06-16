@@ -52,7 +52,7 @@ djlib-doctor migrate rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / 
 
 ## Not Yet Public-Release Ready
 
-- The high-level Serato-to-Rekordbox `stage rekordbox-db-import --port-manifest ...` wrapper is not complete yet.
+- More Rekordbox DB schema adapters are needed for broader real-world coverage.
 - Claude Desktop extension packaging is still a template.
 - PyPI release automation is not complete.
 - More real-world Serato fixture validation is needed before broad public claims.

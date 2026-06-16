@@ -41,6 +41,7 @@ PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tes
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlists-file playlists.txt --summary-only --out work/unused
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --track-id 1 --transfer-mode cues-only --out work/serato-track-demo
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --collection --transfer-mode match-only --out work/serato-collection-demo
+PYTHONPATH=src python3 -m djlib_doctor.cli stage rekordbox-db-import --db /path/to/rekordbox/master.db --port-manifest work/serato-to-rb/port-manifest.json --stage-dir work/rekordbox-stage
 PYTHONPATH=src python3 -m djlib_doctor.cli stage serato --port-manifest work/serato-port-demo/port-manifest.json --serato-library-dir /path/to/serato-library --serato-music-dir /path/to/_Serato_ --stage-dir work/serato-stage
 PYTHONPATH=src python3 -m djlib_doctor.cli install serato-stage --stage-dir work/serato-stage --serato-library-dir /path/to/serato-library --serato-music-dir /path/to/_Serato_ --confirm-token INSTALL_SERATO_STAGE:...
 PYTHONPATH=src python3 -m djlib_doctor.cli migrate rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlist "ROOT / Fixture Playlist" --out work/migrate-demo
@@ -70,6 +71,6 @@ The current milestone is safe verification, planning, staged writes, and migrati
 - support single-track, playlist/crate, multi-playlist, and whole-collection port scopes
 - support `full`, `cues-only`, and `match-only` transfer modes in port manifests
 - stage and install Serato SQLite/crate changes only through token-gated manifests with backups, sidecar checks, app-closed checks, and hash verification
-- for Serato-to-Rekordbox, do not present XML preview as the final write workflow; the intended target flow is port manifest/XML representation, staged copied `master.db`, then `install rekordbox-db`
+- for Serato-to-Rekordbox, do not present XML preview as the final write workflow; the intended target flow is port manifest/XML representation, `stage rekordbox-db-import` into a copied `master.db`, then `install rekordbox-db`
 
 Do not write live DBs directly. The verifier and port manifest are the foundation; staged DB installs are the only approved DB write path.

@@ -63,11 +63,25 @@ def handle_migrate(args: argparse.Namespace) -> int:
 def _migrate_serato_to_rb(args: argparse.Namespace) -> int:
     try:
         _require_one_scope(args, ("crate", "portable_id", "collection"))
-        result = migrate_serato_to_rekordbox(args.serato_library_dir, args.collection_root, args.out, args.crate, args.portable_id, args.collection, args.playlist_name, args.transfer_mode)
+        result = migrate_serato_to_rekordbox(
+            args.serato_library_dir,
+            args.collection_root,
+            args.out,
+            args.crate,
+            args.portable_id,
+            args.collection,
+            args.playlist_name,
+            args.transfer_mode,
+            args.rekordbox_db,
+            args.stage_db,
+        )
     except (OSError, sqlite3.Error, ValueError, RuntimeError, json.JSONDecodeError) as exc:
         return _fail("migrate", exc)
     print(f"Port manifest: {result.port_manifest}")
     print(f"Rekordbox XML preview: {result.rekordbox_xml_preview}")
+    if result.rekordbox_stage:
+        print(f"Rekordbox DB stage: {result.rekordbox_stage.stage_manifest_path}")
+        print(f"Rekordbox install token: {result.rekordbox_stage.install_token}")
     return 0
 
 

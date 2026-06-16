@@ -11,6 +11,7 @@ from .port_rekordbox_serato import (
     write_rekordbox_to_serato_plan,
 )
 from .port_serato_rekordbox import build_serato_collection_to_rekordbox_plan, build_serato_to_rekordbox_plan, build_serato_track_to_rekordbox_plan, write_serato_to_rekordbox_plan
+from .rekordbox_db_stage import SqliteStage, stage_rekordbox_db_import
 from .serato_audio_tags import SeratoAudioTagStageReport, build_serato_audio_tag_stage
 from .serato_stage import SeratoStageReport, stage_serato_from_port_manifest
 
@@ -28,6 +29,7 @@ class RekordboxToSeratoWorkflowResult:
 class SeratoToRekordboxWorkflowResult:
     port_manifest: Path
     rekordbox_xml_preview: Path
+    rekordbox_stage: SqliteStage | None = None
 
 
 def migrate_rekordbox_to_serato(
@@ -90,6 +92,8 @@ def migrate_serato_to_rekordbox(
     collection: bool = False,
     playlist_name: str | None = None,
     transfer_mode: str = "full",
+    rekordbox_db: Path | None = None,
+    stage_db: bool = False,
 ) -> SeratoToRekordboxWorkflowResult:
     if sum(bool(value) for value in (crate, portable_id, collection)) != 1:
         raise ValueError("Exactly one Serato source scope is required")
@@ -100,7 +104,13 @@ def migrate_serato_to_rekordbox(
     else:
         plan = build_serato_to_rekordbox_plan(serato_library_dir, crate, collection_root, playlist_name)
     outputs = write_serato_to_rekordbox_plan(plan, out_dir / "port")
+    rekordbox_stage = None
+    if stage_db:
+        if rekordbox_db is None:
+            raise ValueError("rekordbox_db is required when stage_db is true")
+        rekordbox_stage = stage_rekordbox_db_import(rekordbox_db, Path(outputs["manifest"]), out_dir / "rekordbox-stage")
     return SeratoToRekordboxWorkflowResult(
         port_manifest=Path(outputs["manifest"]),
         rekordbox_xml_preview=Path(outputs["rekordbox_xml_preview"]),
+        rekordbox_stage=rekordbox_stage,
     )

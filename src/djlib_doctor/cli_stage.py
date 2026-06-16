@@ -7,7 +7,7 @@ import subprocess
 import sys
 
 from .file_operations import apply_file_operations_stage, stage_file_operations
-from .rekordbox_db_stage import install_rekordbox_db_stage, stage_rekordbox_db_operations
+from .rekordbox_db_stage import install_rekordbox_db_stage, stage_rekordbox_db_import, stage_rekordbox_db_operations
 from .serato_audio_tags import build_serato_audio_tag_stage, install_serato_audio_tag_stage
 from .serato_stage import install_serato_stage, stage_serato_from_port_manifest
 
@@ -35,6 +35,10 @@ def handle_stage(args: argparse.Namespace) -> int:
         elif args.stage_command == "rekordbox-db":
             report = stage_rekordbox_db_operations(args.db, args.operations, args.stage_dir)
             print(f"Rekordbox DB stage written: {report.stage_manifest_path}")
+            print(f"Staged DB: {report.staged_db}")
+        elif args.stage_command == "rekordbox-db-import":
+            report = stage_rekordbox_db_import(args.db, args.port_manifest, args.stage_dir)
+            print(f"Rekordbox DB import stage written: {report.stage_manifest_path}")
             print(f"Staged DB: {report.staged_db}")
         else:
             raise ValueError(f"Unknown stage command: {args.stage_command}")
