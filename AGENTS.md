@@ -67,7 +67,7 @@ The current milestone is safe verification, planning, staged writes, and migrati
 - produce human-readable and machine-readable reports
 - produce read-only plans for missing files, duplicates, cue coverage, and bad path hygiene
 - expose user-selectable duplicate collision policies and audio compatibility profiles
-- fingerprint local files and compare arbitrary tracks for identity or similarity
+- fingerprint local file bytes for exact duplicates or byte similarity
 - run interactive CLI review and record ingestible decisions
 - export dry-run-only apply manifests without applying them
 - inspect Serato root.sqlite read-only and build dry-run Rekordbox XML to Serato port manifests

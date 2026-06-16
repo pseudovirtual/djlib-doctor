@@ -12,7 +12,7 @@ Primary commands:
 - `djlib-doctor plan duplicates --snapshot run/snapshot.json --out run/plan-duplicates.json --collision-policy cue-safe`
 - `djlib-doctor plan bad-paths --snapshot run/snapshot.json --out run/plan-bad-paths.json`
 - `djlib-doctor plan audio-compatibility --list-profiles`
-- `djlib-doctor fingerprint compare old.wav new.aiff --out run/track-compare.json`
+- `djlib-doctor fingerprint compare copy-a.wav copy-b.wav --out run/file-compare.json`
 - `djlib-doctor fingerprint scan ~/Music --out run/fingerprints.json --redact-paths`
 - `djlib-doctor review --plan run/plan-missing-files.json --out run/review-decisions.json`
 - `djlib-doctor apply-manifest --plan run/plan-missing-files.json --review-log run/review-decisions.json --only-reviewed --out run/apply-manifest.json`
@@ -40,7 +40,7 @@ Safety boundary:
 - planning and porting commands do not write live databases or music files
 - install commands require exact tokens and verify staged hashes, source hashes, sidecars, and backups where relevant
 - Rekordbox DB import stages into a copied `master.db` and fails closed for unsupported DB schemas
-- fingerprinting and certification are read-only
+- fingerprinting is byte-level only and certification is read-only
 - streaming placeholders are not missing local files
 - cue timing work must be preserved
 

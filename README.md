@@ -14,8 +14,8 @@ This is an open-source project from [@pseudovirtual](https://github.com/pseudovi
 - parses memory cues, hotcues, cue loops, and loop end times
 - creates snapshots and redacted shareable reports
 - plans missing-file, duplicate, cue, bad-path, and audio-format cleanup
-- fingerprints local audio files for track identity and similarity checks
-- compares two arbitrary track files as `same`, `similar`, or `different`
+- fingerprints local files for exact-duplicate and raw-byte similarity checks
+- compares two arbitrary files as `exact_duplicate`, `byte_similar`, or `different`
 - supports duplicate policies: `cue-safe`, `quality`, and `keep-both`
 - records interactive review decisions
 - compares baseline/final exports for lost material or cue regressions
@@ -113,16 +113,16 @@ djlib-doctor compare exports --baseline ~/Desktop/rekordbox-before.xml --final ~
 
 This checks for missing material, cue regressions, playlist differences, and bad final paths.
 
-### 5. Compare Two Track Files
+### 5. Compare Two Files By Bytes
 
-Use fingerprints when you need to decide whether two local files are the same recording or close enough to review as a possible match:
+Use byte fingerprints when you need to decide whether two local files are exact duplicates or close enough at the byte level to review manually:
 
 ```bash
-djlib-doctor fingerprint compare ~/Music/old-track.wav ~/Music/new-track.aiff --out run/track-compare.json
+djlib-doctor fingerprint compare ~/Music/copy-a.wav ~/Music/copy-b.wav --out run/file-compare.json
 djlib-doctor fingerprint scan ~/Music --out run/fingerprints.json --redact-paths
 ```
 
-The base package uses deterministic local fingerprints. Native acoustic fingerprint backends can be added later without changing these artifact shapes.
+This is not acoustic matching. A future optional `fingerprint` extra can add a real acoustic backend without changing the read-only safety boundary.
 
 ### 6. Dry-Run A Rekordbox To Serato Playlist Port
 
@@ -184,7 +184,7 @@ The repo includes [AGENTS.md](AGENTS.md) and a packaged skill under `.agents/ski
 
 ## Project Status
 
-Implemented: verification, snapshots, cleanup plans, review logs, schema output, export comparison, local fingerprinting, migration certification, Serato inspection, two-way dry-run porting, and staged/token-gated install workflows.
+Implemented: verification, snapshots, cleanup plans, review logs, schema output, export comparison, byte fingerprinting, migration certification, Serato inspection, two-way dry-run porting, and staged/token-gated install workflows.
 
 Still pre-release: polished package distribution, CI/release automation, broader real-world Serato cue/tag fixture validation, more Rekordbox DB schema adapters, and broader playlist/cue table coverage.
 

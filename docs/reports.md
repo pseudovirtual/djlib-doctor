@@ -10,6 +10,7 @@ Reports are meant for both humans and agents. They should be stable, explicit, a
 - `review-log`: interactive human decisions.
 - `apply-manifest`: dry-run operations derived from a reviewed plan.
 - `compare`: baseline/final export diff.
+- `fingerprint-*`: raw-file-byte fingerprints and byte-similarity reports.
 - `port-manifest`: dry-run migration plan.
 - `*-stage-manifest`: staged files plus hashes and install token.
 - `*-install-report`: backup paths and post-install verification.

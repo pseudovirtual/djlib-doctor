@@ -25,7 +25,7 @@ PYTHONPATH=src python3 -m djlib_doctor.cli verify export.xml
 PYTHONPATH=src python3 -m djlib_doctor.cli snapshot --rekordbox-xml export.xml --music-root ~/Music --out run/
 PYTHONPATH=src python3 -m djlib_doctor.cli plan missing-files --snapshot run/snapshot.json --out run/plan-missing-files.json
 PYTHONPATH=src python3 -m djlib_doctor.cli plan duplicates --snapshot run/snapshot.json --out run/plan-duplicates.json --collision-policy cue-safe
-PYTHONPATH=src python3 -m djlib_doctor.cli fingerprint compare old.wav new.aiff --out run/track-compare.json
+PYTHONPATH=src python3 -m djlib_doctor.cli fingerprint compare copy-a.wav copy-b.wav --out run/file-compare.json
 PYTHONPATH=src python3 -m djlib_doctor.cli fingerprint scan ~/Music --out run/fingerprints.json --redact-paths
 PYTHONPATH=src python3 -m djlib_doctor.cli review --plan run/plan-missing-files.json --out run/review-decisions.json
 PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline before.xml --final after.xml --out run/compare.json
@@ -46,6 +46,6 @@ PYTHONPATH=src python3 -m djlib_doctor.cli migrate serato-to-rb --serato-library
 1. Choose exactly one scope: one track, one playlist/crate, many playlists, or collection.
 2. Choose `--transfer-mode full`, `cues-only`, or `match-only`.
 3. Generate and inspect a port manifest before staging.
-4. Use fingerprinting for local track identity checks, and certify generated port artifacts before install.
+4. Use fingerprinting for exact duplicate or raw-byte similarity checks, and certify generated port artifacts before install.
 5. For staged writes, read the generated manifest and only install with the exact token after the user approves.
 6. If a Rekordbox DB schema is unsupported, stop and report that the importer failed closed.

@@ -14,7 +14,7 @@ The project is read-only-first. Write-capable workflows are explicit, staged, to
 - local file, streaming placeholder, and unknown-location classification
 - verification reports, snapshots, redacted snapshots, and schema discovery
 - missing-file, duplicate, cue-coverage, bad-path, and audio compatibility plans
-- local file fingerprinting, folder fingerprint manifests, and two-track similarity checks
+- local byte fingerprinting, folder byte-fingerprint manifests, and exact-duplicate/raw-byte similarity checks
 - duplicate collision policies: `cue-safe`, `quality`, and `keep-both`
 - interactive CLI review, decision sheets, and dry-run apply manifests
 - baseline/final Rekordbox export comparison
@@ -70,7 +70,7 @@ The Rekordbox DB importer fails closed if the target schema is unsupported.
 3. Explain findings in DJ language.
 4. Ask the user to choose scope and transfer mode.
 5. Use `review` for row-by-row human decisions.
-6. Use `fingerprint compare` or `fingerprint scan` when local track identity is uncertain.
+6. Use `fingerprint compare` or `fingerprint scan` for byte-level duplicate checks; do not treat it as acoustic identity.
 7. Certify generated migration artifacts before staging or installing.
 8. Inspect generated manifests before staging.
 9. Install only when the user supplies the exact token and confirms the relevant app is closed.

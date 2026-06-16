@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] Backlog 1: Rescoped fingerprinting as exact-duplicate/raw-byte similarity instead of audio identity.
 - Added read-only Rekordbox XML parser.
 - Added cue parsing for memory cues, hotcues, and loops.
 - Added verification report counts.

@@ -5,12 +5,12 @@ import json
 import sys
 from pathlib import Path
 
-from .fingerprint import compare_tracks, fingerprint_file, scan_fingerprints
+from .fingerprint import compare_files, fingerprint_file, scan_fingerprints
 from .io_utils import write_json
 
 
 def add_fingerprint_parser(sub: argparse._SubParsersAction) -> None:
-    fp = sub.add_parser("fingerprint", help="Fingerprint or compare local audio files.").add_subparsers(
+    fp = sub.add_parser("fingerprint", help="Fingerprint or compare local file bytes.").add_subparsers(
         dest="fingerprint_command", required=True
     )
     one = fp.add_parser("file")
@@ -38,7 +38,7 @@ def handle_fingerprint(args: argparse.Namespace) -> int:
             _write_or_print(data, args.out)
             return 0
         if args.fingerprint_command == "compare":
-            data = compare_tracks(args.left, args.right).to_dict()
+            data = compare_files(args.left, args.right).to_dict()
             _write_or_print(data, args.out)
             return 0
         if args.fingerprint_command == "scan":
@@ -53,6 +53,6 @@ def handle_fingerprint(args: argparse.Namespace) -> int:
 def _write_or_print(data, out) -> None:
     if out:
         write_json(out, data)
-        print(f"Fingerprint report written: {out}")
+        print(f"Byte fingerprint report written: {out}")
     else:
         print(json.dumps(data, indent=2, sort_keys=True))

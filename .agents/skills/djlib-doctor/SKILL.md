@@ -43,7 +43,7 @@ PYTHONPATH=src python3 -m djlib_doctor.cli plan duplicates --snapshot run/snapsh
 PYTHONPATH=src python3 -m djlib_doctor.cli plan bad-paths --snapshot run/snapshot.json --out run/plan-bad-paths.json
 PYTHONPATH=src python3 -m djlib_doctor.cli plan audio-compatibility --list-profiles
 PYTHONPATH=src python3 -m djlib_doctor.cli plan audio-compatibility --probe-csv run/audio-probes.csv --out run/plan-audio-compatibility.json --profile rekordbox-conservative
-PYTHONPATH=src python3 -m djlib_doctor.cli fingerprint compare old.wav new.aiff --out run/track-compare.json
+PYTHONPATH=src python3 -m djlib_doctor.cli fingerprint compare copy-a.wav copy-b.wav --out run/file-compare.json
 PYTHONPATH=src python3 -m djlib_doctor.cli fingerprint scan ~/Music --out run/fingerprints.json --redact-paths
 PYTHONPATH=src python3 -m djlib_doctor.cli explain --plan run/plan-missing-files.json
 PYTHONPATH=src python3 -m djlib_doctor.cli review --plan run/plan-missing-files.json --out run/review-decisions.json
@@ -84,7 +84,7 @@ PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline baseline.x
 6. Ask or infer the user's duplicate collision preference and audio compatibility target before choosing `--collision-policy` or `--profile`.
 7. Use `review` for row-by-row human decisions; use `decision-sheet` only when a spreadsheet artifact is helpful.
 8. If the user has baseline and final XML exports, run `compare exports`.
-9. Use `fingerprint compare` or `fingerprint scan` when matching local files or checking whether two tracks are the same recording.
+9. Use `fingerprint compare` or `fingerprint scan` only for exact duplicate or raw-byte similarity checks; it is not acoustic matching.
 10. For porting, choose exactly one source scope: one track, one playlist/crate, many playlists, or a collection.
 11. Use `--transfer-mode full`, `--transfer-mode cues-only`, or `--transfer-mode match-only` to make migration intent explicit.
 12. Certify generated migration outputs with `certify rb-to-serato` or `certify serato-to-rb` before staging or installing.

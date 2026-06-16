@@ -10,7 +10,7 @@
 - Memory cues, hotcues, cue loops, and loop end times parsed.
 - Snapshot directories with redacted sharing mode.
 - Plans for missing files, duplicates, cue coverage, bad paths, and audio compatibility.
-- Local file fingerprinting, folder fingerprint manifests, and two-track similarity comparison.
+- Local byte fingerprinting, folder byte-fingerprint manifests, and exact-duplicate/raw-byte similarity comparison.
 - Duplicate collision policies: `cue-safe`, `quality`, and `keep-both`.
 - Interactive CLI review logs and optional CSV decision sheets.
 - Dry-run apply manifests generated from reviewed plans.
@@ -36,7 +36,7 @@ djlib-doctor snapshot --rekordbox-xml export.xml --music-root ~/Music --out run/
 djlib-doctor plan missing-files --snapshot run/snapshot.json --out run/missing.json
 djlib-doctor plan duplicates --snapshot run/snapshot.json --out run/dupes.json
 djlib-doctor plan audio-compatibility --probe-csv probes.csv --out run/audio.json
-djlib-doctor fingerprint compare old.wav new.aiff --out run/track-compare.json
+djlib-doctor fingerprint compare copy-a.wav copy-b.wav --out run/file-compare.json
 djlib-doctor fingerprint scan ~/Music --out run/fingerprints.json --redact-paths
 djlib-doctor review --plan run/missing.json --out run/review.json
 djlib-doctor compare exports --baseline before.xml --final after.xml
@@ -56,6 +56,7 @@ djlib-doctor migrate rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / 
 - Install commands verify tokens, staged hashes, source hashes, backups, and app/sidecar checks where relevant.
 - Tests use synthetic fixtures only.
 - Certification reports are read-only scorecards and do not install staged changes.
+- Byte fingerprinting does not claim acoustic identity across different encodings.
 
 ## Not Yet Public-Release Ready
 

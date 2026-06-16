@@ -22,6 +22,7 @@ classifiers = [
 
 [project.optional-dependencies]
 audio-tags = ["mutagen>=1.47"]
+fingerprint = []
 dev = ["pytest>=7"]
 
 [project.scripts]

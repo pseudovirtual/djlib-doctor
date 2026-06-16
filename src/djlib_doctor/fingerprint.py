@@ -14,7 +14,7 @@ BUCKETS = 16
 
 
 @dataclass(frozen=True)
-class TrackFingerprint:
+class FileFingerprint:
     path: str
     size: int
     sha256: str
@@ -31,17 +31,19 @@ class TrackFingerprint:
 
 
 @dataclass(frozen=True)
-class TrackComparison:
-    left: TrackFingerprint
-    right: TrackFingerprint
-    similarity: float
+class FileComparison:
+    left: FileFingerprint
+    right: FileFingerprint
+    byte_similarity: float
     classification: str
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "schema_version": SCHEMA_VERSION,
+            "comparison_basis": "raw_file_bytes",
+            "claims_audio_identity": False,
             "classification": self.classification,
-            "similarity": round(self.similarity, 6),
+            "byte_similarity": round(self.byte_similarity, 6),
             "left": self.left.to_dict(),
             "right": self.right.to_dict(),
         }
@@ -50,7 +52,7 @@ class TrackComparison:
 @dataclass(frozen=True)
 class FingerprintManifest:
     root: str
-    tracks: tuple[TrackFingerprint, ...]
+    files: tuple[FileFingerprint, ...]
     redacted_paths: bool = False
 
     def to_dict(self) -> dict[str, Any]:
@@ -58,14 +60,14 @@ class FingerprintManifest:
             "schema_version": SCHEMA_VERSION,
             "root": self.root,
             "redacted_paths": self.redacted_paths,
-            "track_count": len(self.tracks),
-            "tracks": [track.to_dict() for track in self.tracks],
+            "file_count": len(self.files),
+            "files": [item.to_dict() for item in self.files],
         }
 
 
-def fingerprint_file(path: Path) -> TrackFingerprint:
+def fingerprint_file(path: Path) -> FileFingerprint:
     data = path.read_bytes()
-    return TrackFingerprint(
+    return FileFingerprint(
         path=str(path),
         size=len(data),
         sha256=sha256(data).hexdigest(),
@@ -77,19 +79,19 @@ def scan_fingerprints(root: Path, redact_paths: bool = False) -> FingerprintMani
     if not root.exists() or not root.is_dir():
         raise ValueError(f"Fingerprint scan root is not a directory: {root}")
     paths = sorted(iter_audio_files(root), key=lambda path: (path.name.lower(), str(path).lower()))
-    tracks = tuple(_with_path(fingerprint_file(path), _scan_path(path, index, redact_paths)) for index, path in enumerate(paths, 1))
-    return FingerprintManifest("<redacted>" if redact_paths else str(root), tracks, redacted_paths=redact_paths)
+    files = tuple(_with_path(fingerprint_file(path), _scan_path(path, index, redact_paths)) for index, path in enumerate(paths, 1))
+    return FingerprintManifest("<redacted>" if redact_paths else str(root), files, redacted_paths=redact_paths)
 
 
-def compare_tracks(left: Path, right: Path) -> TrackComparison:
+def compare_files(left: Path, right: Path) -> FileComparison:
     left_fp = fingerprint_file(left)
     right_fp = fingerprint_file(right)
     similarity = 1.0 if left_fp.sha256 == right_fp.sha256 else _cosine(left_fp.byte_histogram, right_fp.byte_histogram)
-    return TrackComparison(left_fp, right_fp, similarity, _classify(similarity, left_fp.sha256 == right_fp.sha256))
+    return FileComparison(left_fp, right_fp, similarity, _classify(similarity, left_fp.sha256 == right_fp.sha256))
 
 
-def _with_path(fingerprint: TrackFingerprint, path: str) -> TrackFingerprint:
-    return TrackFingerprint(path, fingerprint.size, fingerprint.sha256, fingerprint.byte_histogram)
+def _with_path(fingerprint: FileFingerprint, path: str) -> FileFingerprint:
+    return FileFingerprint(path, fingerprint.size, fingerprint.sha256, fingerprint.byte_histogram)
 
 
 def _scan_path(path: Path, index: int, redact_paths: bool) -> str:
@@ -114,7 +116,7 @@ def _cosine(left: tuple[float, ...], right: tuple[float, ...]) -> float:
 
 def _classify(similarity: float, exact: bool) -> str:
     if exact:
-        return "same"
+        return "exact_duplicate"
     if similarity >= 0.88:
-        return "similar"
+        return "byte_similar"
     return "different"

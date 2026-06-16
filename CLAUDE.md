@@ -15,7 +15,7 @@ PYTHONPATH=src python3 -m djlib_doctor.cli plan missing-files --snapshot work/sn
 PYTHONPATH=src python3 -m djlib_doctor.cli plan duplicates --snapshot work/snapshot-demo/snapshot.json --out work/snapshot-demo/plan-duplicates.json --collision-policy cue-safe
 PYTHONPATH=src python3 -m djlib_doctor.cli review --plan work/snapshot-demo/plan-missing-files.json --out work/snapshot-demo/review-decisions.json
 PYTHONPATH=src python3 -m djlib_doctor.cli schema --pretty
-PYTHONPATH=src python3 -m djlib_doctor.cli fingerprint compare old.wav new.aiff --out work/track-compare.json
+PYTHONPATH=src python3 -m djlib_doctor.cli fingerprint compare copy-a.wav copy-b.wav --out work/file-compare.json
 PYTHONPATH=src python3 -m djlib_doctor.cli fingerprint scan /path/to/music --out work/fingerprints.json --redact-paths
 PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline tests/fixtures/rekordbox/simple.xml --final tests/fixtures/rekordbox/simple.xml --check-files
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlist "ROOT / Fixture Playlist" --out work/serato-port-demo --verify-preview
@@ -35,6 +35,6 @@ PYTHONPATH=src python3 -m djlib_doctor.cli migrate serato-to-rb --serato-library
 - `POSITION_MARK Num="-1"` is a memory cue; `Num="0"` is hotcue A; `Type="4"` is a loop.
 - Streaming placeholders are not missing local files.
 - Porting commands create manifests first; install commands apply only staged, token-verified artifacts.
-- Fingerprinting commands are read-only helpers for matching local files.
+- Fingerprinting commands are read-only byte-level helpers; they do not claim acoustic identity.
 - Certification commands are read-only scorecards for migration artifacts.
 - Serato-to-Rekordbox DB import fails closed when the target `master.db` schema is unsupported.

@@ -24,7 +24,7 @@ Streaming placeholders are treated as non-local references. The tool can report 
 - **Agent-friendly outputs:** JSON manifests and schemas for every important artifact.
 - **Human-friendly commands:** common workflows get short commands; low-level steps remain available.
 - **Certify migrations:** generated previews and staged artifacts should be scored before install.
-- **Fingerprint locally:** track identity helpers should be platform-neutral and optional-backend friendly.
+- **Fingerprint honestly:** base fingerprinting compares raw file bytes; acoustic identity belongs behind a future optional backend.
 
 ## Command Shape
 
@@ -32,7 +32,7 @@ Manual flow:
 
 ```bash
 djlib-doctor verify export.xml
-djlib-doctor fingerprint compare old.wav new.aiff --out run/track-compare.json
+djlib-doctor fingerprint compare copy-a.wav copy-b.wav --out run/file-compare.json
 djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / Test" --out run/port
 djlib-doctor certify rb-to-serato --port-manifest run/port/port-manifest.json --out run/port/certification.json
 djlib-doctor stage serato --port-manifest run/port/port-manifest.json --serato-library-dir ~/serato-library --serato-music-dir ~/_Serato_ --stage-dir run/serato-stage
@@ -67,4 +67,4 @@ Add platforms by implementing adapters, not by copying workflows:
 - stage platform-specific writes from the manifest
 - install staged files with shared safety helpers
 
-The next major gap is real-world certification coverage: anonymized fixture bundles across app versions, more Rekordbox DB schemas, playlist table imports, additional Serato marker/tag fixtures, and optional acoustic fingerprint backends. New support should extend the existing core model and staged workflow rather than introducing parallel migration code.
+The next major gap is real-world certification coverage: anonymized fixture bundles across app versions, more Rekordbox DB schemas, playlist table imports, additional Serato marker/tag fixtures, and an optional acoustic fingerprint backend. New support should extend the existing core model and staged workflow rather than introducing parallel migration code.
