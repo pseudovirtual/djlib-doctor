@@ -14,8 +14,8 @@ def stage_hashes(root: Path, crate_paths: tuple[Path, ...]) -> dict[str, Any]:
     return {"root_sqlite": sha256_file(root), "crates": {str(path): sha256_file(path) for path in crate_paths}}
 
 
-def install_token_payload(stage_hashes: dict[str, Any], source_hashes: dict[str, str]) -> dict[str, Any]:
-    return {"hashes": stage_hashes, "source_hashes": source_hashes}
+def install_token_payload(manifest: dict[str, Any]) -> dict[str, Any]:
+    return {key: value for key, value in manifest.items() if key != "install_token"}
 
 
 def file_hash_check(code: str, path: Path, expected_hash: str) -> dict[str, Any]:

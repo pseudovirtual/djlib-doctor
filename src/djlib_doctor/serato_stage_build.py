@@ -29,12 +29,12 @@ def stage_serato_from_port_manifest(port_manifest_path: Path, live_serato_librar
     crate_paths, per_crate_reports = _write_stage(staged_root, stage_subcrates, crates)
     source_hashes = {"root_sqlite": sha256_file(live_root)}
     hashes = stage_hashes(staged_root, tuple(crate_paths))
-    token = install_token("INSTALL_SERATO_STAGE", install_token_payload(hashes, source_hashes))
-    manifest = _stage_manifest(port_manifest_path, live_serato_library_dir, live_serato_music_dir, staged_root, crate_paths, per_crate_reports, hashes, source_hashes, token)
+    manifest = _stage_manifest(port_manifest_path, live_serato_library_dir, live_serato_music_dir, staged_root, crate_paths, per_crate_reports, hashes, source_hashes)
+    manifest["install_token"] = install_token("INSTALL_SERATO_STAGE", install_token_payload(manifest))
     stage_manifest_path = stage_dir / "serato-stage-manifest.json"
     write_json(stage_manifest_path, manifest)
     write_json(stage_dir / "serato-stage-verification.json", verify_serato_stage(stage_dir).to_dict())
-    return SeratoStageReport(stage_dir, stage_manifest_path, staged_root, tuple(crate_paths), token, manifest["summary"])
+    return SeratoStageReport(stage_dir, stage_manifest_path, staged_root, tuple(crate_paths), manifest["install_token"], manifest["summary"])
 
 
 def _copy_stage_roots(live_root: Path, stage_dir: Path) -> tuple[Path, Path]:
@@ -78,7 +78,7 @@ def _write_crate(conn: sqlite3.Connection, crate: dict, stage_subcrates: Path, c
     return {"source_playlist": crate.get("source_playlist", ""), "target_crate_name": crate_name, "crate_path": str(crate_path), "tracks": len(tracks), "created_assets": created, "reused_assets": reused}
 
 
-def _stage_manifest(port_manifest_path: Path, live_library: Path, live_music: Path, staged_root: Path, crate_paths: list[Path], reports: list[dict], hashes: dict, source_hashes: dict, token: str) -> dict:
+def _stage_manifest(port_manifest_path: Path, live_library: Path, live_music: Path, staged_root: Path, crate_paths: list[Path], reports: list[dict], hashes: dict, source_hashes: dict) -> dict:
     return {
         "schema_version": SERATO_STAGE_SCHEMA_VERSION,
         "mode": "staged_serato_install",
@@ -90,7 +90,6 @@ def _stage_manifest(port_manifest_path: Path, live_library: Path, live_music: Pa
         "crates": reports,
         "hashes": hashes,
         "source_hashes": source_hashes,
-        "install_token": token,
     }
 
 

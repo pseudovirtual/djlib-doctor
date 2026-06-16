@@ -30,7 +30,7 @@ def install_serato_stage(
     process_lines: tuple[str, ...] | list[str] | None = None,
 ) -> SeratoInstallReport:
     manifest = read_json(stage_dir / "serato-stage-manifest.json")
-    require_install_token("INSTALL_SERATO_STAGE", install_token_payload(manifest["hashes"], manifest["source_hashes"]), manifest["install_token"], confirm_token)
+    require_install_token("INSTALL_SERATO_STAGE", install_token_payload(manifest), manifest["install_token"], confirm_token)
     if not verify_serato_stage(stage_dir).passed:
         raise RuntimeError("Refusing to install because staged verification failed")
     live_root = live_serato_library_dir / "root.sqlite"
@@ -50,13 +50,13 @@ def _install_files(stage_dir: Path, live_root: Path, live_serato_music_dir: Path
     backup_subcrates = backup_dir / "_Serato_" / "Subcrates"
     backup_library.mkdir(parents=True, exist_ok=True)
     backup_subcrates.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(live_root, backup_library / "root.sqlite")
+    _copy_required_backup(live_root, backup_library / "root.sqlite")
     live_subcrates = live_serato_music_dir / "Subcrates"
     live_subcrates.mkdir(parents=True, exist_ok=True)
     for staged_crate in staged_crates:
         live_crate = live_subcrates / staged_crate.name
         if live_crate.exists():
-            shutil.copy2(live_crate, backup_subcrates / live_crate.name)
+            _copy_required_backup(live_crate, backup_subcrates / live_crate.name)
     installed_files = _copy_installs(staged_root, live_root, staged_crates, live_subcrates)
     report_path = stage_dir / "serato-install-report.json"
     passed = all(record["source_sha256"] == record["target_sha256"] for record in installed_files)
@@ -64,6 +64,12 @@ def _install_files(stage_dir: Path, live_root: Path, live_serato_music_dir: Path
     if not passed:
         raise RuntimeError("Installed file hash verification failed")
     return SeratoInstallReport(True, report_path, backup_dir, tuple(installed_files))
+
+
+def _copy_required_backup(source: Path, backup: Path) -> None:
+    shutil.copy2(source, backup)
+    if not backup.is_file():
+        raise RuntimeError(f"Required backup was not created: {backup}")
 
 
 def _copy_installs(staged_root: Path, live_root: Path, staged_crates: tuple[Path, ...], live_subcrates: Path) -> list[dict[str, str]]:
