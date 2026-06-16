@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from .cli_certify import add_certify_parser
 from .cli_fingerprint import add_fingerprint_parser
 
 
@@ -14,6 +15,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_plan(sub)
     _add_review(sub)
     _add_schema_config_inspect(sub)
+    add_certify_parser(sub)
     add_fingerprint_parser(sub)
     _add_stage_install(sub)
     _add_migrate_port_compare(sub)
