@@ -1,6 +1,6 @@
 # djlib-doctor
 
-Read-only-first, cue-safe DJ library verification and migration planning for Rekordbox and Serato.
+Read-only-first, cue-safe DJ library verification, cleanup planning, and dry-run/staged porting for Rekordbox and Serato.
 
 `djlib-doctor` helps DJs and coding agents inspect messy libraries, plan cleanup, compare exports, and stage migrations without silently rewriting creative metadata. It treats hotcues, memory cues, loops, playlist order, and source files as things to verify before touching.
 
@@ -18,7 +18,7 @@ This is an open-source project from [@pseudovirtual](https://github.com/pseudovi
 - records interactive review decisions
 - compares baseline/final exports for lost material or cue regressions
 - dry-runs Rekordbox-to-Serato and Serato-to-Rekordbox migrations
-- stages Serato library updates, Serato audio tags, file operations, and SQLite operations behind explicit install tokens
+- stages Serato library updates, Serato audio tags, file operations, and Rekordbox DB operations behind explicit install tokens
 
 ## Safety Model
 
@@ -41,6 +41,14 @@ cd djlib-doctor
 python3 -m pip install -e .
 djlib-doctor verify tests/fixtures/rekordbox/simple.xml --no-file-check
 djlib-doctor self-test
+```
+
+Before installing, run commands from a clone with `PYTHONPATH=src python3 -m djlib_doctor.cli ...`.
+
+Serato audio tag staging needs the optional tag-writing dependencies:
+
+```bash
+python3 -m pip install -e ".[audio-tags]"
 ```
 
 Run the full suite:
@@ -150,7 +158,7 @@ The repo includes [AGENTS.md](AGENTS.md) and a packaged skill under `.agents/ski
 
 Implemented: verification, snapshots, cleanup plans, review logs, schema output, export comparison, Serato inspection, two-way dry-run porting, and staged/token-gated install workflows.
 
-Still pre-release: Rekordbox XML writing, polished package distribution, CI/release automation, and broader real-world Serato cue/tag fixture validation.
+Still pre-release: production Rekordbox XML writing/import workflows, polished package distribution, CI/release automation, and broader real-world Serato cue/tag fixture validation.
 
 ## More Docs
 
