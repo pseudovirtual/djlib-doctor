@@ -4,11 +4,11 @@ import json
 import sqlite3
 import unittest
 
-from djlib_doctor.sqlite_stage import install_sqlite_stage, stage_sqlite_operations
+from djlib_doctor.rekordbox_db_stage import install_rekordbox_db_stage, stage_rekordbox_db_operations
 
 
-class SqliteStageTests(unittest.TestCase):
-    def test_stage_and_install_sqlite_update(self):
+class RekordboxDbStageTests(unittest.TestCase):
+    def test_stage_and_install_rekordbox_db_update(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
             db = tmp / "master.db"
@@ -34,8 +34,8 @@ class SqliteStageTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            stage = stage_sqlite_operations(db, ops, tmp / "stage", label="rekordbox")
-            report = install_sqlite_stage(tmp / "stage", db, confirm_token=stage.install_token, label="rekordbox")
+            stage = stage_rekordbox_db_operations(db, ops, tmp / "stage")
+            report = install_rekordbox_db_stage(tmp / "stage", db, confirm_token=stage.install_token)
             conn = sqlite3.connect(db)
             try:
                 value = conn.execute("SELECT name FROM tracks WHERE id = 1").fetchone()[0]
@@ -70,7 +70,7 @@ class SqliteStageTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
-            stage = stage_sqlite_operations(db, ops, tmp / "stage", label="rekordbox")
+            stage = stage_rekordbox_db_operations(db, ops, tmp / "stage")
 
             conn = sqlite3.connect(db)
             conn.execute("INSERT INTO tracks(id, name) VALUES(2, 'Later')")
@@ -78,7 +78,7 @@ class SqliteStageTests(unittest.TestCase):
             conn.close()
 
             with self.assertRaises(RuntimeError):
-                install_sqlite_stage(tmp / "stage", db, confirm_token=stage.install_token, label="rekordbox")
+                install_rekordbox_db_stage(tmp / "stage", db, confirm_token=stage.install_token)
 
 
 if __name__ == "__main__":

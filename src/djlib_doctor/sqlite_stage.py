@@ -24,7 +24,7 @@ class SqliteStage:
     install_token: str
 
 
-def stage_sqlite_operations(live_db: Path, operations_manifest: Path, stage_dir: Path, label: str = "sqlite") -> SqliteStage:
+def stage_sqlite_operations(live_db: Path, operations_manifest: Path, stage_dir: Path, label: str = "sqlite", artifact_prefix: str | None = None) -> SqliteStage:
     sidecar_checks = check_sqlite_sidecars(live_db, code=f"{label}_sqlite_sidecar_absent")
     if not all_checks_passed(sidecar_checks):
         raise RuntimeError("Refusing to stage SQLite operations while sidecars exist")
@@ -57,13 +57,14 @@ def stage_sqlite_operations(live_db: Path, operations_manifest: Path, stage_dir:
         "hashes": hashes,
         "install_token": token,
     }
-    stage_manifest_path = stage_dir / f"{label}-sqlite-stage-manifest.json"
+    stage_manifest_path = stage_dir / f"{artifact_prefix or f'{label}-sqlite'}-stage-manifest.json"
     write_json(stage_manifest_path, manifest)
     return SqliteStage(stage_dir, stage_manifest_path, staged_db, token)
 
 
-def install_sqlite_stage(stage_dir: Path, live_db: Path, confirm_token: str, label: str = "sqlite") -> dict[str, Any]:
-    manifest_path = stage_dir / f"{label}-sqlite-stage-manifest.json"
+def install_sqlite_stage(stage_dir: Path, live_db: Path, confirm_token: str, label: str = "sqlite", artifact_prefix: str | None = None) -> dict[str, Any]:
+    output_prefix = artifact_prefix or f"{label}-sqlite"
+    manifest_path = stage_dir / f"{output_prefix}-stage-manifest.json"
     manifest = read_json(manifest_path)
     require_install_token("INSTALL_SQLITE_STAGE", manifest["hashes"], manifest["install_token"], confirm_token)
     staged_db = Path(manifest["staged_db"])
@@ -85,7 +86,7 @@ def install_sqlite_stage(stage_dir: Path, live_db: Path, confirm_token: str, lab
         "backup": str(backup),
         "installed_db": str(live_db),
     }
-    write_json(stage_dir / f"{label}-sqlite-install-report.json", report)
+    write_json(stage_dir / f"{output_prefix}-install-report.json", report)
     if not passed:
         raise RuntimeError("Installed SQLite hash verification failed")
     return report

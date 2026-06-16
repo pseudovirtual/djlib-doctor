@@ -7,9 +7,9 @@ import subprocess
 import sys
 
 from .file_operations import apply_file_operations_stage, stage_file_operations
+from .rekordbox_db_stage import install_rekordbox_db_stage, stage_rekordbox_db_operations
 from .serato_audio_tags import build_serato_audio_tag_stage, install_serato_audio_tag_stage
 from .serato_stage import install_serato_stage, stage_serato_from_port_manifest
-from .sqlite_stage import install_sqlite_stage, stage_sqlite_operations
 
 
 def _fail(label: str, exc: Exception) -> int:
@@ -33,7 +33,7 @@ def handle_stage(args: argparse.Namespace) -> int:
             report = stage_file_operations(args.operations, args.stage_dir)
             print(f"File operations stage written: {report.stage_manifest_path}")
         elif args.stage_command == "rekordbox-db":
-            report = stage_sqlite_operations(args.db, args.operations, args.stage_dir, label="rekordbox")
+            report = stage_rekordbox_db_operations(args.db, args.operations, args.stage_dir)
             print(f"Rekordbox DB stage written: {report.stage_manifest_path}")
             print(f"Staged DB: {report.staged_db}")
         else:
@@ -60,8 +60,8 @@ def handle_install(args: argparse.Namespace) -> int:
             print(f"File operations applied: {args.stage_dir / 'file-operations-install-report.json'}")
             print(f"Operations applied: {len(report['applied'])}")
         elif args.install_command == "rekordbox-db":
-            report = install_sqlite_stage(args.stage_dir, args.db, args.confirm_token, label="rekordbox")
-            print(f"Rekordbox DB stage installed: {args.stage_dir / 'rekordbox-sqlite-install-report.json'}")
+            report = install_rekordbox_db_stage(args.stage_dir, args.db, args.confirm_token)
+            print(f"Rekordbox DB stage installed: {args.stage_dir / 'rekordbox-db-install-report.json'}")
             print(f"Backup: {report['backup']}")
         else:
             raise ValueError(f"Unknown install command: {args.install_command}")

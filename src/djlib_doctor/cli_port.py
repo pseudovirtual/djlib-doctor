@@ -7,8 +7,8 @@ import sqlite3
 import sys
 import xml.etree.ElementTree as ET
 
-from .port_rekordbox import build_serato_to_rekordbox_plan, write_serato_to_rekordbox_plan
-from .port_serato import (
+from .port_serato_rekordbox import build_serato_to_rekordbox_plan, write_serato_to_rekordbox_plan
+from .port_rekordbox_serato import (
     build_rekordbox_to_serato_plan,
     build_rekordbox_to_serato_plans,
     read_playlist_names,

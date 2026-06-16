@@ -9,14 +9,14 @@ from .decision_sheet import DECISION_SHEET_FIELDS
 from .file_operations import FILE_OPS_INSTALL_SCHEMA_VERSION, FILE_OPS_STAGE_SCHEMA_VERSION
 from .io_utils import render_json
 from .plan import PLAN_SCHEMA_VERSION
-from .port_rekordbox import REKORDBOX_PORT_SCHEMA_VERSION
-from .port_serato import PORT_MANIFEST_SCHEMA_VERSION
+from .port_serato_rekordbox import REKORDBOX_PORT_SCHEMA_VERSION
+from .port_rekordbox_serato import PORT_MANIFEST_SCHEMA_VERSION
 from .reviewer import REVIEW_SCHEMA_VERSION
+from .rekordbox_db_stage import SQLITE_INSTALL_SCHEMA_VERSION, SQLITE_STAGE_SCHEMA_VERSION
 from .serato_audio_tags import SERATO_AUDIO_TAG_INSTALL_SCHEMA_VERSION, SERATO_AUDIO_TAG_STAGE_SCHEMA_VERSION
 from .serato_sqlite import SERATO_INSPECTION_SCHEMA_VERSION
 from .serato_stage import SERATO_INSTALL_SCHEMA_VERSION, SERATO_STAGE_SCHEMA_VERSION
 from .snapshot import SNAPSHOT_SCHEMA_VERSION
-from .sqlite_stage import SQLITE_INSTALL_SCHEMA_VERSION, SQLITE_STAGE_SCHEMA_VERSION
 from .verify import SCHEMA_VERSION as VERIFY_SCHEMA_VERSION
 
 VERIFY_FIELDS = ("schema_version", "status", "source", "counts", "failures", "warnings", "next_actions")
@@ -50,8 +50,8 @@ SCHEMAS: dict[str, dict[str, Any]] = {
     "serato-audio-tag-install-report": _json_schema(SERATO_AUDIO_TAG_INSTALL_SCHEMA_VERSION, ("schema_version", "passed", "stage_manifest", "backup_dir", "installed")),
     "file-operations-stage-manifest": _json_schema(FILE_OPS_STAGE_SCHEMA_VERSION, ("schema_version", "mode", "source_manifest", "operations", "install_token", "safety"), mode_values=["staged_file_operations"]),
     "file-operations-install-report": _json_schema(FILE_OPS_INSTALL_SCHEMA_VERSION, ("schema_version", "passed", "stage_manifest", "backup_dir", "applied")),
-    "sqlite-stage-manifest": _json_schema(SQLITE_STAGE_SCHEMA_VERSION, ("schema_version", "mode", "label", "source_db", "operations_manifest", "staged_db", "operations", "hashes", "install_token"), mode_values=["staged_sqlite_operations"]),
-    "sqlite-install-report": _json_schema(SQLITE_INSTALL_SCHEMA_VERSION, ("schema_version", "passed", "stage_manifest", "backup", "installed_db")),
+    "rekordbox-db-stage-manifest": _json_schema(SQLITE_STAGE_SCHEMA_VERSION, ("schema_version", "mode", "label", "source_db", "operations_manifest", "staged_db", "operations", "hashes", "install_token"), mode_values=["staged_sqlite_operations"]),
+    "rekordbox-db-install-report": _json_schema(SQLITE_INSTALL_SCHEMA_VERSION, ("schema_version", "passed", "stage_manifest", "backup", "installed_db")),
 }
 
 

@@ -6,7 +6,7 @@ import json
 import unittest
 
 from djlib_doctor.cli import main
-from djlib_doctor.port_serato import (
+from djlib_doctor.port_rekordbox_serato import (
     build_rekordbox_to_serato_plan,
     build_rekordbox_to_serato_plans,
     serato_format_capability,

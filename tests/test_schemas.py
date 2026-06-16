@@ -26,8 +26,8 @@ class SchemaTests(unittest.TestCase):
         self.assertIn("serato-audio-tag-install-report", schema_names())
         self.assertIn("file-operations-stage-manifest", schema_names())
         self.assertIn("file-operations-install-report", schema_names())
-        self.assertIn("sqlite-stage-manifest", schema_names())
-        self.assertIn("sqlite-install-report", schema_names())
+        self.assertIn("rekordbox-db-stage-manifest", schema_names())
+        self.assertIn("rekordbox-db-install-report", schema_names())
         self.assertEqual(get_schema("plan")["schema_version"], "1.0")
 
     def test_schema_cli_prints_all_schemas(self):

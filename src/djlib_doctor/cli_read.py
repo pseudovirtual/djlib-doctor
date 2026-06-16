@@ -15,7 +15,7 @@ from .config import default_config, load_config, write_config
 from .decision_sheet import write_decision_sheet
 from .io_utils import render_json
 from .plan import build_audio_compatibility_plan, build_bad_paths_plan, build_cues_plan, build_duplicates_plan, build_missing_files_plan, load_plan, write_plan
-from .port_serato import build_rekordbox_to_serato_plan
+from .port_rekordbox_serato import build_rekordbox_to_serato_plan
 from .rekordbox_xml import parse_rekordbox_xml
 from .reviewer import load_review_log, run_interactive_review
 from .schemas import render_schema

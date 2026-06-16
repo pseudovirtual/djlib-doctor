@@ -6,7 +6,7 @@ from typing import Any
 from .cues import CueType
 from .library_model import LibraryCue, LibraryTrack, rekordbox_xml_to_library
 from .locations import LocationKind
-from .port_serato_models import SERATO_MANAGED_CRATE_PREFIX, PortTrack, RekordboxToSeratoBatchPlan, RekordboxToSeratoPlan, SeratoCueIntent
+from .port_rekordbox_serato_models import SERATO_MANAGED_CRATE_PREFIX, PortTrack, RekordboxToSeratoBatchPlan, RekordboxToSeratoPlan, SeratoCueIntent
 from .rekordbox_xml import parse_rekordbox_xml
 from .serato_crate import safe_crate_filename
 

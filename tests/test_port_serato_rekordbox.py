@@ -7,7 +7,7 @@ import sqlite3
 import unittest
 
 from djlib_doctor.cli import main
-from djlib_doctor.port_rekordbox import build_serato_to_rekordbox_plan, write_serato_to_rekordbox_plan
+from djlib_doctor.port_serato_rekordbox import build_serato_to_rekordbox_plan, write_serato_to_rekordbox_plan
 from djlib_doctor.serato_crate import write_serato_crate
 
 

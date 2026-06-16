@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from .io_utils import read_json, write_json
-from .port_serato_models import RekordboxToSeratoBatchPlan, RekordboxToSeratoPlan
+from .port_rekordbox_serato_models import RekordboxToSeratoBatchPlan, RekordboxToSeratoPlan
 from .serato_crate import read_serato_crate, safe_crate_filename, write_serato_crate
 
 

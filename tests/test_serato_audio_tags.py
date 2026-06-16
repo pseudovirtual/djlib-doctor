@@ -7,7 +7,7 @@ import unittest
 from unittest import mock
 
 from djlib_doctor.cli import main
-from djlib_doctor.port_serato import build_rekordbox_to_serato_plan, write_rekordbox_to_serato_plan
+from djlib_doctor.port_rekordbox_serato import build_rekordbox_to_serato_plan, write_rekordbox_to_serato_plan
 from djlib_doctor.serato_audio_tags import (
     build_markers2_payload,
     build_serato_audio_tag_stage,
