@@ -190,6 +190,7 @@ Still pre-release: polished package distribution, CI/release automation, broader
 
 ## More Docs
 
+- [Docs Index](docs/README.md)
 - [Safety](docs/safety.md)
 - [Feature List](docs/feature-list.md)
 - [Human Workflows](docs/human-workflows.md)

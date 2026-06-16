@@ -1,6 +1,6 @@
 # GitHub Launch Plan
 
-Historical note: this was the pre-public launch checklist. The repository is now public, so use it only as historical context and do not follow the private-repo setup commands as current instructions.
+Historical note: this was the pre-public launch checklist. The repository is now public, so use this archived file only as historical context and do not follow the private-repo setup commands as current instructions.
 
 This project should eventually live at:
 

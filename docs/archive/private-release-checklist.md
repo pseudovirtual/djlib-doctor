@@ -1,6 +1,6 @@
 # Private Release Checklist
 
-Historical note: this checklist predates the public GitHub repo. Keep it only for privacy-scrub context; do not use the private repo creation steps as current setup guidance.
+Historical note: this checklist predates the public GitHub repo. Keep this archived file only for privacy-scrub context; do not use the private repo creation steps as current setup guidance.
 
 Use this only as a privacy-scrub checklist before public releases or large documentation updates.
 

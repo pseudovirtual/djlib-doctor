@@ -1,96 +1,83 @@
 # djlib-doctor Full Model Context
 
-`djlib-doctor` is being prepared as an eventual open-source project under `pseudovirtual/djlib-doctor`, but it is not public yet.
+`djlib-doctor` is an open-source DJ library verification, cleanup planning, staging, and migration toolkit under `pseudovirtual/djlib-doctor`.
 
 ## Purpose
 
-Help DJs understand and eventually clean up Rekordbox-oriented libraries without losing hotcues, memory cues, playlist order, or trust in their local files.
+Help DJs inspect, clean up, and migrate local Rekordbox and Serato libraries without losing cue work, playlist intent, or trust in their files.
 
-The project also includes read-only and dry-run Serato porting support generalized from a separate porting lab. The lab stays separate; `djlib-doctor` carries only fixture-tested, open-source-safe modules.
-
-The project is not a one-click repair tool. It prioritizes verification, dry-run plans, human review, and auditability.
+The project is read-only-first. Write-capable workflows are explicit, staged, token-gated, backed up, and verified.
 
 ## Implemented
 
-- read-only Rekordbox XML parser
-- local file vs streaming placeholder classification
-- memory cue, hotcue, and loop parsing
-- verification reports in text and JSON
-- duplicate TrackID failure detection
-- missing playlist reference failure detection
-- unknown location and unknown cue type warnings
-- snapshot directory generation
-- redacted shareable snapshots
-- CSV artifacts for missing files, streaming placeholders, tracks, cues, playlists, and optional filesystem inventory
-- read-only missing-files plans
-- read-only duplicate plans
-- duplicate collision policies: cue-safe, quality, keep-both
-- read-only cue coverage plans
-- read-only bad path hygiene plans
-- configurable audio compatibility profiles
-- CSV decision-sheet export
-- interactive review and ingestible decision logs
-- dry-run-only apply manifest export
-- schema discovery CLI
-- baseline/final export comparison
-- read-only Serato root.sqlite inspection
-- dry-run Rekordbox XML to Serato port manifests and crate previews
-- Serato playlist-file batch planning, summary-only reports, crate-preview verification, cue-count metrics, format capability notes, and managed namespace warnings
-- staged Serato SQLite/crate updates and guarded install with backups, sidecar checks, app-closed checks, exact confirmation tokens, and hash verification
-- staged Serato audio tag writes for AIFF/AIF, M4A/MP4, and MP3 with backup/token install flow
-- staged structured Rekordbox SQLite row operations
+- Rekordbox XML parsing for collection tracks, playlist references, memory cues, hotcues, and loops
+- local file, streaming placeholder, and unknown-location classification
+- verification reports, snapshots, redacted snapshots, and schema discovery
+- missing-file, duplicate, cue-coverage, bad-path, and audio compatibility plans
+- duplicate collision policies: `cue-safe`, `quality`, and `keep-both`
+- interactive CLI review, decision sheets, and dry-run apply manifests
+- baseline/final Rekordbox export comparison
+- read-only Serato `root.sqlite` inspection
+- Rekordbox-to-Serato port manifests, crate previews, batch playlist planning, and summary-only checks
+- Serato-to-Rekordbox port manifests and Rekordbox XML preview representations
+- scoped migration by track, playlist/crate, multi-playlist, or collection
+- `full`, `cues-only`, and `match-only` transfer modes
+- staged Serato SQLite/crate installs with backups, sidecar checks, app-closed checks, exact tokens, and hash verification
+- staged Serato audio tag writes for AIFF/AIF, M4A/MP4, and MP3
+- staged Rekordbox DB imports from Serato-to-Rekordbox port manifests through copied `master.db` files
+- lower-level staged Rekordbox SQLite operations for reviewed operation manifests
 - staged file copy, move, delete, and ffmpeg conversion operations
-- safety utilities for future DB-write guardrails
-- Codex `AGENTS.md`
-- Claude `CLAUDE.md`
-- repo-scoped Codex skill and plugin skeleton
-- Claude Desktop extension template marked as not installable yet
+- Codex `AGENTS.md`, Claude `CLAUDE.md`, llms files, repo-scoped skill, plugin skeleton, and Claude Desktop extension template
 
 ## Not Implemented
 
-- Rekordbox XML writing
 - standalone MCP server
-- public GitHub publishing
-- PyPI publishing
+- PyPI publishing and release automation
+- broad real-world Rekordbox DB schema adapter coverage
 
 ## Safety
 
-Do not write to live databases, music files, or Serato audio tags from planning commands. Writes are allowed only through staged install/apply commands with exact confirmation tokens: `install serato-stage`, `install serato-tags`, `install rekordbox-db`, and `install file-ops`.
+Do not write to live databases, music files, or Serato audio tags from planning commands. Writes are allowed only through staged install/apply commands with exact confirmation tokens:
 
-Write-capable future features must require:
+- `install serato-stage`
+- `install serato-tags`
+- `install rekordbox-db`
+- `install file-ops`
 
-- explicit command names
-- dry-run manifests
-- human-readable explanations
-- user approval
-- backups or rollback paths
-- post-apply verification
+For Serato-to-Rekordbox writes, use:
+
+```bash
+djlib-doctor port serato-to-rb --serato-library-dir "/path/to/serato-library" --crate "/path/to/_Serato_/Subcrates/My.crate" --collection-root ~/Music --out run/serato-to-rb
+djlib-doctor stage rekordbox-db-import --db /path/to/rekordbox/master.db --port-manifest run/serato-to-rb/port-manifest.json --stage-dir run/rekordbox-stage
+djlib-doctor install rekordbox-db --stage-dir run/rekordbox-stage --db /path/to/rekordbox/master.db --confirm-token INSTALL_SQLITE_STAGE:...
+```
+
+Or use the workflow shortcut:
+
+```bash
+djlib-doctor migrate serato-to-rb --serato-library-dir "/path/to/serato-library" --crate "/path/to/_Serato_/Subcrates/My.crate" --collection-root ~/Music --out run/serato-to-rb --stage-db --rekordbox-db /path/to/rekordbox/master.db
+```
+
+The Rekordbox DB importer fails closed if the target schema is unsupported.
 
 ## Good Agent Workflow
 
-1. Read `AGENTS.md` or `CLAUDE.md`.
-2. Run `verify` or `snapshot`; use `snapshot --redact-paths` before sharing artifacts outside the local machine.
-3. Explain report counts in DJ-friendly language.
-4. Use `plan missing-files`, `plan duplicates`, `plan bad-paths`, or `plan cues` for read-only decision support.
-5. Choose duplicate collision policy and audio compatibility profile based on the user's DJ software, hardware, and preferences.
-6. Use `review` when the user needs to make row-by-row decisions.
-7. Use `decision-sheet` only when the user specifically wants a spreadsheet review artifact.
-8. Use `apply-manifest` only to produce dry-run-only operation manifests, and pass `--review-log` when decisions exist.
-9. Use `schema` when an agent needs report or CSV field contracts.
-10. Use `compare exports` when baseline and final XML exports exist.
-11. Use `inspect serato` and `port rb-to-serato` for Serato read-only/dry-run workflows. Prefer `--summary-only` before large batch runs.
-12. Use `stage serato` only from a reviewed `port-manifest.json`.
-13. Use `install serato-stage` only after the user has quit Serato and supplies the exact stage `install_token`.
-14. Avoid write-capable suggestions unless the required safety workflow exists.
+1. Read `AGENTS.md`, `CLAUDE.md`, or `.agents/skills/djlib-doctor/SKILL.md`.
+2. Run `verify`, `snapshot`, `inspect`, or `port` before any staging command.
+3. Explain findings in DJ language.
+4. Ask the user to choose scope and transfer mode.
+5. Use `review` for row-by-row human decisions.
+6. Inspect generated manifests before staging.
+7. Install only when the user supplies the exact token and confirms the relevant app is closed.
 
 ## Important Docs
 
 - `README.md`
+- `AGENTS.md`
+- `CLAUDE.md`
 - `docs/feature-list.md`
-- `docs/execution-plan.md`
+- `docs/product-architecture.md`
 - `docs/safety.md`
-- `docs/reports.md`
 - `docs/human-workflows.md`
-- `docs/legacy-script-audit.md`
 - `docs/agent-friendliness-and-discovery.md`
 - `docs/serato-porting.md`

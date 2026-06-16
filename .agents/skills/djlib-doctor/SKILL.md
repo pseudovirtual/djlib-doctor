@@ -55,10 +55,12 @@ PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml exp
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml export.xml --collection --transfer-mode match-only --out run/rb-collection-match
 PYTHONPATH=src python3 -m djlib_doctor.cli port serato-to-rb --serato-library-dir "/path/to/serato-library" --portable-id "Music/Track.aiff" --collection-root ~/Music --transfer-mode cues-only --out run/serato-track-cues
 PYTHONPATH=src python3 -m djlib_doctor.cli port serato-to-rb --serato-library-dir "/path/to/serato-library" --collection --collection-root ~/Music --out run/serato-collection
+PYTHONPATH=src python3 -m djlib_doctor.cli stage rekordbox-db-import --db /path/to/rekordbox/master.db --port-manifest run/serato-to-rb/port-manifest.json --stage-dir run/rekordbox-stage
 PYTHONPATH=src python3 -m djlib_doctor.cli stage rekordbox-db --db /path/to/rekordbox/master.db --operations run/rekordbox-db-operations.json --stage-dir run/rekordbox-stage
 PYTHONPATH=src python3 -m djlib_doctor.cli install rekordbox-db --stage-dir run/rekordbox-stage --db /path/to/rekordbox/master.db --confirm-token INSTALL_SQLITE_STAGE:...
 PYTHONPATH=src python3 -m djlib_doctor.cli stage serato --port-manifest run/rb-to-serato/port-manifest.json --serato-library-dir "/path/to/serato-library" --serato-music-dir "/path/to/_Serato_" --stage-dir run/serato-stage
 PYTHONPATH=src python3 -m djlib_doctor.cli install serato-stage --stage-dir run/serato-stage --serato-library-dir "/path/to/serato-library" --serato-music-dir "/path/to/_Serato_" --confirm-token INSTALL_SERATO_STAGE:...
+PYTHONPATH=src python3 -m djlib_doctor.cli migrate serato-to-rb --serato-library-dir "/path/to/serato-library" --crate "/path/to/_Serato_/Subcrates/My.crate" --collection-root ~/Music --out run/serato-to-rb --stage-db --rekordbox-db /path/to/rekordbox/master.db
 ```
 
 Compare baseline/final XML exports:
@@ -81,6 +83,6 @@ PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline baseline.x
 9. For porting, choose exactly one source scope: one track, one playlist/crate, many playlists, or a collection.
 10. Use `--transfer-mode full`, `--transfer-mode cues-only`, or `--transfer-mode match-only` to make migration intent explicit.
 11. For Rekordbox-to-Serato, prefer `--summary-only` first for batch playlist files, then generate crate previews with `--verify-preview` for single-playlist checks.
-12. For Serato-to-Rekordbox, do not stop at “import the XML preview” when the user wants a write workflow. Explain that the intended write path is port manifest/XML representation, staged copied `master.db`, then `install rekordbox-db`; the high-level import wrapper is still missing.
+12. For Serato-to-Rekordbox, do not stop at “import the XML preview” when the user wants a write workflow. Use `stage rekordbox-db-import` or `migrate serato-to-rb --stage-db`, then `install rekordbox-db`; the DB importer fails closed for unsupported schemas.
 13. For Serato install, require the exact stage token, keep Serato closed, and verify the install report.
 14. Suggest only read-only next steps unless a write-capable command already exists with the required safety workflow.

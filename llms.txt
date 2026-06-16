@@ -1,69 +1,42 @@
 # djlib-doctor
 
-`djlib-doctor` is a read-only-first, cue-safe DJ library verification, cleanup planning, and dry-run porting toolkit for Rekordbox XML exports and Serato planning artifacts.
+`djlib-doctor` is a read-only-first, cue-safe DJ library verification, cleanup planning, staging, and migration toolkit for Rekordbox and Serato.
 
 Primary commands:
 
 - `djlib-doctor verify export.xml`
 - `djlib-doctor self-test`
-- `djlib-doctor config init --out djlib-doctor.json`
 - `djlib-doctor snapshot --rekordbox-xml export.xml --music-root ~/Music --out run/`
 - `djlib-doctor snapshot --rekordbox-xml export.xml --music-root ~/Music --out shareable-run/ --redact-paths`
 - `djlib-doctor plan missing-files --snapshot run/snapshot.json --out run/plan-missing-files.json`
-- `djlib-doctor plan duplicates --snapshot run/snapshot.json --out run/plan-duplicates.json`
-- `djlib-doctor plan duplicates --snapshot run/snapshot.json --out run/plan-duplicates-quality.json --collision-policy quality`
+- `djlib-doctor plan duplicates --snapshot run/snapshot.json --out run/plan-duplicates.json --collision-policy cue-safe`
 - `djlib-doctor plan bad-paths --snapshot run/snapshot.json --out run/plan-bad-paths.json`
 - `djlib-doctor plan audio-compatibility --list-profiles`
-- `djlib-doctor plan audio-compatibility --probe-csv run/audio-probes.csv --out run/plan-audio-compatibility.json --profile rekordbox-conservative`
-- `djlib-doctor plan cues --baseline baseline.xml --final final.xml --out run/plan-cues.json`
-- `djlib-doctor explain --plan run/plan-missing-files.json`
 - `djlib-doctor review --plan run/plan-missing-files.json --out run/review-decisions.json`
-- `djlib-doctor decision-sheet --plan run/plan-missing-files.json --out run/decision-sheet.csv`
 - `djlib-doctor apply-manifest --plan run/plan-missing-files.json --review-log run/review-decisions.json --only-reviewed --out run/apply-manifest.json`
 - `djlib-doctor schema --pretty`
 - `djlib-doctor inspect serato --library-dir "/path/to/serato-library" --out run/inspect-serato`
 - `djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --out run/rb-to-serato --verify-preview`
-- `djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlists-file playlists.txt --summary-only --out run/unused`
-- `djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlists-file playlists.txt --out run/rb-to-serato-batch`
 - `djlib-doctor stage serato --port-manifest run/rb-to-serato/port-manifest.json --serato-library-dir "/path/to/serato-library" --serato-music-dir "/path/to/_Serato_" --stage-dir run/serato-stage`
 - `djlib-doctor install serato-stage --stage-dir run/serato-stage --serato-library-dir "/path/to/serato-library" --serato-music-dir "/path/to/_Serato_" --confirm-token INSTALL_SERATO_STAGE:...`
 - `djlib-doctor stage serato-tags --port-manifest run/rb-to-serato/port-manifest.json --stage-dir run/serato-tags`
 - `djlib-doctor install serato-tags --stage-dir run/serato-tags --confirm-token INSTALL_SERATO_TAGS:...`
+- `djlib-doctor port serato-to-rb --serato-library-dir "/path/to/serato-library" --crate "/path/to/_Serato_/Subcrates/My.crate" --collection-root ~/Music --out run/serato-to-rb`
+- `djlib-doctor stage rekordbox-db-import --db master.db --port-manifest run/serato-to-rb/port-manifest.json --stage-dir run/rb-db-stage`
 - `djlib-doctor stage rekordbox-db --db master.db --operations rekordbox-ops.json --stage-dir run/rb-db-stage`
 - `djlib-doctor install rekordbox-db --stage-dir run/rb-db-stage --db master.db --confirm-token INSTALL_SQLITE_STAGE:...`
 - `djlib-doctor stage file-ops --operations file-ops.json --stage-dir run/file-ops-stage`
 - `djlib-doctor install file-ops --stage-dir run/file-ops-stage --confirm-token INSTALL_FILE_OPS:...`
 - `djlib-doctor migrate rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --out run/migrate --stage-library --stage-tags --serato-library-dir "/path/to/serato-library" --serato-music-dir "/path/to/_Serato_"`
-- `djlib-doctor migrate serato-to-rb --serato-library-dir "/path/to/serato-library" --crate "/path/to/_Serato_/Subcrates/My.crate" --collection-root ~/Music --out run/serato-to-rb`
+- `djlib-doctor migrate serato-to-rb --serato-library-dir "/path/to/serato-library" --crate "/path/to/_Serato_/Subcrates/My.crate" --collection-root ~/Music --out run/serato-to-rb --stage-db --rekordbox-db master.db`
 - `djlib-doctor compare exports --baseline baseline.xml --final final.xml --out run/compare.json`
-- `djlib-doctor compare exports --baseline baseline.xml --final final.xml --out run/compare-with-files.json --check-files`
 
 Safety boundary:
 
-- current workflows are read-only with respect to Rekordbox databases, XML exports, and music files
-- current Serato install support is limited to staged SQLite/crate installs with backups, sidecar checks, app-closed checks, exact confirmation tokens, and hash verification
-- Serato dry-run manifests report cue-count semantics, format capability, managed crate namespace, skipped placeholders, and crate filename warnings
-- Serato audio tags are written only through `stage serato-tags` and `install serato-tags`
-- Serato audio tags, Rekordbox DB row changes, and file operations require explicit staged install commands and exact tokens
-- future write-capable features must use dry-run manifests, backups, explicit approval, and post-apply verification
-
-Key concepts:
-
-- collection tracks are separate from playlist references
+- planning and porting commands do not write live databases or music files
+- install commands require exact tokens and verify staged hashes, source hashes, sidecars, and backups where relevant
+- Rekordbox DB import stages into a copied `master.db` and fails closed for unsupported DB schemas
 - streaming placeholders are not missing local files
 - cue timing work must be preserved
-- duplicate matching needs evidence and confidence
-- duplicate collision policy can be `cue-safe`, `quality`, or `keep-both`
-- audio compatibility profile can be selected or overridden
-- weak matches become human-review rows, not automatic actions
 
-See:
-
-- `README.md`
-- `docs/feature-list.md`
-- `docs/product-architecture.md`
-- `docs/safety.md`
-- `docs/reports.md`
-- `docs/legacy-script-audit.md`
-- `AGENTS.md`
-- `CLAUDE.md`
+See `README.md`, `AGENTS.md`, `CLAUDE.md`, and `docs/`.
