@@ -14,7 +14,7 @@ SERATO_FORMAT_CAPABILITIES = {
     ".aiff": {"status": "supported_for_future_tag_writes", "cue_tags": "aiff_id3_geob_markers2", "notes": "Serato Markers2 cue data is stored in an ID3 GEOB frame."},
     ".m4a": {"status": "supported_for_future_tag_writes", "cue_tags": "mp4_freeform_markersv2", "notes": "Serato markersv2 cue data is stored in an MP4 freeform atom."},
     ".mp4": {"status": "supported_for_future_tag_writes", "cue_tags": "mp4_freeform_markersv2", "notes": "Serato markersv2 cue data is stored in an MP4 freeform atom."},
-    ".mp3": {"status": "likely_supported_future_work", "cue_tags": "id3_geob_markers2", "notes": "MP3 should use an ID3 GEOB-style Serato marker frame; not implemented."},
+    ".mp3": {"status": "supported_for_tag_writes", "cue_tags": "id3_geob_markers2", "notes": "Serato Markers2 cue data is stored in an ID3 GEOB frame."},
     ".flac": {"status": "future_uncertain", "cue_tags": "unknown", "notes": "Serato FLAC cue metadata needs more fixture-backed validation."},
     ".ogg": {"status": "future_uncertain", "cue_tags": "unknown", "notes": "Serato Ogg cue metadata needs more fixture-backed validation."},
     ".wav": {"status": "future_uncertain", "cue_tags": "unknown", "notes": "Serato WAV cue metadata needs more fixture-backed validation."},

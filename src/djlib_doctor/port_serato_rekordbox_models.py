@@ -9,6 +9,19 @@ REKORDBOX_PORT_SCHEMA_VERSION = "1.0"
 
 
 @dataclass(frozen=True)
+class RekordboxPortCue:
+    kind: str
+    cue_type: str
+    start_ms: int
+    end_ms: int | None = None
+    slot: int | None = None
+    label: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return self.__dict__.copy()
+
+
+@dataclass(frozen=True)
 class RekordboxPortTrack:
     track_id: str
     portable_id: str
@@ -20,9 +33,12 @@ class RekordboxPortTrack:
     key: str = ""
     bpm: float | None = None
     length_ms: int | None = None
+    cues: tuple[RekordboxPortCue, ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
-        return self.__dict__.copy()
+        data = self.__dict__.copy()
+        data["cues"] = [cue.to_dict() for cue in self.cues]
+        return data
 
 
 @dataclass(frozen=True)

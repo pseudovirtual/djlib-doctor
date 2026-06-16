@@ -62,4 +62,4 @@ Add platforms by implementing adapters, not by copying workflows:
 - stage platform-specific writes from the manifest
 - install staged files with shared safety helpers
 
-The next major gap is the Serato-to-Rekordbox staged DB import wrapper. It should reuse the core model and staged SQLite workflow rather than introducing parallel migration code.
+The next major gap is broader adapter coverage: more real-world Rekordbox DB schemas, playlist table imports, and additional Serato marker/tag fixtures. New support should extend the existing core model and staged SQLite workflow rather than introducing parallel migration code.

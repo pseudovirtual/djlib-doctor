@@ -27,12 +27,12 @@ The project should be:
 - [x] Workflow API for Rekordbox to Serato
 - [x] Serato to Rekordbox dry-run manifest
 - [x] Serato to Rekordbox port manifest and XML representation
-- [ ] High-level Serato-to-Rekordbox staged `master.db` import wrapper
-- [ ] Serato cue/tag reader into the core model
+- [x] High-level Serato-to-Rekordbox staged `master.db` import wrapper
+- [x] Fixture-backed Serato Markers2 cue reader into Serato-to-Rekordbox manifests
 - [ ] Higher-level interactive review/prompt flow for migrations
 - [x] User config file for local paths and defaults
 - [ ] Public API docs with short examples
-- [ ] Fixture-backed round-trip tests for cue preservation
+- [x] Fixture-backed Serato-to-Rekordbox cue preservation tests for supported schemas
 - [ ] CLI naming cleanup and alias pass
 
 ## Safety Checklist
@@ -71,9 +71,9 @@ Every write-capable workflow must have:
 
 ## Near-Term Implementation Order
 
-1. Add high-level Serato-to-Rekordbox staged `master.db` import wrapper.
+1. Add broader Rekordbox DB schema adapters for playlists and cue tables found in real libraries.
 2. Add a small config system for path/default discovery.
 3. Refactor repeated staging hash/token helpers into shared utilities.
 4. Add migration recipe docs for human and agent workflows.
 5. Add interactive migration review command.
-6. Add cue/tag round-trip fixtures when optional audio dependencies are available.
+6. Add more cue/tag round-trip fixtures when optional audio dependencies are available.

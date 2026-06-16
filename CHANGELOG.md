@@ -20,10 +20,11 @@
 - Expanded Serato dry-runs with playlist-file batches, summary-only mode, preview verification, cue-count metrics, format capability notes, and namespace warnings.
 - Added staged Serato SQLite/crate install workflow with stage manifests, verification, install tokens, backups, sidecar checks, app-closed checks, and hash verification.
 - Added staged Serato audio tag writes, structured Rekordbox SQLite row operations, and file copy/move/delete/convert operations behind manifest/token workflows.
+- Added staged Serato-to-Rekordbox DB imports with fixture-backed cue rows for supported Rekordbox schemas.
 - Added repo-scoped Codex skill and plugin skeleton.
 - Added Claude Desktop extension template with explicit non-installable status.
-- Added safety guard utilities for future DB-write milestones.
-- Added `llms.txt` and `llms-full.txt` for future model discoverability.
+- Added shared safety guard utilities for staged write workflows.
+- Added `llms.txt` and `llms-full.txt` for model discoverability.
 - Added synthetic fixture tests.
 - Added Codex and Claude guidance files.
 - Added open-source execution and GitHub launch plans.

@@ -9,7 +9,9 @@ from .sqlite_utils import quote_identifier, table_columns
 
 IMPORT_SCHEMA_VERSION = "1.0"
 CONTENT_TABLE = "djmdContent"
+CUE_TABLE = "djmdCue"
 REQUIRED_COLUMNS = ("ID", "FolderPath", "FileNameL", "Title")
+CUE_COLUMNS = ("ID", "ContentID", "InMsec", "OutMsec", "Kind", "HotCue", "Name")
 
 
 def build_rekordbox_db_import_operations(live_db: Path, port_manifest: Path, out_path: Path) -> Path:
@@ -19,7 +21,8 @@ def build_rekordbox_db_import_operations(live_db: Path, port_manifest: Path, out
     try:
         columns = table_columns(conn, CONTENT_TABLE)
         _require_supported_content_schema(columns)
-        operations = _build_operations(conn, columns, manifest.get("tracks", ()))
+        cue_columns = table_columns(conn, CUE_TABLE)
+        operations = _build_operations(conn, columns, cue_columns, manifest.get("tracks", ()))
     finally:
         conn.close()
     write_json(out_path, _operations_manifest(port_manifest, operations))
@@ -43,19 +46,24 @@ def _require_supported_content_schema(columns: tuple[str, ...]) -> None:
         )
 
 
-def _build_operations(conn: sqlite3.Connection, columns: tuple[str, ...], tracks: tuple[dict[str, Any], ...]) -> list[dict[str, Any]]:
+def _build_operations(conn: sqlite3.Connection, columns: tuple[str, ...], cue_columns: tuple[str, ...], tracks: tuple[dict[str, Any], ...]) -> list[dict[str, Any]]:
     operations = []
     existing = _existing_paths(conn)
     next_id = _next_content_id(conn)
+    next_cue_id = _next_id(conn, CUE_TABLE) if cue_columns else 1
     for track in tracks:
         values = _content_values(track, columns)
         key = (values["FolderPath"], values["FileNameL"])
         if key in existing:
+            content_id = existing[key]
             operations.append({"operation": "update", "table": CONTENT_TABLE, "values": _update_values(values), "where": {"ID": existing[key]}})
         else:
+            content_id = next_id
             values["ID"] = next_id
             operations.append({"operation": "insert", "table": CONTENT_TABLE, "values": values})
             next_id += 1
+        cue_ops, next_cue_id = _cue_operations(track, cue_columns, content_id, next_cue_id)
+        operations.extend(cue_ops)
     return operations
 
 
@@ -65,7 +73,11 @@ def _existing_paths(conn: sqlite3.Connection) -> dict[tuple[str, str], int]:
 
 
 def _next_content_id(conn: sqlite3.Connection) -> int:
-    value = conn.execute(f"SELECT MAX(ID) FROM {quote_identifier(CONTENT_TABLE)}").fetchone()[0]
+    return _next_id(conn, CONTENT_TABLE)
+
+
+def _next_id(conn: sqlite3.Connection, table: str) -> int:
+    value = conn.execute(f"SELECT MAX(ID) FROM {quote_identifier(table)}").fetchone()[0]
     return int(value or 0) + 1
 
 
@@ -92,6 +104,36 @@ def _split_db_path(path: str) -> tuple[str, str]:
     item = Path(path)
     folder = "" if str(item.parent) == "." else str(item.parent)
     return folder, item.name
+
+
+def _cue_operations(track: dict[str, Any], columns: tuple[str, ...], content_id: int, next_id: int) -> tuple[list[dict[str, Any]], int]:
+    cues = tuple(track.get("cues") or ())
+    if not cues:
+        return [], next_id
+    _require_supported_cue_schema(columns)
+    operations = [{"operation": "delete", "table": CUE_TABLE, "where": {"ContentID": content_id}}]
+    for cue in cues:
+        operations.append({"operation": "insert", "table": CUE_TABLE, "values": _cue_values(cue, content_id, next_id)})
+        next_id += 1
+    return operations, next_id
+
+
+def _require_supported_cue_schema(columns: tuple[str, ...]) -> None:
+    missing = [column for column in CUE_COLUMNS if column not in columns]
+    if missing:
+        raise ValueError("Unsupported Rekordbox cue table for import; missing " + ", ".join(missing))
+
+
+def _cue_values(cue: dict[str, Any], content_id: int, cue_id: int) -> dict[str, Any]:
+    return {
+        "ID": cue_id,
+        "ContentID": content_id,
+        "InMsec": int(cue["start_ms"]),
+        "OutMsec": None if cue.get("end_ms") is None else int(cue["end_ms"]),
+        "Kind": 4 if cue.get("cue_type") == "loop" else 0,
+        "HotCue": -1 if cue.get("slot") is None else int(cue["slot"]),
+        "Name": str(cue.get("label") or ""),
+    }
 
 
 def _operations_manifest(port_manifest: Path, operations: list[dict[str, Any]]) -> dict[str, Any]:

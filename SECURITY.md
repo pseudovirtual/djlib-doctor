@@ -1,29 +1,29 @@
 # Security And Safety
 
-`djlib-doctor` is designed for local DJ library verification.
+`djlib-doctor` is designed for local DJ library verification, planning, staging, and token-gated installs.
 
 ## Reporting Issues
 
-While the project is private, report issues directly in the private repository.
-
-After public release, use GitHub issues for ordinary bugs. For security-sensitive reports, use GitHub private vulnerability reporting if enabled.
+Use GitHub issues for ordinary bugs. For security-sensitive reports, use GitHub private vulnerability reporting if enabled.
 
 ## Current Risk Boundary
 
-The current code is read-only with respect to Rekordbox databases and music libraries.
+Planning commands are read-only with respect to Rekordbox databases, Serato databases, audio tags, and music files.
 
 It may read:
 
 - Rekordbox XML exports selected by the user
+- Rekordbox and Serato database files selected by the user
 - local file paths referenced by those exports
 
-It must not currently:
+It must not:
 
-- edit a database
+- edit a live database outside a token-gated `install ...` command
 - edit an XML export
-- move files
-- convert files
-- delete files
+- move files outside `install file-ops`
+- convert files outside `install file-ops`
+- delete files outside `install file-ops`
+- write Serato audio tags outside `install serato-tags`
 
 ## Privacy
 

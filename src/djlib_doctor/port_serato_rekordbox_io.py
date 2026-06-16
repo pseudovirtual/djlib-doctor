@@ -22,7 +22,9 @@ def render_rekordbox_xml_preview(plan: SeratoToRekordboxPlan) -> str:
     ET.SubElement(root, "PRODUCT", {"Name": "djlib-doctor", "Version": "0.1.0", "Company": "djlib-doctor"})
     collection = ET.SubElement(root, "COLLECTION", {"Entries": str(len(plan.tracks))})
     for track in plan.tracks:
-        ET.SubElement(collection, "TRACK", _track_attrs(track))
+        track_element = ET.SubElement(collection, "TRACK", _track_attrs(track))
+        for cue in track.cues:
+            ET.SubElement(track_element, "POSITION_MARK", _cue_attrs(cue))
     playlists = ET.SubElement(root, "PLAYLISTS")
     root_node = ET.SubElement(playlists, "NODE", {"Type": "0", "Name": "ROOT", "Count": "1"})
     playlist = ET.SubElement(root_node, "NODE", {"Name": plan.target_playlist, "Type": "1", "KeyType": "0", "Entries": str(len(plan.tracks))})
@@ -40,6 +42,19 @@ def _track_attrs(track) -> dict[str, str]:
         attrs["AverageBpm"] = f"{track.bpm:g}"
     if track.length_ms is not None:
         attrs["TotalTime"] = str(int(round(track.length_ms / 1000)))
+    return attrs
+
+
+def _cue_attrs(cue) -> dict[str, str]:
+    attrs = {
+        "Type": "4" if cue.cue_type == "loop" else "0",
+        "Start": f"{cue.start_ms / 1000:.3f}",
+        "Num": "" if cue.slot is None else str(cue.slot),
+    }
+    if cue.label:
+        attrs["Name"] = cue.label
+    if cue.end_ms is not None:
+        attrs["End"] = f"{cue.end_ms / 1000:.3f}"
     return attrs
 
 

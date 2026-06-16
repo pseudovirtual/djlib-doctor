@@ -18,6 +18,7 @@ This is an open-source project from [@pseudovirtual](https://github.com/pseudovi
 - records interactive review decisions
 - compares baseline/final exports for lost material or cue regressions
 - dry-runs Rekordbox-to-Serato and Serato-to-Rekordbox migrations
+- carries fixture-backed Serato Markers2 cue/loop data into supported Rekordbox imports
 - scopes migration plans to one track, one playlist/crate, many playlists, or a whole collection
 - supports transfer modes: `full`, `cues-only`, and `match-only`
 - stages Serato library updates, Serato audio tags, file operations, and Rekordbox DB operations behind explicit install tokens
@@ -186,12 +187,11 @@ The repo includes [AGENTS.md](AGENTS.md) and a packaged skill under `.agents/ski
 
 Implemented: verification, snapshots, cleanup plans, review logs, schema output, export comparison, Serato inspection, two-way dry-run porting, and staged/token-gated install workflows.
 
-Still pre-release: polished package distribution, CI/release automation, broader real-world Serato cue/tag fixture validation, and more Rekordbox DB schema adapters.
+Still pre-release: polished package distribution, CI/release automation, broader real-world Serato cue/tag fixture validation, more Rekordbox DB schema adapters, and broader playlist/cue table coverage.
 
 ## More Docs
 
 - [Docs Index](docs/README.md)
-- [Safety](docs/safety.md)
 - [Feature List](docs/feature-list.md)
 - [Human Workflows](docs/human-workflows.md)
 - [Serato Porting](docs/serato-porting.md)

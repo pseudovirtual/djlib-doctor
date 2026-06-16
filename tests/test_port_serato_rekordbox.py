@@ -25,7 +25,8 @@ def make_serato_root(path: Path) -> None:
                 genre TEXT,
                 key TEXT,
                 bpm REAL,
-                length_ms INTEGER
+                length_ms INTEGER,
+                markers2 BLOB
             );
             INSERT INTO asset(id, portable_id, name, artist, album, genre, key, bpm, length_ms)
             VALUES(1, 'Music/Track One.aiff', 'Track One', 'Artist One', 'Album', 'House', '8A', 124.0, 300000);

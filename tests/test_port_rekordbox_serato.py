@@ -71,6 +71,7 @@ class PortSeratoTests(unittest.TestCase):
     def test_serato_format_capability_describes_known_and_unknown_formats(self):
         self.assertEqual(serato_format_capability("/tmp/song.aiff")["cue_tags"], "aiff_id3_geob_markers2")
         self.assertEqual(serato_format_capability("/tmp/song.m4a")["cue_tags"], "mp4_freeform_markersv2")
+        self.assertEqual(serato_format_capability("/tmp/song.mp3")["status"], "supported_for_tag_writes")
         self.assertEqual(serato_format_capability("/tmp/song.flac")["status"], "future_uncertain")
 
     def test_verify_rekordbox_to_serato_plan_checks_crate_preview(self):

@@ -33,6 +33,10 @@ def make_port_manifest(path: Path) -> None:
                     "key": "8A",
                     "bpm": 124.0,
                     "length_ms": 300000,
+                    "cues": [
+                        {"kind": "hotcue", "cue_type": "cue", "start_ms": 12345, "end_ms": None, "slot": 0, "label": "Cue A"},
+                        {"kind": "hotcue", "cue_type": "loop", "start_ms": 48000, "end_ms": 56000, "slot": 1, "label": "Loop B"},
+                    ],
                 }
             ],
             "skipped": [],
@@ -60,6 +64,19 @@ def make_rekordbox_db(path: Path, supported: bool = True) -> None:
                 )
                 """
             )
+            conn.execute(
+                """
+                CREATE TABLE djmdCue(
+                    ID INTEGER PRIMARY KEY,
+                    ContentID INTEGER,
+                    InMsec INTEGER,
+                    OutMsec INTEGER,
+                    Kind INTEGER,
+                    HotCue INTEGER,
+                    Name TEXT
+                )
+                """
+            )
         else:
             conn.execute("CREATE TABLE something_else(id INTEGER PRIMARY KEY)")
         conn.commit()
@@ -81,11 +98,13 @@ class RekordboxDbImportTests(unittest.TestCase):
             conn = sqlite3.connect(stage.staged_db)
             try:
                 row = conn.execute("SELECT Title, ArtistName, BPM FROM djmdContent").fetchone()
+                cue_rows = conn.execute("SELECT ContentID, InMsec, OutMsec, Kind, HotCue, Name FROM djmdCue ORDER BY ID").fetchall()
             finally:
                 conn.close()
 
-        self.assertEqual(ops["summary"], {"insert": 1, "update": 0})
+        self.assertEqual(ops["summary"], {"insert": 3, "update": 0})
         self.assertEqual(row, ("Track One", "Artist One", 124.0))
+        self.assertEqual(cue_rows, [(1, 12345, None, 0, 0, "Cue A"), (1, 48000, 56000, 4, 1, "Loop B")])
 
     def test_cli_stage_rekordbox_db_import_prints_install_token(self):
         with TemporaryDirectory() as tmpdir:

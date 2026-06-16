@@ -4,8 +4,9 @@ from pathlib import Path
 import sqlite3
 from typing import Any
 
-from .port_serato_rekordbox_models import RekordboxPortTrack, SeratoToRekordboxPlan
+from .port_serato_rekordbox_models import RekordboxPortCue, RekordboxPortTrack, SeratoToRekordboxPlan
 from .serato_crate import read_serato_crate
+from .serato_markers import parse_markers2_payload
 from .sqlite_utils import quote_identifier
 
 
@@ -54,14 +55,20 @@ def _track(index: int, portable_id: str, asset: dict[str, Any], collection_root:
         key=str(asset.get("key") or ""),
         bpm=_optional_float(asset.get("bpm")),
         length_ms=_optional_int(asset.get("length_ms")),
+        cues=_cues(asset),
     )
+
+
+def _cues(asset: dict[str, Any]) -> tuple[RekordboxPortCue, ...]:
+    payload = asset.get("markers2") or asset.get("cue_data")
+    return tuple(RekordboxPortCue(**cue) for cue in parse_markers2_payload(payload))
 
 
 def _read_assets_by_portable_id(root_sqlite: Path) -> dict[str, dict[str, Any]]:
     conn = sqlite3.connect(f"file:{root_sqlite}?mode=ro", uri=True)
     try:
         columns = _table_columns(conn, "asset")
-        wanted = [column for column in ("portable_id", "name", "artist", "album", "genre", "key", "bpm", "length_ms") if column in columns]
+        wanted = [column for column in ("portable_id", "name", "artist", "album", "genre", "key", "bpm", "length_ms", "markers2", "cue_data") if column in columns]
         if "portable_id" not in wanted:
             raise ValueError("Serato asset table does not include portable_id")
         rows = conn.execute(f"SELECT {', '.join(quote_identifier(column) for column in wanted)} FROM asset").fetchall()
