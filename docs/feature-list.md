@@ -10,10 +10,12 @@
 - Memory cues, hotcues, cue loops, and loop end times parsed.
 - Snapshot directories with redacted sharing mode.
 - Plans for missing files, duplicates, cue coverage, bad paths, and audio compatibility.
+- Local file fingerprinting, folder fingerprint manifests, and two-track similarity comparison.
 - Duplicate collision policies: `cue-safe`, `quality`, and `keep-both`.
 - Interactive CLI review logs and optional CSV decision sheets.
 - Dry-run apply manifests generated from reviewed plans.
 - Baseline/final export comparison.
+- Port certification reports for migration previews and staged artifacts.
 - Read-only Serato `root.sqlite` inspection.
 - Dry-run Rekordbox-to-Serato crate manifests and preview crates.
 - Dry-run Serato-to-Rekordbox port manifests with Rekordbox XML representation and fixture-backed cue rows for staged DB import work.
@@ -34,11 +36,15 @@ djlib-doctor snapshot --rekordbox-xml export.xml --music-root ~/Music --out run/
 djlib-doctor plan missing-files --snapshot run/snapshot.json --out run/missing.json
 djlib-doctor plan duplicates --snapshot run/snapshot.json --out run/dupes.json
 djlib-doctor plan audio-compatibility --probe-csv probes.csv --out run/audio.json
+djlib-doctor fingerprint compare old.wav new.aiff --out run/track-compare.json
+djlib-doctor fingerprint scan ~/Music --out run/fingerprints.json --redact-paths
 djlib-doctor review --plan run/missing.json --out run/review.json
 djlib-doctor compare exports --baseline before.xml --final after.xml
 djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / Set" --out run/port
+djlib-doctor certify rb-to-serato --port-manifest run/port/port-manifest.json --out run/port/certification.json
 djlib-doctor port rb-to-serato --rekordbox-xml export.xml --track-id 123 --transfer-mode cues-only --out run/track
 djlib-doctor port serato-to-rb --serato-library-dir Library --collection --collection-root ~/Music --out run/rb
+djlib-doctor certify serato-to-rb --port-manifest run/rb/port-manifest.json --out run/rb/certification.json
 djlib-doctor migrate rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / Set" --out run/migrate
 ```
 
@@ -49,6 +55,7 @@ djlib-doctor migrate rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / 
 - Plans do not apply changes.
 - Install commands verify tokens, staged hashes, source hashes, backups, and app/sidecar checks where relevant.
 - Tests use synthetic fixtures only.
+- Certification reports are read-only scorecards and do not install staged changes.
 
 ## Not Yet Public-Release Ready
 

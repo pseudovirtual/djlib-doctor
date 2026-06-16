@@ -14,10 +14,13 @@ This is an open-source project from [@pseudovirtual](https://github.com/pseudovi
 - parses memory cues, hotcues, cue loops, and loop end times
 - creates snapshots and redacted shareable reports
 - plans missing-file, duplicate, cue, bad-path, and audio-format cleanup
+- fingerprints local audio files for track identity and similarity checks
+- compares two arbitrary track files as `same`, `similar`, or `different`
 - supports duplicate policies: `cue-safe`, `quality`, and `keep-both`
 - records interactive review decisions
 - compares baseline/final exports for lost material or cue regressions
 - dry-runs Rekordbox-to-Serato and Serato-to-Rekordbox migrations
+- certifies migration previews and staged artifacts with machine-readable scorecards
 - carries fixture-backed Serato Markers2 cue/loop data into supported Rekordbox imports
 - scopes migration plans to one track, one playlist/crate, many playlists, or a whole collection
 - supports transfer modes: `full`, `cues-only`, and `match-only`
@@ -48,11 +51,7 @@ djlib-doctor self-test
 
 Before installing, run commands from a clone with `PYTHONPATH=src python3 -m djlib_doctor.cli ...`.
 
-Serato audio tag staging needs the optional tag-writing dependencies:
-
-```bash
-python3 -m pip install -e ".[audio-tags]"
-```
+Serato audio tag staging needs optional dependencies: `python3 -m pip install -e ".[audio-tags]"`.
 
 Run the full suite:
 
@@ -102,12 +101,7 @@ djlib-doctor plan duplicates --snapshot run/dupes/snapshot.json --out run/dupes/
 djlib-doctor review --plan run/dupes/plan.json --out run/dupes/review.json
 ```
 
-Other policies are available when you know what you want:
-
-```bash
-djlib-doctor plan duplicates --snapshot run/dupes/snapshot.json --out run/dupes/quality.json --collision-policy quality
-djlib-doctor plan duplicates --snapshot run/dupes/snapshot.json --out run/dupes/keep-both.json --collision-policy keep-both
-```
+Other policies are available when you know what you want: `quality` and `keep-both`.
 
 ### 4. Compare Before And After Exports
 
@@ -119,27 +113,34 @@ djlib-doctor compare exports --baseline ~/Desktop/rekordbox-before.xml --final ~
 
 This checks for missing material, cue regressions, playlist differences, and bad final paths.
 
-### 5. Dry-Run A Rekordbox To Serato Playlist Port
+### 5. Compare Two Track Files
+
+Use fingerprints when you need to decide whether two local files are the same recording or close enough to review as a possible match:
+
+```bash
+djlib-doctor fingerprint compare ~/Music/old-track.wav ~/Music/new-track.aiff --out run/track-compare.json
+djlib-doctor fingerprint scan ~/Music --out run/fingerprints.json --redact-paths
+```
+
+The base package uses deterministic local fingerprints. Native acoustic fingerprint backends can be added later without changing these artifact shapes.
+
+### 6. Dry-Run A Rekordbox To Serato Playlist Port
 
 Start with a preview before staging anything:
 
 ```bash
 djlib-doctor port rb-to-serato --rekordbox-xml ~/Desktop/rekordbox-export.xml --playlist "ROOT / My Set" --out run/rb-to-serato --verify-preview
+djlib-doctor certify rb-to-serato --port-manifest run/rb-to-serato/port-manifest.json --out run/rb-to-serato/certification.json
 ```
 
-Inspect `run/rb-to-serato/port-manifest.json`, the crate preview, and `unsupported.csv`. If it looks right and you intentionally want a staged Serato install:
+Inspect `run/rb-to-serato/port-manifest.json`, the crate preview, and `unsupported.csv`. If it looks right, stage and install only with the printed token:
 
 ```bash
 djlib-doctor stage serato --port-manifest run/rb-to-serato/port-manifest.json --serato-library-dir /path/to/serato-library --serato-music-dir /path/to/_Serato_ --stage-dir run/serato-stage
-```
-
-Then close Serato, read the printed install token, and install only when you are comfortable:
-
-```bash
 djlib-doctor install serato-stage --stage-dir run/serato-stage --serato-library-dir /path/to/serato-library --serato-music-dir /path/to/_Serato_ --confirm-token INSTALL_SERATO_STAGE:...
 ```
 
-### 6. Choose Scope And Transfer Mode
+### 7. Choose Scope And Transfer Mode
 
 Use the same port command shape for smaller or larger jobs:
 
@@ -152,28 +153,26 @@ djlib-doctor port serato-to-rb --serato-library-dir /path/to/serato-library --co
 
 `full` plans tracks plus cue intent where the source adapter can read it. `cues-only` marks the manifest for cue migration onto existing matched tracks. `match-only` creates track matching/playlist structure with no cue writes.
 
-### 7. Port A Serato Crate Toward Rekordbox
+### 8. Port A Serato Crate Toward Rekordbox
 
 ```bash
 djlib-doctor port serato-to-rb --serato-library-dir /path/to/serato-library --crate /path/to/_Serato_/Subcrates/MySet.crate --collection-root ~/Music --out run/serato-to-rb
+djlib-doctor certify serato-to-rb --port-manifest run/serato-to-rb/port-manifest.json --out run/serato-to-rb/certification.json
 ```
 
 This writes a dry-run manifest and `rekordbox-preview.xml` representation for inspection. The intended write path is not manual XML import as the final step. Rekordbox writes should be staged against a copied `master.db`, then installed only through `install rekordbox-db` after token, hash, sidecar, and backup checks pass.
 
+Use the explicit stage/install flow, or one-command staging:
+
 ```bash
 djlib-doctor stage rekordbox-db-import --db /path/to/rekordbox/master.db --port-manifest run/serato-to-rb/port-manifest.json --stage-dir run/rekordbox-stage
 djlib-doctor install rekordbox-db --stage-dir run/rekordbox-stage --db /path/to/rekordbox/master.db --confirm-token INSTALL_SQLITE_STAGE:...
-```
-
-For one-command staging, use:
-
-```bash
 djlib-doctor migrate serato-to-rb --serato-library-dir /path/to/serato-library --crate /path/to/_Serato_/Subcrates/MySet.crate --collection-root ~/Music --out run/serato-to-rb --stage-db --rekordbox-db /path/to/rekordbox/master.db
 ```
 
 The DB importer fails closed if the target Rekordbox schema is not supported.
 
-### 8. Let An Agent Help, Safely
+### 9. Let An Agent Help, Safely
 
 In Codex, Claude Desktop, or another local coding agent, ask for read-only help first:
 
@@ -185,7 +184,7 @@ The repo includes [AGENTS.md](AGENTS.md) and a packaged skill under `.agents/ski
 
 ## Project Status
 
-Implemented: verification, snapshots, cleanup plans, review logs, schema output, export comparison, Serato inspection, two-way dry-run porting, and staged/token-gated install workflows.
+Implemented: verification, snapshots, cleanup plans, review logs, schema output, export comparison, local fingerprinting, migration certification, Serato inspection, two-way dry-run porting, and staged/token-gated install workflows.
 
 Still pre-release: polished package distribution, CI/release automation, broader real-world Serato cue/tag fixture validation, more Rekordbox DB schema adapters, and broader playlist/cue table coverage.
 

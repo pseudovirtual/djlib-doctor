@@ -23,6 +23,8 @@ Streaming placeholders are treated as non-local references. The tool can report 
 - **One safety vocabulary:** hashes, backups, sidecar checks, app-closed checks, and exact install tokens.
 - **Agent-friendly outputs:** JSON manifests and schemas for every important artifact.
 - **Human-friendly commands:** common workflows get short commands; low-level steps remain available.
+- **Certify migrations:** generated previews and staged artifacts should be scored before install.
+- **Fingerprint locally:** track identity helpers should be platform-neutral and optional-backend friendly.
 
 ## Command Shape
 
@@ -30,10 +32,13 @@ Manual flow:
 
 ```bash
 djlib-doctor verify export.xml
+djlib-doctor fingerprint compare old.wav new.aiff --out run/track-compare.json
 djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / Test" --out run/port
+djlib-doctor certify rb-to-serato --port-manifest run/port/port-manifest.json --out run/port/certification.json
 djlib-doctor stage serato --port-manifest run/port/port-manifest.json --serato-library-dir ~/serato-library --serato-music-dir ~/_Serato_ --stage-dir run/serato-stage
 djlib-doctor stage serato-tags --port-manifest run/port/port-manifest.json --stage-dir run/serato-tags
 djlib-doctor port serato-to-rb --serato-library-dir ~/serato-library --crate ~/Music/_Serato_/Subcrates/Test.crate --collection-root ~/Music --out run/serato-to-rb
+djlib-doctor certify serato-to-rb --port-manifest run/serato-to-rb/port-manifest.json --out run/serato-to-rb/certification.json
 djlib-doctor stage rekordbox-db-import --db ~/Library/Pioneer/rekordbox/master.db --port-manifest run/serato-to-rb/port-manifest.json --stage-dir run/rekordbox-stage
 djlib-doctor install rekordbox-db --stage-dir run/rekordbox-stage --db ~/Library/Pioneer/rekordbox/master.db --confirm-token INSTALL_SQLITE_STAGE:...
 ```
@@ -62,4 +67,4 @@ Add platforms by implementing adapters, not by copying workflows:
 - stage platform-specific writes from the manifest
 - install staged files with shared safety helpers
 
-The next major gap is broader adapter coverage: more real-world Rekordbox DB schemas, playlist table imports, and additional Serato marker/tag fixtures. New support should extend the existing core model and staged SQLite workflow rather than introducing parallel migration code.
+The next major gap is real-world certification coverage: anonymized fixture bundles across app versions, more Rekordbox DB schemas, playlist table imports, additional Serato marker/tag fixtures, and optional acoustic fingerprint backends. New support should extend the existing core model and staged workflow rather than introducing parallel migration code.

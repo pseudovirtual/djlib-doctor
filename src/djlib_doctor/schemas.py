@@ -7,6 +7,8 @@ from .compare import COMPARE_SCHEMA_VERSION
 from .config import CONFIG_SCHEMA_VERSION
 from .decision_sheet import DECISION_SHEET_FIELDS
 from .file_operations import FILE_OPS_INSTALL_SCHEMA_VERSION, FILE_OPS_STAGE_SCHEMA_VERSION
+from .fingerprint import SCHEMA_VERSION as FINGERPRINT_SCHEMA_VERSION
+from .certify import SCHEMA_VERSION as CERTIFICATION_SCHEMA_VERSION
 from .io_utils import render_json
 from .plan import PLAN_SCHEMA_VERSION
 from .port_serato_rekordbox import REKORDBOX_PORT_SCHEMA_VERSION
@@ -26,6 +28,8 @@ PLAN_FIELDS = ("schema_version", "plan_type", "summary", "actions")
 PLAN_ACTION_FIELDS = ("action", "track_id", "artist", "title", "confidence", "human_review_required", "reason", "evidence", "source_path", "candidate_path", "metadata")
 PORT_FIELDS = ("schema_version", "mode", "transfer_mode", "scope", "source_platform", "target_platform", "source_playlist", "target_crate_name", "target_crate_filename", "summary", "cue_policy", "namespace_policy", "tracks", "skipped", "warnings", "crates")
 AUDIO_PROBE_FIELDS = ("track_id", "artist", "title", "path", "extension", "codec", "sample_rate_hz", "bit_depth", "bit_rate_kbps", "duration_seconds", "probe_ok")
+FINGERPRINT_FIELDS = ("schema_version", "path", "size", "sha256", "byte_histogram")
+CERTIFICATION_FIELDS = ("schema_version", "passed", "manifest_path", "source_platform", "target_platform", "summary", "issues")
 
 
 def _json_schema(version: str, fields: tuple[str, ...], **extra: Any) -> dict[str, Any]:
@@ -42,6 +46,10 @@ SCHEMAS: dict[str, dict[str, Any]] = {
     "review-log": _json_schema(REVIEW_SCHEMA_VERSION, ("schema_version", "source_plan_type", "generated_at", "summary", "decisions"), decision_fields=["review_id", "decision", "notes", "action"]),
     "apply-manifest": _json_schema(APPLY_MANIFEST_SCHEMA_VERSION, ("schema_version", "mode", "source_plan_type", "summary", "safety", "post_apply_verification", "operations"), mode_values=["dry_run_only"]),
     "audio-probe-csv": {"schema_version": "1.0", "format": "csv", "fields": list(AUDIO_PROBE_FIELDS)},
+    "fingerprint": _json_schema(FINGERPRINT_SCHEMA_VERSION, FINGERPRINT_FIELDS),
+    "fingerprint-comparison": _json_schema(FINGERPRINT_SCHEMA_VERSION, ("schema_version", "classification", "similarity", "left", "right")),
+    "fingerprint-manifest": _json_schema(FINGERPRINT_SCHEMA_VERSION, ("schema_version", "root", "redacted_paths", "track_count", "tracks")),
+    "certification": _json_schema(CERTIFICATION_SCHEMA_VERSION, CERTIFICATION_FIELDS, severity_values=["info", "warning", "error"]),
     "serato-inspection": _json_schema(SERATO_INSPECTION_SCHEMA_VERSION, ("schema_version", "source", "summary", "schema_fingerprint", "tables", "asset_identity")),
     "port-manifest": _json_schema(PORT_MANIFEST_SCHEMA_VERSION, PORT_FIELDS, summary_fields=["crates", "tracks", "cue_intents", "skipped", "unsupported_tracks", "format_counts", "cue_counts", "warnings"], mode_values=["dry_run_only"]),
     "rekordbox-port-manifest": _json_schema(REKORDBOX_PORT_SCHEMA_VERSION, ("schema_version", "mode", "transfer_mode", "scope", "source_platform", "target_platform", "source_crate", "target_playlist", "summary", "tracks", "skipped"), mode_values=["dry_run_only"]),

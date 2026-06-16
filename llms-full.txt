@@ -14,9 +14,11 @@ The project is read-only-first. Write-capable workflows are explicit, staged, to
 - local file, streaming placeholder, and unknown-location classification
 - verification reports, snapshots, redacted snapshots, and schema discovery
 - missing-file, duplicate, cue-coverage, bad-path, and audio compatibility plans
+- local file fingerprinting, folder fingerprint manifests, and two-track similarity checks
 - duplicate collision policies: `cue-safe`, `quality`, and `keep-both`
 - interactive CLI review, decision sheets, and dry-run apply manifests
 - baseline/final Rekordbox export comparison
+- migration certification reports for generated previews and staged artifacts
 - read-only Serato `root.sqlite` inspection
 - Rekordbox-to-Serato port manifests, crate previews, batch playlist planning, and summary-only checks
 - Serato-to-Rekordbox port manifests and Rekordbox XML preview representations
@@ -48,6 +50,7 @@ For Serato-to-Rekordbox writes, use:
 
 ```bash
 djlib-doctor port serato-to-rb --serato-library-dir "/path/to/serato-library" --crate "/path/to/_Serato_/Subcrates/My.crate" --collection-root ~/Music --out run/serato-to-rb
+djlib-doctor certify serato-to-rb --port-manifest run/serato-to-rb/port-manifest.json --out run/serato-to-rb/certification.json
 djlib-doctor stage rekordbox-db-import --db /path/to/rekordbox/master.db --port-manifest run/serato-to-rb/port-manifest.json --stage-dir run/rekordbox-stage
 djlib-doctor install rekordbox-db --stage-dir run/rekordbox-stage --db /path/to/rekordbox/master.db --confirm-token INSTALL_SQLITE_STAGE:...
 ```
@@ -67,8 +70,10 @@ The Rekordbox DB importer fails closed if the target schema is unsupported.
 3. Explain findings in DJ language.
 4. Ask the user to choose scope and transfer mode.
 5. Use `review` for row-by-row human decisions.
-6. Inspect generated manifests before staging.
-7. Install only when the user supplies the exact token and confirms the relevant app is closed.
+6. Use `fingerprint compare` or `fingerprint scan` when local track identity is uncertain.
+7. Certify generated migration artifacts before staging or installing.
+8. Inspect generated manifests before staging.
+9. Install only when the user supplies the exact token and confirms the relevant app is closed.
 
 ## Important Docs
 

@@ -32,12 +32,15 @@ PYTHONPATH=src python3 -m djlib_doctor.cli plan duplicates --snapshot work/snaps
 PYTHONPATH=src python3 -m djlib_doctor.cli plan bad-paths --snapshot work/snapshot-demo/snapshot.json --out work/snapshot-demo/plan-bad-paths.json
 PYTHONPATH=src python3 -m djlib_doctor.cli plan audio-compatibility --list-profiles
 PYTHONPATH=src python3 -m djlib_doctor.cli plan audio-compatibility --probe-csv tests/fixtures/audio/compatibility_probes.csv --out work/snapshot-demo/plan-audio-compatibility.json --profile rekordbox-conservative
+PYTHONPATH=src python3 -m djlib_doctor.cli fingerprint compare tests/fixtures/audio/synthetic-a.wav tests/fixtures/audio/synthetic-b.wav --out work/fingerprint-compare.json
+PYTHONPATH=src python3 -m djlib_doctor.cli fingerprint scan tests/fixtures --out work/fingerprints.json --redact-paths
 PYTHONPATH=src python3 -m djlib_doctor.cli review --plan work/snapshot-demo/plan-missing-files.json --out work/snapshot-demo/review-decisions.json
 PYTHONPATH=src python3 -m djlib_doctor.cli decision-sheet --plan work/snapshot-demo/plan-missing-files.json --out work/snapshot-demo/decision-sheet.csv
 PYTHONPATH=src python3 -m djlib_doctor.cli apply-manifest --plan work/snapshot-demo/plan-missing-files.json --review-log work/snapshot-demo/review-decisions.json --only-reviewed --out work/snapshot-demo/apply-manifest.json
 PYTHONPATH=src python3 -m djlib_doctor.cli schema --pretty
 PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline tests/fixtures/rekordbox/simple.xml --final tests/fixtures/rekordbox/simple.xml --check-files
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlist "ROOT / Fixture Playlist" --out work/serato-port-demo --verify-preview
+PYTHONPATH=src python3 -m djlib_doctor.cli certify rb-to-serato --port-manifest work/serato-port-demo/port-manifest.json --out work/serato-port-demo/certification.json
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlists-file playlists.txt --summary-only --out work/unused
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --track-id 1 --transfer-mode cues-only --out work/serato-track-demo
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --collection --transfer-mode match-only --out work/serato-collection-demo
@@ -64,10 +67,12 @@ The current milestone is safe verification, planning, staged writes, and migrati
 - produce human-readable and machine-readable reports
 - produce read-only plans for missing files, duplicates, cue coverage, and bad path hygiene
 - expose user-selectable duplicate collision policies and audio compatibility profiles
+- fingerprint local files and compare arbitrary tracks for identity or similarity
 - run interactive CLI review and record ingestible decisions
 - export dry-run-only apply manifests without applying them
 - inspect Serato root.sqlite read-only and build dry-run Rekordbox XML to Serato port manifests
 - support Serato batch playlist dry-runs, summary-only reports, cue-count metrics, format capability notes, and crate-preview verification
+- certify generated migration previews and staged artifacts before install
 - support single-track, playlist/crate, multi-playlist, and whole-collection port scopes
 - support `full`, `cues-only`, and `match-only` transfer modes in port manifests
 - stage and install Serato SQLite/crate changes only through token-gated manifests with backups, sidecar checks, app-closed checks, and hash verification

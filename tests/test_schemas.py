@@ -41,6 +41,8 @@ class SchemaTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertIn("schemas", data)
         self.assertIn("audio-probe-csv", data["schemas"])
+        self.assertIn("fingerprint-manifest", data["schemas"])
+        self.assertIn("certification", data["schemas"])
 
     def test_schema_cli_prints_named_schema(self):
         stdout = io.StringIO()

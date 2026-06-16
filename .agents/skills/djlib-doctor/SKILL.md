@@ -43,6 +43,8 @@ PYTHONPATH=src python3 -m djlib_doctor.cli plan duplicates --snapshot run/snapsh
 PYTHONPATH=src python3 -m djlib_doctor.cli plan bad-paths --snapshot run/snapshot.json --out run/plan-bad-paths.json
 PYTHONPATH=src python3 -m djlib_doctor.cli plan audio-compatibility --list-profiles
 PYTHONPATH=src python3 -m djlib_doctor.cli plan audio-compatibility --probe-csv run/audio-probes.csv --out run/plan-audio-compatibility.json --profile rekordbox-conservative
+PYTHONPATH=src python3 -m djlib_doctor.cli fingerprint compare old.wav new.aiff --out run/track-compare.json
+PYTHONPATH=src python3 -m djlib_doctor.cli fingerprint scan ~/Music --out run/fingerprints.json --redact-paths
 PYTHONPATH=src python3 -m djlib_doctor.cli explain --plan run/plan-missing-files.json
 PYTHONPATH=src python3 -m djlib_doctor.cli review --plan run/plan-missing-files.json --out run/review-decisions.json
 PYTHONPATH=src python3 -m djlib_doctor.cli decision-sheet --plan run/plan-missing-files.json --out run/decision-sheet.csv
@@ -50,11 +52,13 @@ PYTHONPATH=src python3 -m djlib_doctor.cli apply-manifest --plan run/plan-missin
 PYTHONPATH=src python3 -m djlib_doctor.cli schema --pretty
 PYTHONPATH=src python3 -m djlib_doctor.cli inspect serato --library-dir "/path/to/serato-library" --out run/inspect-serato
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --out run/rb-to-serato --verify-preview
+PYTHONPATH=src python3 -m djlib_doctor.cli certify rb-to-serato --port-manifest run/rb-to-serato/port-manifest.json --out run/rb-to-serato/certification.json
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml export.xml --playlists-file playlists.txt --summary-only --out run/unused
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml export.xml --track-id 123 --transfer-mode cues-only --out run/rb-track-cues
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml export.xml --collection --transfer-mode match-only --out run/rb-collection-match
 PYTHONPATH=src python3 -m djlib_doctor.cli port serato-to-rb --serato-library-dir "/path/to/serato-library" --portable-id "Music/Track.aiff" --collection-root ~/Music --transfer-mode cues-only --out run/serato-track-cues
 PYTHONPATH=src python3 -m djlib_doctor.cli port serato-to-rb --serato-library-dir "/path/to/serato-library" --collection --collection-root ~/Music --out run/serato-collection
+PYTHONPATH=src python3 -m djlib_doctor.cli certify serato-to-rb --port-manifest run/serato-collection/port-manifest.json --out run/serato-collection/certification.json
 PYTHONPATH=src python3 -m djlib_doctor.cli stage rekordbox-db-import --db /path/to/rekordbox/master.db --port-manifest run/serato-to-rb/port-manifest.json --stage-dir run/rekordbox-stage
 PYTHONPATH=src python3 -m djlib_doctor.cli stage rekordbox-db --db /path/to/rekordbox/master.db --operations run/rekordbox-db-operations.json --stage-dir run/rekordbox-stage
 PYTHONPATH=src python3 -m djlib_doctor.cli install rekordbox-db --stage-dir run/rekordbox-stage --db /path/to/rekordbox/master.db --confirm-token INSTALL_SQLITE_STAGE:...
@@ -80,9 +84,11 @@ PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline baseline.x
 6. Ask or infer the user's duplicate collision preference and audio compatibility target before choosing `--collision-policy` or `--profile`.
 7. Use `review` for row-by-row human decisions; use `decision-sheet` only when a spreadsheet artifact is helpful.
 8. If the user has baseline and final XML exports, run `compare exports`.
-9. For porting, choose exactly one source scope: one track, one playlist/crate, many playlists, or a collection.
-10. Use `--transfer-mode full`, `--transfer-mode cues-only`, or `--transfer-mode match-only` to make migration intent explicit.
-11. For Rekordbox-to-Serato, prefer `--summary-only` first for batch playlist files, then generate crate previews with `--verify-preview` for single-playlist checks.
-12. For Serato-to-Rekordbox, do not stop at “import the XML preview” when the user wants a write workflow. Use `stage rekordbox-db-import` or `migrate serato-to-rb --stage-db`, then `install rekordbox-db`; the DB importer fails closed for unsupported schemas.
-13. For Serato install, require the exact stage token, keep Serato closed, and verify the install report.
-14. Suggest only read-only next steps unless a write-capable command already exists with the required safety workflow.
+9. Use `fingerprint compare` or `fingerprint scan` when matching local files or checking whether two tracks are the same recording.
+10. For porting, choose exactly one source scope: one track, one playlist/crate, many playlists, or a collection.
+11. Use `--transfer-mode full`, `--transfer-mode cues-only`, or `--transfer-mode match-only` to make migration intent explicit.
+12. Certify generated migration outputs with `certify rb-to-serato` or `certify serato-to-rb` before staging or installing.
+13. For Rekordbox-to-Serato, prefer `--summary-only` first for batch playlist files, then generate crate previews with `--verify-preview` for single-playlist checks.
+14. For Serato-to-Rekordbox, do not stop at “import the XML preview” when the user wants a write workflow. Use `stage rekordbox-db-import` or `migrate serato-to-rb --stage-db`, then `install rekordbox-db`; the DB importer fails closed for unsupported schemas.
+15. For Serato install, require the exact stage token, keep Serato closed, and verify the install report.
+16. Suggest only read-only next steps unless a write-capable command already exists with the required safety workflow.
