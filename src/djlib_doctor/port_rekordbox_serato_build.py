@@ -11,17 +11,17 @@ from .rekordbox_xml import parse_rekordbox_xml
 from .serato_crate import safe_crate_filename
 
 
-def build_rekordbox_to_serato_plan(rekordbox_xml: Path, playlist_name: str, crate_prefix: str = SERATO_MANAGED_CRATE_PREFIX) -> RekordboxToSeratoPlan:
-    return _build_plan_from_library(rekordbox_xml_to_library(parse_rekordbox_xml(rekordbox_xml)), playlist_name, crate_prefix)
+def build_rekordbox_to_serato_plan(rekordbox_xml: Path, playlist_name: str, crate_prefix: str = SERATO_MANAGED_CRATE_PREFIX, transfer_mode: str = "full") -> RekordboxToSeratoPlan:
+    return _build_playlist_plan(rekordbox_xml_to_library(parse_rekordbox_xml(rekordbox_xml)), playlist_name, crate_prefix, transfer_mode)
 
 
-def build_rekordbox_to_serato_plans(rekordbox_xml: Path, playlist_names: list[str] | tuple[str, ...], crate_prefix: str = SERATO_MANAGED_CRATE_PREFIX) -> RekordboxToSeratoBatchPlan:
+def build_rekordbox_to_serato_plans(rekordbox_xml: Path, playlist_names: list[str] | tuple[str, ...], crate_prefix: str = SERATO_MANAGED_CRATE_PREFIX, transfer_mode: str = "full") -> RekordboxToSeratoBatchPlan:
     source = rekordbox_xml_to_library(parse_rekordbox_xml(rekordbox_xml))
     plans = []
     warnings = []
     crate_filenames: dict[str, str] = {}
     for playlist_name in playlist_names:
-        plan = _build_plan_from_library(source, playlist_name, crate_prefix)
+        plan = _build_playlist_plan(source, playlist_name, crate_prefix, transfer_mode)
         plans.append(plan)
         warnings.extend(plan.warnings)
         filename = safe_crate_filename(plan.target_crate_name)
@@ -29,10 +29,21 @@ def build_rekordbox_to_serato_plans(rekordbox_xml: Path, playlist_names: list[st
             warnings.append({"code": "target_crate_filename_collision", "target_crate_filename": filename, "first_playlist": crate_filenames[filename], "playlist": plan.source_playlist})
         else:
             crate_filenames[filename] = plan.source_playlist
-    return RekordboxToSeratoBatchPlan(tuple(plans), tuple(warnings))
+    return RekordboxToSeratoBatchPlan(tuple(plans), tuple(warnings), transfer_mode=transfer_mode)
 
 
-def _build_plan_from_library(source: Any, playlist_name: str, crate_prefix: str = SERATO_MANAGED_CRATE_PREFIX) -> RekordboxToSeratoPlan:
+def build_rekordbox_track_to_serato_plan(rekordbox_xml: Path, track_id: str, crate_prefix: str = SERATO_MANAGED_CRATE_PREFIX, transfer_mode: str = "full") -> RekordboxToSeratoPlan:
+    source = rekordbox_xml_to_library(parse_rekordbox_xml(rekordbox_xml))
+    return _build_scoped_plan(source, (track_id,), f"TRACK / {track_id}", f"{crate_prefix}Track {track_id}", "track", transfer_mode)
+
+
+def build_rekordbox_collection_to_serato_plan(rekordbox_xml: Path, crate_prefix: str = SERATO_MANAGED_CRATE_PREFIX, transfer_mode: str = "full") -> RekordboxToSeratoPlan:
+    source = rekordbox_xml_to_library(parse_rekordbox_xml(rekordbox_xml))
+    track_ids = tuple(track.source_id for track in source.tracks)
+    return _build_scoped_plan(source, track_ids, "COLLECTION", f"{crate_prefix}Collection", "collection", transfer_mode)
+
+
+def _build_playlist_plan(source: Any, playlist_name: str, crate_prefix: str = SERATO_MANAGED_CRATE_PREFIX, transfer_mode: str = "full") -> RekordboxToSeratoPlan:
     playlists = {playlist.name: playlist for playlist in source.playlists}
     playlist = playlists.get(playlist_name)
     warnings = []
@@ -43,23 +54,34 @@ def _build_plan_from_library(source: Any, playlist_name: str, crate_prefix: str 
             warnings.append({"code": "playlist_name_matched_after_trimming", "requested_playlist": playlist_name, "matched_playlist": playlist.name})
     if playlist is None:
         raise ValueError(f"Playlist not found: {playlist_name}. Known playlists: {', '.join(sorted(playlists))}")
+    plan = _build_scoped_plan(source, playlist.track_ids, playlist.name, f"{crate_prefix}{playlist.name}", "playlist", transfer_mode)
+    return RekordboxToSeratoPlan(plan.source_playlist, plan.target_crate_name, plan.tracks, plan.skipped, tuple(warnings), plan.scope, plan.transfer_mode)
+
+
+def _build_scoped_plan(source: Any, track_ids: tuple[str, ...], source_name: str, target_name: str, scope: str, transfer_mode: str) -> RekordboxToSeratoPlan:
+    _validate_transfer_mode(transfer_mode)
     tracks_by_id = source.track_by_id()
     tracks = []
     skipped = []
-    for track_id in playlist.track_ids:
+    for track_id in track_ids:
         track = tracks_by_id.get(track_id)
         if track is None:
             skipped.append({"track_id": track_id, "reason": "playlist_reference_missing_collection_track"})
         elif track.location_kind != LocationKind.LOCAL_FILE.value or track.path is None:
             skipped.append({"track_id": track_id, "title": track.title, "artist": track.artist, "reason": "not_local_file"})
         else:
-            tracks.append(_port_track(track))
-    return RekordboxToSeratoPlan(playlist.name, f"{crate_prefix}{playlist.name}", tuple(tracks), tuple(skipped), tuple(warnings))
+            tracks.append(_port_track(track, include_cues=transfer_mode != "match-only"))
+    return RekordboxToSeratoPlan(source_name, target_name, tuple(tracks), tuple(skipped), scope=scope, transfer_mode=transfer_mode)
 
 
-def _port_track(track: LibraryTrack) -> PortTrack:
-    cue_intents, unsupported = _cue_intents(track.cues)
+def _port_track(track: LibraryTrack, include_cues: bool = True) -> PortTrack:
+    cue_intents, unsupported = _cue_intents(track.cues) if include_cues else ((), ())
     return PortTrack(track.source_id, track.title, track.artist, str(track.path or ""), track.serato_portable_id, cue_intents, unsupported, len(track.cues))
+
+
+def _validate_transfer_mode(value: str) -> None:
+    if value not in {"full", "cues-only", "match-only"}:
+        raise ValueError(f"Unsupported transfer mode: {value}")
 
 
 def _cue_intents(cues: tuple[LibraryCue, ...]) -> tuple[tuple[SeratoCueIntent, ...], tuple[str, ...]]:

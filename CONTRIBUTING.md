@@ -1,6 +1,6 @@
 # Contributing
 
-`djlib-doctor` is private and early right now, but the contribution model should be open-source friendly from the start.
+`djlib-doctor` is an early open-source project. It should stay small, testable, and safe enough for DJs and agents to understand.
 
 ## Good First Contributions
 
@@ -16,8 +16,15 @@
 - Do not add real music files.
 - Do not add real user Rekordbox exports.
 - Do not add DB-writing behavior without an accepted design.
-- Keep write-capable behavior out of early milestones.
 - Add tests for every user-visible behavior change.
+
+## Engineering Expectations
+
+- Follow TDD for behavior changes: add or update a focused synthetic-fixture test before implementing the feature.
+- Keep modules DRY. Prefer shared models, adapters, and staging helpers over copy-pasted platform logic.
+- Keep Python and Markdown files under 200 lines where practical. Split files by responsibility before they become dense.
+- Preserve the safety boundary: plan, stage, then install with explicit tokens for write-capable flows.
+- Prefer small public APIs that compose into larger workflows.
 
 ## Running Tests
 

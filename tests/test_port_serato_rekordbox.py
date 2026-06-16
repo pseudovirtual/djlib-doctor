@@ -7,7 +7,7 @@ import sqlite3
 import unittest
 
 from djlib_doctor.cli import main
-from djlib_doctor.port_serato_rekordbox import build_serato_to_rekordbox_plan, write_serato_to_rekordbox_plan
+from djlib_doctor.port_serato_rekordbox import build_serato_collection_to_rekordbox_plan, build_serato_to_rekordbox_plan, build_serato_track_to_rekordbox_plan, write_serato_to_rekordbox_plan
 from djlib_doctor.serato_crate import write_serato_crate
 
 
@@ -73,6 +73,33 @@ class PortRekordboxTests(unittest.TestCase):
         self.assertIn("<DJ_PLAYLISTS", xml)
         self.assertIn("Track One", xml)
 
+    def test_build_serato_track_to_rekordbox_plan_scopes_single_track(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            library = tmp / "Library"
+            library.mkdir()
+            make_serato_root(library / "root.sqlite")
+
+            plan = build_serato_track_to_rekordbox_plan(library, "Music/Track One.aiff", Path("/Users/test"), transfer_mode="cues-only")
+
+        self.assertEqual(plan.scope, "track")
+        self.assertEqual(plan.transfer_mode, "cues-only")
+        self.assertEqual(plan.summary["tracks"], 1)
+
+    def test_build_serato_collection_to_rekordbox_plan_skips_streaming_assets(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            library = tmp / "Library"
+            library.mkdir()
+            make_serato_root(library / "root.sqlite")
+
+            plan = build_serato_collection_to_rekordbox_plan(library, Path("/Users/test"), transfer_mode="match-only")
+
+        self.assertEqual(plan.scope, "collection")
+        self.assertEqual(plan.transfer_mode, "match-only")
+        self.assertEqual(plan.summary["tracks"], 1)
+        self.assertEqual(plan.summary["skipped"], 1)
+
     def test_port_cli_serato_to_rb_writes_outputs(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
@@ -101,6 +128,59 @@ class PortRekordboxTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertIn("Rekordbox XML preview written:", stdout.getvalue())
+
+    def test_port_cli_serato_to_rb_accepts_track_scope(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            library = tmp / "Library"
+            library.mkdir()
+            make_serato_root(library / "root.sqlite")
+            exit_code = main(
+                [
+                    "port",
+                    "serato-to-rb",
+                    "--serato-library-dir",
+                    str(library),
+                    "--portable-id",
+                    "Music/Track One.aiff",
+                    "--collection-root",
+                    "/Users/test",
+                    "--transfer-mode",
+                    "cues-only",
+                    "--out",
+                    str(tmp / "out"),
+                ]
+            )
+            manifest = json.loads((tmp / "out" / "port-manifest.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(manifest["scope"], "track")
+        self.assertEqual(manifest["transfer_mode"], "cues-only")
+
+    def test_port_cli_serato_to_rb_accepts_collection_scope(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            library = tmp / "Library"
+            library.mkdir()
+            make_serato_root(library / "root.sqlite")
+            exit_code = main(
+                [
+                    "port",
+                    "serato-to-rb",
+                    "--serato-library-dir",
+                    str(library),
+                    "--collection",
+                    "--collection-root",
+                    "/Users/test",
+                    "--out",
+                    str(tmp / "out"),
+                ]
+            )
+            manifest = json.loads((tmp / "out" / "port-manifest.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(manifest["scope"], "collection")
+        self.assertEqual(manifest["summary"]["tracks"], 1)
 
 
 if __name__ == "__main__":

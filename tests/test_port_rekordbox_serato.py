@@ -7,8 +7,10 @@ import unittest
 
 from djlib_doctor.cli import main
 from djlib_doctor.port_rekordbox_serato import (
+    build_rekordbox_collection_to_serato_plan,
     build_rekordbox_to_serato_plan,
     build_rekordbox_to_serato_plans,
+    build_rekordbox_track_to_serato_plan,
     serato_format_capability,
     verify_rekordbox_to_serato_plan,
     write_rekordbox_to_serato_plan,
@@ -35,6 +37,23 @@ class PortSeratoTests(unittest.TestCase):
         self.assertIn("serato_hotcue", intents)
         self.assertIn("serato_saved_loop", intents)
         self.assertEqual(plan.skipped[0]["reason"], "not_local_file")
+
+    def test_build_rekordbox_track_to_serato_plan_scopes_single_track(self):
+        plan = build_rekordbox_track_to_serato_plan(FIXTURE, "1", transfer_mode="cues-only")
+
+        self.assertEqual(plan.scope, "track")
+        self.assertEqual(plan.transfer_mode, "cues-only")
+        self.assertEqual(len(plan.tracks), 1)
+        self.assertEqual(plan.tracks[0].source_id, "1")
+        self.assertEqual(plan.to_dict()["transfer_mode"], "cues-only")
+
+    def test_build_rekordbox_collection_to_serato_plan_skips_non_local_tracks(self):
+        plan = build_rekordbox_collection_to_serato_plan(FIXTURE, transfer_mode="match-only")
+
+        self.assertEqual(plan.scope, "collection")
+        self.assertEqual(plan.transfer_mode, "match-only")
+        self.assertEqual(plan.summary["tracks"], 2)
+        self.assertEqual(len(plan.skipped), 1)
 
     def test_batch_plan_preserves_playlist_order_and_reports_name_warnings(self):
         plan = build_rekordbox_to_serato_plans(
@@ -105,6 +124,49 @@ class PortSeratoTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertEqual(data["target_platform"], "serato")
         self.assertIn("Serato crate preview written:", stdout.getvalue())
+
+    def test_port_cli_accepts_track_scope_and_transfer_mode(self):
+        with TemporaryDirectory() as tmpdir:
+            exit_code = main(
+                [
+                    "port",
+                    "rb-to-serato",
+                    "--rekordbox-xml",
+                    str(FIXTURE),
+                    "--track-id",
+                    "1",
+                    "--transfer-mode",
+                    "cues-only",
+                    "--out",
+                    tmpdir,
+                ]
+            )
+            data = json.loads((Path(tmpdir) / "port-manifest.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(data["scope"], "track")
+        self.assertEqual(data["transfer_mode"], "cues-only")
+
+    def test_port_cli_accepts_collection_scope(self):
+        with TemporaryDirectory() as tmpdir:
+            exit_code = main(
+                [
+                    "port",
+                    "rb-to-serato",
+                    "--rekordbox-xml",
+                    str(FIXTURE),
+                    "--collection",
+                    "--transfer-mode",
+                    "match-only",
+                    "--out",
+                    tmpdir,
+                ]
+            )
+            data = json.loads((Path(tmpdir) / "port-manifest.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(data["scope"], "collection")
+        self.assertEqual(data["summary"]["cue_intents"], 0)
 
     def test_port_cli_accepts_playlists_file_and_summary_only(self):
         with TemporaryDirectory() as tmpdir:

@@ -23,7 +23,7 @@ VERIFY_FIELDS = ("schema_version", "status", "source", "counts", "failures", "wa
 SNAPSHOT_FIELDS = ("schema_version", "generated_at", "redacted", "command", "source", "artifacts", "verification", "filesystem")
 PLAN_FIELDS = ("schema_version", "plan_type", "summary", "actions")
 PLAN_ACTION_FIELDS = ("action", "track_id", "artist", "title", "confidence", "human_review_required", "reason", "evidence", "source_path", "candidate_path", "metadata")
-PORT_FIELDS = ("schema_version", "mode", "source_platform", "target_platform", "source_playlist", "target_crate_name", "target_crate_filename", "summary", "cue_policy", "namespace_policy", "tracks", "skipped", "warnings", "crates")
+PORT_FIELDS = ("schema_version", "mode", "transfer_mode", "scope", "source_platform", "target_platform", "source_playlist", "target_crate_name", "target_crate_filename", "summary", "cue_policy", "namespace_policy", "tracks", "skipped", "warnings", "crates")
 AUDIO_PROBE_FIELDS = ("track_id", "artist", "title", "path", "extension", "codec", "sample_rate_hz", "bit_depth", "bit_rate_kbps", "duration_seconds", "probe_ok")
 
 
@@ -43,7 +43,7 @@ SCHEMAS: dict[str, dict[str, Any]] = {
     "audio-probe-csv": {"schema_version": "1.0", "format": "csv", "fields": list(AUDIO_PROBE_FIELDS)},
     "serato-inspection": _json_schema(SERATO_INSPECTION_SCHEMA_VERSION, ("schema_version", "source", "summary", "schema_fingerprint", "tables", "asset_identity")),
     "port-manifest": _json_schema(PORT_MANIFEST_SCHEMA_VERSION, PORT_FIELDS, summary_fields=["crates", "tracks", "cue_intents", "skipped", "unsupported_tracks", "format_counts", "cue_counts", "warnings"], mode_values=["dry_run_only"]),
-    "rekordbox-port-manifest": _json_schema(REKORDBOX_PORT_SCHEMA_VERSION, ("schema_version", "mode", "source_platform", "target_platform", "source_crate", "target_playlist", "summary", "tracks", "skipped"), mode_values=["dry_run_only"]),
+    "rekordbox-port-manifest": _json_schema(REKORDBOX_PORT_SCHEMA_VERSION, ("schema_version", "mode", "transfer_mode", "scope", "source_platform", "target_platform", "source_crate", "target_playlist", "summary", "tracks", "skipped"), mode_values=["dry_run_only"]),
     "serato-stage-manifest": _json_schema(SERATO_STAGE_SCHEMA_VERSION, ("schema_version", "mode", "safety", "source_port_manifest", "live_targets", "staged_files", "summary", "crates", "hashes", "source_hashes", "install_token"), mode_values=["staged_serato_install"]),
     "serato-install-report": _json_schema(SERATO_INSTALL_SCHEMA_VERSION, ("schema_version", "passed", "stage_manifest", "backup_dir", "installed_files")),
     "serato-audio-tag-stage-manifest": _json_schema(SERATO_AUDIO_TAG_STAGE_SCHEMA_VERSION, ("schema_version", "mode", "safety", "source_port_manifest", "summary", "tracks", "hashes", "source_hashes", "install_token"), mode_values=["staged_serato_audio_tags"]),

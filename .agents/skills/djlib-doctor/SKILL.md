@@ -51,6 +51,10 @@ PYTHONPATH=src python3 -m djlib_doctor.cli schema --pretty
 PYTHONPATH=src python3 -m djlib_doctor.cli inspect serato --library-dir "/path/to/serato-library" --out run/inspect-serato
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --out run/rb-to-serato --verify-preview
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml export.xml --playlists-file playlists.txt --summary-only --out run/unused
+PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml export.xml --track-id 123 --transfer-mode cues-only --out run/rb-track-cues
+PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml export.xml --collection --transfer-mode match-only --out run/rb-collection-match
+PYTHONPATH=src python3 -m djlib_doctor.cli port serato-to-rb --serato-library-dir "/path/to/serato-library" --portable-id "Music/Track.aiff" --collection-root ~/Music --transfer-mode cues-only --out run/serato-track-cues
+PYTHONPATH=src python3 -m djlib_doctor.cli port serato-to-rb --serato-library-dir "/path/to/serato-library" --collection --collection-root ~/Music --out run/serato-collection
 PYTHONPATH=src python3 -m djlib_doctor.cli stage serato --port-manifest run/rb-to-serato/port-manifest.json --serato-library-dir "/path/to/serato-library" --serato-music-dir "/path/to/_Serato_" --stage-dir run/serato-stage
 PYTHONPATH=src python3 -m djlib_doctor.cli install serato-stage --stage-dir run/serato-stage --serato-library-dir "/path/to/serato-library" --serato-music-dir "/path/to/_Serato_" --confirm-token INSTALL_SERATO_STAGE:...
 ```
@@ -72,6 +76,8 @@ PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline baseline.x
 6. Ask or infer the user's duplicate collision preference and audio compatibility target before choosing `--collision-policy` or `--profile`.
 7. Use `review` for row-by-row human decisions; use `decision-sheet` only when a spreadsheet artifact is helpful.
 8. If the user has baseline and final XML exports, run `compare exports`.
-9. For Serato porting, prefer `--summary-only` first for batch playlist files, then generate crate previews with `--verify-preview` for single-playlist checks.
-10. For Serato install, require the exact stage token, keep Serato closed, and verify the install report.
-11. Suggest only read-only next steps unless a write-capable command already exists with the required safety workflow.
+9. For porting, choose exactly one source scope: one track, one playlist/crate, many playlists, or a collection.
+10. Use `--transfer-mode full`, `--transfer-mode cues-only`, or `--transfer-mode match-only` to make migration intent explicit.
+11. For Serato porting, prefer `--summary-only` first for batch playlist files, then generate crate previews with `--verify-preview` for single-playlist checks.
+12. For Serato install, require the exact stage token, keep Serato closed, and verify the install report.
+13. Suggest only read-only next steps unless a write-capable command already exists with the required safety workflow.

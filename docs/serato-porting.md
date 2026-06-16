@@ -6,6 +6,8 @@
 
 ```bash
 djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / Set" --out run/port --verify-preview
+djlib-doctor port rb-to-serato --rekordbox-xml export.xml --track-id 123 --transfer-mode cues-only --out run/track-cues
+djlib-doctor port rb-to-serato --rekordbox-xml export.xml --collection --transfer-mode match-only --out run/collection-match
 djlib-doctor migrate rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / Set" --out run/migrate
 ```
 
@@ -26,10 +28,27 @@ Cue policy:
 
 ```bash
 djlib-doctor port serato-to-rb --serato-library-dir Library --crate Set.crate --collection-root ~/Music --out run/rb
+djlib-doctor port serato-to-rb --serato-library-dir Library --portable-id "Music/Track.aiff" --collection-root ~/Music --transfer-mode cues-only --out run/rb-track
+djlib-doctor port serato-to-rb --serato-library-dir Library --collection --collection-root ~/Music --out run/rb-collection
 djlib-doctor migrate serato-to-rb --serato-library-dir Library --crate Set.crate --collection-root ~/Music --out run/rb
 ```
 
 This is preview-only: it writes a manifest and Rekordbox XML preview, not a live Rekordbox DB.
+
+## Scopes And Transfer Modes
+
+Source scopes:
+
+- `--track-id` / `--portable-id`: one track
+- `--playlist` / `--crate`: one playlist or crate
+- `--playlists-file`: many Rekordbox playlists
+- `--collection`: whole available source collection
+
+Transfer modes:
+
+- `full`: tracks plus cue intent where supported by the source adapter
+- `cues-only`: cue migration intent for existing matched tracks
+- `match-only`: track matching and playlist/crate structure without cue writes
 
 ## Staged Serato Install
 

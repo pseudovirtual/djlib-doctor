@@ -17,6 +17,8 @@
 - Read-only Serato `root.sqlite` inspection.
 - Dry-run Rekordbox-to-Serato crate manifests and preview crates.
 - Dry-run Serato-to-Rekordbox XML preview manifests.
+- Migration scopes for single tracks, playlists/crates, multiple playlists, and whole collections.
+- Transfer modes for `full`, `cues-only`, and `match-only` workflows.
 - Staged Serato library installs through `stage serato` and `install serato-stage`.
 - Staged Serato audio tag writes through `stage serato-tags` and `install serato-tags`.
 - Staged file copy, move, delete, and conversion operations through `stage file-ops` and `install file-ops`.
@@ -35,6 +37,8 @@ djlib-doctor plan audio-compatibility --probe-csv probes.csv --out run/audio.jso
 djlib-doctor review --plan run/missing.json --out run/review.json
 djlib-doctor compare exports --baseline before.xml --final after.xml
 djlib-doctor port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / Set" --out run/port
+djlib-doctor port rb-to-serato --rekordbox-xml export.xml --track-id 123 --transfer-mode cues-only --out run/track
+djlib-doctor port serato-to-rb --serato-library-dir Library --collection --collection-root ~/Music --out run/rb
 djlib-doctor migrate rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / Set" --out run/migrate
 ```
 

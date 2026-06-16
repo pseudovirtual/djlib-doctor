@@ -4,11 +4,13 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .port_rekordbox_serato import (
+    build_rekordbox_collection_to_serato_plan,
     build_rekordbox_to_serato_plan,
     build_rekordbox_to_serato_plans,
+    build_rekordbox_track_to_serato_plan,
     write_rekordbox_to_serato_plan,
 )
-from .port_serato_rekordbox import build_serato_to_rekordbox_plan, write_serato_to_rekordbox_plan
+from .port_serato_rekordbox import build_serato_collection_to_rekordbox_plan, build_serato_to_rekordbox_plan, build_serato_track_to_rekordbox_plan, write_serato_to_rekordbox_plan
 from .serato_audio_tags import SeratoAudioTagStageReport, build_serato_audio_tag_stage
 from .serato_stage import SeratoStageReport, stage_serato_from_port_manifest
 
@@ -33,6 +35,9 @@ def migrate_rekordbox_to_serato(
     out_dir: Path,
     playlist: str | None = None,
     playlists: tuple[str, ...] = (),
+    track_id: str | None = None,
+    collection: bool = False,
+    transfer_mode: str = "full",
     crate_prefix: str = "RB - ",
     serato_library_dir: Path | None = None,
     serato_music_dir: Path | None = None,
@@ -40,14 +45,18 @@ def migrate_rekordbox_to_serato(
     stage_tags: bool = False,
 ) -> RekordboxToSeratoWorkflowResult:
     port_dir = out_dir / "port"
-    if playlist and playlists:
-        raise ValueError("Use either playlist or playlists, not both")
-    if playlists:
-        plan = build_rekordbox_to_serato_plans(rekordbox_xml, playlists, crate_prefix=crate_prefix)
+    if sum(bool(value) for value in (playlist, playlists, track_id, collection)) != 1:
+        raise ValueError("Exactly one Rekordbox source scope is required")
+    if track_id:
+        plan = build_rekordbox_track_to_serato_plan(rekordbox_xml, track_id, crate_prefix=crate_prefix, transfer_mode=transfer_mode)
+    elif collection:
+        plan = build_rekordbox_collection_to_serato_plan(rekordbox_xml, crate_prefix=crate_prefix, transfer_mode=transfer_mode)
+    elif playlists:
+        plan = build_rekordbox_to_serato_plans(rekordbox_xml, playlists, crate_prefix=crate_prefix, transfer_mode=transfer_mode)
     elif playlist:
-        plan = build_rekordbox_to_serato_plan(rekordbox_xml, playlist, crate_prefix=crate_prefix)
+        plan = build_rekordbox_to_serato_plan(rekordbox_xml, playlist, crate_prefix=crate_prefix, transfer_mode=transfer_mode)
     else:
-        raise ValueError("A playlist or playlist list is required")
+        raise ValueError("A Rekordbox source scope is required")
     outputs = write_rekordbox_to_serato_plan(plan, port_dir)
     crate_values = outputs.get("crate_previews") or [outputs["crate_preview"]]
     crate_previews = tuple(Path(value) for value in crate_values)
@@ -74,17 +83,22 @@ def migrate_rekordbox_to_serato(
 
 def migrate_serato_to_rekordbox(
     serato_library_dir: Path,
-    crate: Path,
     collection_root: Path,
     out_dir: Path,
+    crate: Path | None = None,
+    portable_id: str | None = None,
+    collection: bool = False,
     playlist_name: str | None = None,
+    transfer_mode: str = "full",
 ) -> SeratoToRekordboxWorkflowResult:
-    plan = build_serato_to_rekordbox_plan(
-        serato_library_dir,
-        crate,
-        collection_root,
-        playlist_name=playlist_name,
-    )
+    if sum(bool(value) for value in (crate, portable_id, collection)) != 1:
+        raise ValueError("Exactly one Serato source scope is required")
+    if portable_id:
+        plan = build_serato_track_to_rekordbox_plan(serato_library_dir, portable_id, collection_root, playlist_name, transfer_mode)
+    elif collection:
+        plan = build_serato_collection_to_rekordbox_plan(serato_library_dir, collection_root, playlist_name, transfer_mode)
+    else:
+        plan = build_serato_to_rekordbox_plan(serato_library_dir, crate, collection_root, playlist_name)
     outputs = write_serato_to_rekordbox_plan(plan, out_dir / "port")
     return SeratoToRekordboxWorkflowResult(
         port_manifest=Path(outputs["manifest"]),

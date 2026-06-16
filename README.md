@@ -18,6 +18,8 @@ This is an open-source project from [@pseudovirtual](https://github.com/pseudovi
 - records interactive review decisions
 - compares baseline/final exports for lost material or cue regressions
 - dry-runs Rekordbox-to-Serato and Serato-to-Rekordbox migrations
+- scopes migration plans to one track, one playlist/crate, many playlists, or a whole collection
+- supports transfer modes: `full`, `cues-only`, and `match-only`
 - stages Serato library updates, Serato audio tags, file operations, and Rekordbox DB operations behind explicit install tokens
 
 ## Safety Model
@@ -136,7 +138,20 @@ Then close Serato, read the printed install token, and install only when you are
 djlib-doctor install serato-stage --stage-dir run/serato-stage --serato-library-dir /path/to/serato-library --serato-music-dir /path/to/_Serato_ --confirm-token INSTALL_SERATO_STAGE:...
 ```
 
-### 6. Dry-Run A Serato To Rekordbox XML Preview
+### 6. Choose Scope And Transfer Mode
+
+Use the same port command shape for smaller or larger jobs:
+
+```bash
+djlib-doctor port rb-to-serato --rekordbox-xml export.xml --track-id 123 --transfer-mode cues-only --out run/one-track-cues
+djlib-doctor port rb-to-serato --rekordbox-xml export.xml --collection --transfer-mode match-only --out run/collection-match
+djlib-doctor port serato-to-rb --serato-library-dir /path/to/serato-library --portable-id "Music/Track.aiff" --collection-root ~/Music --transfer-mode cues-only --out run/serato-track-cues
+djlib-doctor port serato-to-rb --serato-library-dir /path/to/serato-library --collection --collection-root ~/Music --out run/serato-collection
+```
+
+`full` plans tracks plus cue intent where the source adapter can read it. `cues-only` marks the manifest for cue migration onto existing matched tracks. `match-only` creates track matching/playlist structure with no cue writes.
+
+### 7. Dry-Run A Serato To Rekordbox XML Preview
 
 ```bash
 djlib-doctor port serato-to-rb --serato-library-dir /path/to/serato-library --crate /path/to/_Serato_/Subcrates/MySet.crate --collection-root ~/Music --out run/serato-to-rb
@@ -144,7 +159,7 @@ djlib-doctor port serato-to-rb --serato-library-dir /path/to/serato-library --cr
 
 This writes a dry-run manifest and `rekordbox-preview.xml` for inspection.
 
-### 7. Let An Agent Help, Safely
+### 8. Let An Agent Help, Safely
 
 In Codex, Claude Desktop, or another local coding agent, ask for read-only help first:
 

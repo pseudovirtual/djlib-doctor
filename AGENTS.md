@@ -9,6 +9,9 @@
 - Do not modify, move, rename, convert, quarantine, or delete real music files except through `install file-ops` after a staged manifest verifies token, contents, hashes, and backups.
 - Do not write Serato audio tags except through `install serato-tags` after a staged manifest verifies token, contents, staged hash, source hash, and backups.
 - Use synthetic fixtures for tests.
+- Follow TDD for user-visible behavior: add or update a focused fixture-backed test before implementation.
+- Keep modules DRY and share platform-neutral helpers instead of copying logic between Rekordbox and Serato paths.
+- Keep Python and Markdown files under 200 lines where practical; split by responsibility when a file grows.
 - Keep collection `<TRACK>` records separate from playlist `<TRACK Key="...">` references.
 - Treat streaming placeholders as placeholders, not missing local files.
 - Preserve cue semantics: memory cues, hotcue slots, cue vs loop type, loop end times.
@@ -36,6 +39,8 @@ PYTHONPATH=src python3 -m djlib_doctor.cli schema --pretty
 PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline tests/fixtures/rekordbox/simple.xml --final tests/fixtures/rekordbox/simple.xml --check-files
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlist "ROOT / Fixture Playlist" --out work/serato-port-demo --verify-preview
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlists-file playlists.txt --summary-only --out work/unused
+PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --track-id 1 --transfer-mode cues-only --out work/serato-track-demo
+PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --collection --transfer-mode match-only --out work/serato-collection-demo
 PYTHONPATH=src python3 -m djlib_doctor.cli stage serato --port-manifest work/serato-port-demo/port-manifest.json --serato-library-dir /path/to/serato-library --serato-music-dir /path/to/_Serato_ --stage-dir work/serato-stage
 PYTHONPATH=src python3 -m djlib_doctor.cli install serato-stage --stage-dir work/serato-stage --serato-library-dir /path/to/serato-library --serato-music-dir /path/to/_Serato_ --confirm-token INSTALL_SERATO_STAGE:...
 PYTHONPATH=src python3 -m djlib_doctor.cli migrate rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlist "ROOT / Fixture Playlist" --out work/migrate-demo
@@ -62,6 +67,8 @@ The current milestone is read-only verification, snapshots, comparisons, and cle
 - export dry-run-only apply manifests without applying them
 - inspect Serato root.sqlite read-only and build dry-run Rekordbox XML to Serato port manifests
 - support Serato batch playlist dry-runs, summary-only reports, cue-count metrics, format capability notes, and crate-preview verification
+- support single-track, playlist/crate, multi-playlist, and whole-collection port scopes
+- support `full`, `cues-only`, and `match-only` transfer modes in port manifests
 - stage and install Serato SQLite/crate changes only through token-gated manifests with backups, sidecar checks, app-closed checks, and hash verification
 
 Do not start with DB writes. The verifier is the foundation.

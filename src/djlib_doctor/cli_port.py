@@ -7,10 +7,12 @@ import sqlite3
 import sys
 import xml.etree.ElementTree as ET
 
-from .port_serato_rekordbox import build_serato_to_rekordbox_plan, write_serato_to_rekordbox_plan
+from .port_serato_rekordbox import build_serato_collection_to_rekordbox_plan, build_serato_to_rekordbox_plan, build_serato_track_to_rekordbox_plan, write_serato_to_rekordbox_plan
 from .port_rekordbox_serato import (
+    build_rekordbox_collection_to_serato_plan,
     build_rekordbox_to_serato_plan,
     build_rekordbox_to_serato_plans,
+    build_rekordbox_track_to_serato_plan,
     read_playlist_names,
     render_rekordbox_to_serato_summary,
     verify_rekordbox_to_serato_plan,
@@ -26,16 +28,18 @@ def _fail(label: str, exc: Exception) -> int:
 
 def handle_migrate(args: argparse.Namespace) -> int:
     if args.migrate_command == "rb-to-serato":
-        if bool(args.playlist) == bool(args.playlists_file):
-            raise argparse.ArgumentError(None, "exactly one of --playlist or --playlists-file is required")
+        _require_one_scope(args, ("playlist", "playlists_file", "track_id", "collection"))
         try:
             playlists = read_playlist_names(args.playlists_file) if args.playlists_file else ()
             result = migrate_rekordbox_to_serato(
                 args.rekordbox_xml,
                 playlist=args.playlist,
                 playlists=playlists,
+                track_id=args.track_id,
+                collection=args.collection,
                 out_dir=args.out,
                 crate_prefix=args.crate_prefix,
+                transfer_mode=args.transfer_mode,
                 serato_library_dir=args.serato_library_dir,
                 serato_music_dir=args.serato_music_dir,
                 stage_library=args.stage_library,
@@ -58,7 +62,8 @@ def handle_migrate(args: argparse.Namespace) -> int:
 
 def _migrate_serato_to_rb(args: argparse.Namespace) -> int:
     try:
-        result = migrate_serato_to_rekordbox(args.serato_library_dir, args.crate, args.collection_root, args.out, args.playlist_name)
+        _require_one_scope(args, ("crate", "portable_id", "collection"))
+        result = migrate_serato_to_rekordbox(args.serato_library_dir, args.collection_root, args.out, args.crate, args.portable_id, args.collection, args.playlist_name, args.transfer_mode)
     except (OSError, sqlite3.Error, ValueError, RuntimeError, json.JSONDecodeError) as exc:
         return _fail("migrate", exc)
     print(f"Port manifest: {result.port_manifest}")
@@ -70,7 +75,7 @@ def handle_port(args: argparse.Namespace) -> int:
     if args.port_command == "rb-to-serato":
         return _port_rb_to_serato(args)
     try:
-        plan = build_serato_to_rekordbox_plan(args.serato_library_dir, args.crate, args.collection_root, args.playlist_name)
+        plan = _build_serato_to_rb_from_args(args)
         outputs = write_serato_to_rekordbox_plan(plan, args.out)
     except (OSError, sqlite3.Error, ValueError, json.JSONDecodeError) as exc:
         return _fail("port", exc)
@@ -80,16 +85,19 @@ def handle_port(args: argparse.Namespace) -> int:
 
 
 def _port_rb_to_serato(args: argparse.Namespace) -> int:
-    if bool(args.playlist) == bool(args.playlists_file):
-        raise argparse.ArgumentError(None, "exactly one of --playlist or --playlists-file is required")
+    _require_one_scope(args, ("playlist", "playlists_file", "track_id", "collection"))
     try:
-        if args.playlists_file:
+        if args.track_id:
+            plan = build_rekordbox_track_to_serato_plan(args.rekordbox_xml, args.track_id, args.crate_prefix, args.transfer_mode)
+        elif args.collection:
+            plan = build_rekordbox_collection_to_serato_plan(args.rekordbox_xml, args.crate_prefix, args.transfer_mode)
+        elif args.playlists_file:
             playlist_names = read_playlist_names(args.playlists_file)
             if not playlist_names:
                 raise ValueError(f"No playlist names found in {args.playlists_file}")
-            plan = build_rekordbox_to_serato_plans(args.rekordbox_xml, playlist_names, args.crate_prefix)
+            plan = build_rekordbox_to_serato_plans(args.rekordbox_xml, playlist_names, args.crate_prefix, args.transfer_mode)
         else:
-            plan = build_rekordbox_to_serato_plan(args.rekordbox_xml, args.playlist, args.crate_prefix)
+            plan = build_rekordbox_to_serato_plan(args.rekordbox_xml, args.playlist, args.crate_prefix, args.transfer_mode)
         if args.summary_only:
             print(render_rekordbox_to_serato_summary(plan))
             return 0
@@ -105,6 +113,22 @@ def _port_rb_to_serato(args: argparse.Namespace) -> int:
         print(f"Preview verification: {'passed' if verification['passed'] else 'failed'}")
         return 0 if verification["passed"] else 1
     return 0
+
+
+def _build_serato_to_rb_from_args(args: argparse.Namespace):
+    _require_one_scope(args, ("crate", "portable_id", "collection"))
+    if args.portable_id:
+        return build_serato_track_to_rekordbox_plan(args.serato_library_dir, args.portable_id, args.collection_root, args.playlist_name, args.transfer_mode)
+    if args.collection:
+        return build_serato_collection_to_rekordbox_plan(args.serato_library_dir, args.collection_root, args.playlist_name, args.transfer_mode)
+    return build_serato_to_rekordbox_plan(args.serato_library_dir, args.crate, args.collection_root, args.playlist_name)
+
+
+def _require_one_scope(args: argparse.Namespace, names: tuple[str, ...]) -> None:
+    selected = [name for name in names if bool(getattr(args, name))]
+    if len(selected) != 1:
+        flags = ", ".join("--" + name.replace("_", "-") for name in names)
+        raise argparse.ArgumentError(None, f"exactly one scope is required: {flags}")
 
 
 def _verify_preview(args: argparse.Namespace, outputs: dict[str, str]):

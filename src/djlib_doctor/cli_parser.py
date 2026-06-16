@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="djlib-doctor")
+    parser = argparse.ArgumentParser(prog="djlib-doctor", allow_abbrev=False)
     sub = parser.add_subparsers(dest="command", required=True)
     _add_verify(sub)
     _add_snapshot(sub)
@@ -156,13 +156,19 @@ def _rb_to_serato_args(p: argparse.ArgumentParser) -> None:
     p.add_argument("--rekordbox-xml", required=True, type=Path)
     p.add_argument("--playlist")
     p.add_argument("--playlists-file", type=Path)
+    p.add_argument("--track-id")
+    p.add_argument("--collection", action="store_true")
+    p.add_argument("--transfer-mode", default="full", choices=("full", "cues-only", "match-only"))
     p.add_argument("--out", required=True, type=Path)
     p.add_argument("--crate-prefix", default="RB - ")
 
 
 def _serato_to_rb_args(p: argparse.ArgumentParser) -> None:
     p.add_argument("--serato-library-dir", required=True, type=Path)
-    p.add_argument("--crate", required=True, type=Path)
+    p.add_argument("--crate", type=Path)
+    p.add_argument("--portable-id")
+    p.add_argument("--collection", action="store_true")
     p.add_argument("--collection-root", required=True, type=Path)
     p.add_argument("--playlist-name")
+    p.add_argument("--transfer-mode", default="full", choices=("full", "cues-only", "match-only"))
     p.add_argument("--out", required=True, type=Path)
