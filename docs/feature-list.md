@@ -12,7 +12,7 @@
 - Plans for missing files, duplicates, cue coverage, bad paths, and audio compatibility.
 - Local byte fingerprinting, folder byte-fingerprint manifests, and exact-duplicate/raw-byte similarity comparison.
 - Duplicate collision policies: `cue-safe`, `quality`, and `keep-both`.
-- Interactive CLI review logs and optional CSV decision sheets.
+- Interactive CLI review logs with recommended-choice defaults, accept-remaining, undo, and optional CSV decision sheets.
 - Dry-run apply manifests generated from reviewed plans.
 - Baseline/final export comparison.
 - Port certification reports for migration previews and staged artifacts.

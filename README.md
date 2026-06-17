@@ -96,7 +96,7 @@ djlib-doctor plan missing-files --snapshot run/missing/snapshot.json --out run/m
 djlib-doctor review --plan run/missing/plan.json --out run/missing/review.json
 ```
 
-The interactive review walks you through the plan one decision at a time and saves your choices as JSON for later steps.
+The interactive review walks you through the plan one decision at a time, lets Enter accept the recommended choice, `A` accept remaining high-confidence rows, and `u` undo the last decision, then saves your choices as JSON for later steps.
 
 ### 3. Review Duplicates With A Collision Policy
 

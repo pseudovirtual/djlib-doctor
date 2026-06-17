@@ -86,7 +86,7 @@ PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline baseline.x
 4. If missing files exist, run `plan missing-files`.
 5. If duplicate or risky active folder references exist, run `plan duplicates` or `plan bad-paths`.
 6. Ask or infer the user's duplicate collision preference and audio compatibility target before choosing `--collision-policy` or `--profile`.
-7. Use `review` for row-by-row human decisions; use `decision-sheet` only when a spreadsheet artifact is helpful.
+7. Use `review` for row-by-row human decisions. Enter accepts the recommended choice, `A` accepts remaining high-confidence rows, and `u` undoes the last decision; use `decision-sheet` only when a spreadsheet artifact is helpful.
 8. If the user has baseline and final XML exports, run `compare exports`.
 9. Use `fingerprint compare` or `fingerprint scan` only for exact duplicate or raw-byte similarity checks; it is not acoustic matching.
 10. For porting, choose exactly one source scope: one track, one playlist/crate, many playlists, or a collection.

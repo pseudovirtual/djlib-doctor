@@ -31,4 +31,4 @@ Scope: Rekordbox and Serato only. Do not add other DJ apps or a neutral universa
 
 ## Phase D - Review Polish
 
-- [ ] D1: Improve interactive review: Enter accepts recommended choice, `A` accepts recommended for remaining high-confidence rows, `u` undoes the last decision, and a live progress header is shown. Keep stdlib-only.
+- [x] D1: Improve interactive review: Enter accepts recommended choice, `A` accepts recommended for remaining high-confidence rows, `u` undoes the last decision, and a live progress header is shown. Keep stdlib-only.

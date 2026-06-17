@@ -2,15 +2,15 @@
 
 ## Phase
 
-Primary-library foundation complete; one-command porting complete.
+Primary-library foundation, one-command porting, friendly entry points, and review polish complete.
 
 ## Last Done
 
-B3 made `sync` dry-run by default. Staged installs now require `--apply` plus explicit approval, and backups remain handled by the existing install engines.
+D1 polished interactive review with Enter-to-accept, high-confidence accept-remaining, undo, and progress output.
 
 ## Next
 
-D1: improve interactive review with default Enter, accept-remaining, undo, and progress header.
+Maintainer review, then choose the next roadmap slice.
 
 ## Blockers
 

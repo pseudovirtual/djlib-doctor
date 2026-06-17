@@ -1,42 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import datetime, timezone
 from pathlib import Path
 import sys
 from typing import Callable, TextIO
 
-from .io_utils import read_json, write_json
 from .plan import PlanAction, PlanReport
 from .reviewer_choices import ReviewChoice, choices_for_action
-
-
-REVIEW_SCHEMA_VERSION = "1.0"
-
-
-@dataclass(frozen=True)
-class ReviewDecision:
-    review_id: str
-    action: PlanAction
-    decision: str
-    notes: str = ""
-
-    def to_dict(self) -> dict[str, object]:
-        return {
-            "review_id": self.review_id,
-            "decision": self.decision,
-            "notes": self.notes,
-            "action": self.action.to_dict(),
-        }
-
-
-@dataclass(frozen=True)
-class ReviewLog:
-    source_plan_type: str
-    decisions: tuple[ReviewDecision, ...]
-
-    def by_review_id(self) -> dict[str, ReviewDecision]:
-        return {decision.review_id: decision for decision in self.decisions}
+from .reviewer_log import REVIEW_SCHEMA_VERSION, ReviewDecision, ReviewLog, load_review_log, write_review_log
 
 
 def run_interactive_review(
@@ -53,57 +23,42 @@ def run_interactive_review(
     print(f"Rows: {total}", file=output)
     print("No changes will be applied. Decisions are recorded only.", file=output)
 
-    for index, action in enumerate(report.actions, 1):
-        review_id = f"{report.plan_type.upper()}-{index:04d}"
+    index = 0
+    while index < total:
+        action = report.actions[index]
+        review_id = f"{report.plan_type.upper()}-{index + 1:04d}"
         choices = choices_for_action(report.plan_type, action)
         print("", file=output)
-        _print_action(review_id, index, total, action, choices, output)
+        print(f"Progress: {len(decisions)}/{total} reviewed, {total - len(decisions)} remaining", file=output)
+        _print_action(review_id, index + 1, total, action, choices, output)
         selected = _prompt_choice(choices, input_func, output)
         if selected == "quit":
             break
-        if selected == "skip":
-            notes = ""
-        else:
-            notes = input_func("Notes (optional): ").strip()
+        if selected == "undo":
+            if decisions:
+                undone = decisions.pop()
+                index = max(0, index - 1)
+                write_review_log(report, tuple(decisions), out_path)
+                print(f"Undid: {undone.review_id}", file=output)
+            else:
+                print("Nothing to undo.", file=output)
+            continue
+        if selected == "accept_remaining":
+            accepted = _accept_remaining(report, index, decisions)
+            index += accepted
+            write_review_log(report, tuple(decisions), out_path)
+            print(f"Accepted recommended for {accepted} remaining high-confidence rows.", file=output)
+            continue
+        notes = "" if selected == "skip" else input_func("Notes (optional): ").strip()
         decisions.append(ReviewDecision(review_id=review_id, action=action, decision=selected, notes=notes))
         write_review_log(report, tuple(decisions), out_path)
         print(f"Recorded: {selected}", file=output)
+        index += 1
 
     write_review_log(report, tuple(decisions), out_path)
     print("", file=output)
     print(f"Review decisions written: {out_path}", file=output)
     return tuple(decisions)
-
-
-def load_review_log(path: Path) -> ReviewLog:
-    data = read_json(path)
-    decisions = []
-    for row in data.get("decisions", []):
-        action_data = row.get("action", {})
-        decisions.append(
-            ReviewDecision(
-                review_id=row.get("review_id", ""),
-                action=_action_from_dict(action_data),
-                decision=row.get("decision", ""),
-                notes=row.get("notes", ""),
-            )
-        )
-    return ReviewLog(source_plan_type=data.get("source_plan_type", ""), decisions=tuple(decisions))
-
-
-def write_review_log(report: PlanReport, decisions: tuple[ReviewDecision, ...], out_path: Path) -> None:
-    data = {
-        "schema_version": REVIEW_SCHEMA_VERSION,
-        "source_plan_type": report.plan_type,
-        "generated_at": datetime.now(timezone.utc).isoformat(),
-        "summary": {
-            "plan_actions": len(report.actions),
-            "decisions": len(decisions),
-            "unreviewed": len(report.actions) - len(decisions),
-        },
-        "decisions": [decision.to_dict() for decision in decisions],
-    }
-    write_json(out_path, data)
 
 
 def _print_action(
@@ -117,20 +72,22 @@ def _print_action(
     print(f"[{index}/{total}] {review_id}", file=output)
     print(f"{action.artist or '(unknown artist)'} - {action.title or '(unknown title)'}", file=output)
     print(f"Action: {action.action} [{action.confidence.value}]", file=output)
-    if action.reason:
-        print(f"Why: {action.reason}", file=output)
-    if action.evidence:
-        print(f"Evidence: {', '.join(action.evidence)}", file=output)
-    if action.source_path:
-        print(f"Source: {action.source_path}", file=output)
-    if action.candidate_path:
-        print(f"Candidate: {action.candidate_path}", file=output)
-    metadata_summary = _metadata_summary(action)
-    if metadata_summary:
-        print(f"Context: {metadata_summary}", file=output)
+    detail_rows = (
+        ("Why", action.reason),
+        ("Evidence", ", ".join(action.evidence)),
+        ("Source", action.source_path),
+        ("Candidate", action.candidate_path),
+        ("Context", _metadata_summary(action)),
+    )
+    for label, value in detail_rows:
+        if value:
+            print(f"{label}: {value}", file=output)
     print("Choices:", file=output)
     for number, choice in enumerate(choices, 1):
         print(f"  {number}. {choice.label} ({choice.value})", file=output)
+    print(f"  Enter. Accept recommended ({_recommended_choice(choices)})", file=output)
+    print("  A. Accept recommended for remaining high-confidence rows", file=output)
+    print("  u. Undo last decision", file=output)
     print("  s. Skip this row", file=output)
     print("  q. Save and quit", file=output)
 
@@ -144,7 +101,11 @@ def _prompt_choice(
         raw = input_func("Decision: ").strip().lower()
         if raw == "q":
             return "quit"
-        if raw in {"s", ""}:
+        if raw in {"u", "a"}:
+            return {"u": "undo", "a": "accept_remaining"}[raw]
+        if raw == "":
+            return _recommended_choice(choices)
+        if raw == "s":
             return "skip"
         if raw.isdigit():
             index = int(raw) - 1
@@ -153,7 +114,7 @@ def _prompt_choice(
         for choice in choices:
             if raw == choice.value:
                 return choice.value
-        print("Choose a number, decision value, s to skip, or q to quit.", file=output)
+        print("Choose a number, decision value, Enter, A, u, s, or q.", file=output)
 
 
 def _metadata_summary(action: PlanAction) -> str:
@@ -173,19 +134,24 @@ def _metadata_summary(action: PlanAction) -> str:
     return ", ".join(parts)
 
 
-def _action_from_dict(data: dict[str, object]) -> PlanAction:
-    from .plan import MatchConfidence
+def _recommended_choice(choices: tuple[ReviewChoice, ...]) -> str:
+    return choices[0].value if choices else "skip"
 
-    return PlanAction(
-        action=str(data.get("action", "")),
-        track_id=str(data.get("track_id", "")),
-        artist=str(data.get("artist", "")),
-        title=str(data.get("title", "")),
-        confidence=MatchConfidence(str(data.get("confidence", "unsafe"))),
-        human_review_required=bool(data.get("human_review_required", True)),
-        reason=str(data.get("reason", "")),
-        evidence=tuple(str(item) for item in data.get("evidence", [])),
-        source_path=str(data.get("source_path", "")),
-        candidate_path=str(data.get("candidate_path", "")),
-        metadata=data.get("metadata", {}) if isinstance(data.get("metadata", {}), dict) else {},
-    )
+
+def _is_high_confidence(action: PlanAction) -> bool:
+    return action.confidence.value in {"exact", "strong"}
+
+
+def _accept_remaining(report: PlanReport, index: int, decisions: list[ReviewDecision]) -> int:
+    accepted = 0
+    while index + accepted < len(report.actions) and _is_high_confidence(report.actions[index + accepted]):
+        action = report.actions[index + accepted]
+        decisions.append(
+            ReviewDecision(
+                review_id=f"{report.plan_type.upper()}-{index + accepted + 1:04d}",
+                action=action,
+                decision=_recommended_choice(choices_for_action(report.plan_type, action)),
+            )
+        )
+        accepted += 1
+    return accepted

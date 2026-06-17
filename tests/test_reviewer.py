@@ -7,8 +7,7 @@ import unittest
 from unittest.mock import patch
 
 from djlib_doctor.cli import main
-from djlib_doctor.plan import build_missing_files_plan
-from djlib_doctor.plan import write_plan
+from djlib_doctor.plan import MatchConfidence, PlanAction, PlanReport, build_missing_files_plan, write_plan
 from djlib_doctor.reviewer import load_review_log, run_interactive_review
 from djlib_doctor.snapshot import create_snapshot
 
@@ -58,6 +57,53 @@ class ReviewerTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertEqual(data["decisions"][0]["decision"], "reacquire")
         self.assertIn("Review decisions written:", stdout.getvalue())
+
+    def test_enter_accepts_recommended_choice_and_prints_progress(self):
+        with TemporaryDirectory() as tmpdir:
+            report = _review_report(("exact",))
+            out_path = Path(tmpdir) / "review.json"
+            output = io.StringIO()
+            answers = iter(["", "", "q"])
+
+            decisions = run_interactive_review(report, out_path, input_func=lambda prompt: next(answers), output=output)
+
+        self.assertEqual(decisions[0].decision, "reacquire")
+        self.assertIn("Progress: 0/1 reviewed, 1 remaining", output.getvalue())
+
+    def test_accept_remaining_records_high_confidence_rows_only(self):
+        with TemporaryDirectory() as tmpdir:
+            report = _review_report(("exact", "strong", "weak"))
+            out_path = Path(tmpdir) / "review.json"
+            output = io.StringIO()
+            answers = iter(["a", "q"])
+
+            decisions = run_interactive_review(report, out_path, input_func=lambda prompt: next(answers), output=output)
+
+        self.assertEqual([decision.decision for decision in decisions], ["reacquire", "reacquire"])
+        self.assertIn("Accepted recommended for 2 remaining high-confidence rows.", output.getvalue())
+
+    def test_undo_removes_last_decision_and_revisits_row(self):
+        with TemporaryDirectory() as tmpdir:
+            report = _review_report(("exact", "exact"))
+            out_path = Path(tmpdir) / "review.json"
+            answers = iter(["1", "first", "u", "2", "second", "q"])
+
+            decisions = run_interactive_review(report, out_path, input_func=lambda prompt: next(answers), output=io.StringIO())
+
+        self.assertEqual(len(decisions), 1)
+        self.assertEqual(decisions[0].review_id, "MISSING-FILES-0001")
+        self.assertEqual(decisions[0].decision, "manual_match")
+        self.assertEqual(decisions[0].notes, "second")
+
+
+def _review_report(confidences: tuple[str, ...]) -> PlanReport:
+    return PlanReport(
+        "missing-files",
+        tuple(
+            PlanAction("missing_file", str(index), "Artist", f"Track {index}", MatchConfidence(value), True, "missing", ())
+            for index, value in enumerate(confidences, 1)
+        ),
+    )
 
 
 if __name__ == "__main__":
