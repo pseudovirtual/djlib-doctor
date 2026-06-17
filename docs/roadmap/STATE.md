@@ -6,11 +6,11 @@ Primary-library foundation through Phase E complete; cleanup and bug-fix pass in
 
 ## Last Done
 
-V2 removed the no-op `fingerprint` package extra.
+V3 confirmed Python bytecode/cache artifacts are ignored and untracked.
 
 ## Next
 
-V3: confirm `.gitignore` and tracked files exclude Python bytecode artifacts.
+F1: make the root menu invoke accurate commands and fix the misleading `fix` option.
 
 ## Blockers
 
