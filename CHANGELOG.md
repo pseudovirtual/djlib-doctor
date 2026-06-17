@@ -13,6 +13,7 @@
 - [x] P3.9: Added the optional pyrekordbox backend seam and fail-closed encrypted Rekordbox DB messaging.
 - [x] P3.10: Parsed Rekordbox XML metadata and BeatGrid `TEMPO` rows, carrying metadata into port manifests with explicit BeatGrid status.
 - [x] P4.11: Made staged file operations rollback on failure by default, with opt-in `--continue-on-error`.
+- [x] P4.12: Added clear missing-`ffmpeg` detection for staged convert operations.
 - [x] Backlog 1: Rescoped fingerprinting as exact-duplicate/raw-byte similarity instead of audio identity.
 - [x] Backlog 2: Added adversarial Serato install refusal tests and hardened stage manifest/backup verification.
 - [x] Backlog 3: Documented Rekordbox DB import support boundaries and added a clear encrypted SQLCipher refusal.

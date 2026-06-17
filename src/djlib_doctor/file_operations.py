@@ -107,6 +107,8 @@ def _stage_operation(index: int, operation: dict[str, Any], staged_dir: Path) ->
         source = Path(operation["source"])
         target = Path(operation["target"])
         staged = staged_dir / f"OP-{index:04d}-{target.name}"
+        if shutil.which("ffmpeg") is None:
+            raise RuntimeError("ffmpeg is required for convert operations; install ffmpeg or stage copy/move/delete operations only")
         subprocess.run(["ffmpeg", "-y", "-i", str(source), str(staged)], check=True, capture_output=True)
         return {
             "operation_id": f"OP-{index:04d}",

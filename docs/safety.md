@@ -18,6 +18,8 @@ The current code must not:
 
 Staged file operations are all-or-nothing by default. If one operation fails, previously applied file copies, moves, converts, or deletes are rolled back from stage-local backups. `install file-ops --continue-on-error` is available for explicit partial-apply workflows and records errors in the install report.
 
+Convert operations require `ffmpeg` on `PATH` at staging time. If it is missing, staging fails before any staged convert output is produced.
+
 ## Write-Capable Rule
 
 Write-capable features must require:

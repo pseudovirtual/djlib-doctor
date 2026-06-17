@@ -2,6 +2,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import json
 import unittest
+from unittest import mock
 
 from djlib_doctor.cli import main
 from djlib_doctor.file_operations import apply_file_operations_stage, stage_file_operations
@@ -172,6 +173,22 @@ class FileOperationsTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertFalse(report["passed"])
+
+    def test_stage_convert_fails_clearly_when_ffmpeg_is_missing(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            source = tmp / "source.wav"
+            target = tmp / "target.aiff"
+            source.write_bytes(b"audio")
+            manifest = tmp / "file-ops.json"
+            manifest.write_text(
+                json.dumps({"operations": [{"operation": "convert", "source": str(source), "target": str(target)}]}),
+                encoding="utf-8",
+            )
+
+            with mock.patch("djlib_doctor.file_operations.shutil.which", return_value=None):
+                with self.assertRaisesRegex(RuntimeError, "ffmpeg.*install"):
+                    stage_file_operations(manifest, tmp / "stage")
 
 
 if __name__ == "__main__":
