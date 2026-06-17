@@ -84,3 +84,44 @@ class CliTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertIn("Verification report written:", stdout.getvalue())
         self.assertEqual(data["status"], "pass")
+
+    def test_verify_uses_configured_rekordbox_xml_when_arg_is_omitted(self):
+        with TemporaryDirectory() as tmpdir:
+            config = Path(tmpdir) / "config.json"
+            config.write_text(json.dumps({"primary": "rekordbox", "rekordbox_xml": str(FIXTURE)}), encoding="utf-8")
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(["verify", "--config", str(config), "--no-file-check", "--json"])
+
+        data = json.loads(stdout.getvalue())
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(data["source"]["path"], str(FIXTURE))
+
+    def test_verify_detects_rekordbox_xml_when_arg_and_config_are_omitted(self):
+        with TemporaryDirectory() as tmpdir:
+            home = Path(tmpdir) / "home"
+            desktop = home / "Desktop"
+            desktop.mkdir(parents=True)
+            detected_xml = desktop / "rekordbox.xml"
+            detected_xml.write_text(FIXTURE.read_text(encoding="utf-8"), encoding="utf-8")
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(["verify", "--home", str(home), "--no-file-check", "--json"])
+
+        data = json.loads(stdout.getvalue())
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(data["source"]["path"], str(detected_xml))
+
+    def test_verify_rejects_serato_primary_with_clear_message(self):
+        with TemporaryDirectory() as tmpdir:
+            config = Path(tmpdir) / "config.json"
+            config.write_text(json.dumps({"primary": "serato"}), encoding="utf-8")
+
+            stderr = io.StringIO()
+            with contextlib.redirect_stderr(stderr):
+                exit_code = main(["verify", "--config", str(config)])
+
+        self.assertEqual(exit_code, 3)
+        self.assertIn("verify currently supports Rekordbox XML", stderr.getvalue())

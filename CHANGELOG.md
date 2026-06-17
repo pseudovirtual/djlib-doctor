@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] A3: Added config/detection fallback for `verify` when the Rekordbox XML argument is omitted.
 - [x] A2: Added read-only Rekordbox/Serato library path detection with text and JSON output.
 - [x] A1: Added primary-library config fields and Rekordbox/Serato target path round-trip validation.
 - [x] S0: Added durable roadmap backlog and state docs for the primary-library workflow milestone.

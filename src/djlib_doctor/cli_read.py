@@ -13,6 +13,7 @@ from .collision_policy import get_duplicate_collision_policy
 from .compare import compare_exports, write_compare_report
 from .compatibility import customize_audio_compatibility_profile, get_audio_compatibility_profile, list_audio_compatibility_profiles
 from .config import default_config, load_config, write_config
+from .cli_defaults import resolve_rekordbox_xml
 from .decision_sheet import write_decision_sheet
 from .io_utils import render_json
 from .plan import build_audio_compatibility_plan, build_bad_paths_plan, build_cues_plan, build_duplicates_plan, build_missing_files_plan, load_plan, write_plan
@@ -35,13 +36,12 @@ def handle_verify(args: argparse.Namespace) -> int:
     if args.schema_version:
         print(VERIFY_SCHEMA_VERSION)
         return 0
-    if args.xml is None:
-        raise argparse.ArgumentError(None, "the following arguments are required: xml")
     try:
-        library = parse_rekordbox_xml(args.xml)
+        xml = resolve_rekordbox_xml(args.xml, args.config, args.home, args.volume)
+        library = parse_rekordbox_xml(xml)
     except (ET.ParseError, OSError, ValueError) as exc:
         return _fail("verification", exc)
-    report = verify_library(library, check_files=not args.no_file_check, source_path=str(args.xml))
+    report = verify_library(library, check_files=not args.no_file_check, source_path=str(xml))
     rendered = report.render_json(pretty=args.pretty) if args.json else report.render_text()
     if args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)

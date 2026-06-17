@@ -15,7 +15,7 @@ Scope: Rekordbox and Serato only. Do not add other DJ apps or a neutral universa
 - [x] S0: Create `docs/roadmap/BACKLOG.md` and `docs/roadmap/STATE.md` from the active backlog.
 - [x] A1: Add `primary` (`rekordbox` or `serato`) plus target paths to config and `config init` / `config show`. Default primary is `rekordbox`. Test load, validation, and round trip.
 - [x] A2: Add `djlib-doctor detect` to read-only probe default Rekordbox and Serato locations, including Rekordbox `master.db` or exported XML, Serato `_Serato_`, external-drive libraries, `database V2`, `Subcrates`, and `root.sqlite`. Print text and `--json`.
-- [ ] A3: Use config-driven defaults: explicit args first, then config, then detection, with clear errors if still unknown. Make `verify` work with no args against the configured or detected primary.
+- [x] A3: Use config-driven defaults: explicit args first, then config, then detection, with clear errors if still unknown. Make `verify` work with no args against the configured or detected primary.
 
 ## Phase B - One-Command Porting
 

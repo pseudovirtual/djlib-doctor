@@ -2,16 +2,16 @@
 
 ## Phase
 
-Primary-library foundation.
+Primary-library foundation complete; ready for review before one-command porting.
 
 ## Last Done
 
-A2 added read-only `detect` path probes for Rekordbox and Serato, with text and JSON output.
+A3 added config and detection fallback for `verify`, with clear failure when no Rekordbox XML is supplied, configured, or detected.
 
 ## Next
 
-A3: use config-driven defaults for commands, falling back to detection when explicit paths are omitted.
+Pause for maintainer review before Phase B.
 
 ## Blockers
 
-None.
+Phase B requires maintainer approval to continue from foundation into one-command sync planning.

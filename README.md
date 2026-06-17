@@ -71,11 +71,12 @@ These examples use `run/` as a scratch folder. Planning commands are read-only. 
 
 ### 1. Check A Rekordbox XML Export
 
-Export your collection from Rekordbox, then verify the XML:
+Export your collection from Rekordbox, then verify the XML. If config or detection finds it, the path can be omitted:
 
 ```bash
 djlib-doctor detect
 djlib-doctor verify ~/Desktop/rekordbox-export.xml
+djlib-doctor verify
 ```
 
 For a shareable diagnostic bundle:
