@@ -122,7 +122,9 @@ def _add_stage_install(sub: argparse._SubParsersAction) -> None:
     install = sub.add_parser("install").add_subparsers(dest="install_command", required=True)
     _install_common(install.add_parser("serato-stage"), library=True)
     _install_common(install.add_parser("serato-tags"))
-    _install_common(install.add_parser("file-ops"))
+    file_ops = install.add_parser("file-ops")
+    _install_common(file_ops)
+    file_ops.add_argument("--continue-on-error", action="store_true")
     _install_common(install.add_parser("rekordbox-db"), db=True)
 
 

@@ -42,21 +42,34 @@ def stage_file_operations(operations_manifest: Path, stage_dir: Path) -> FileOpe
     return FileOperationsStage(stage_dir, stage_manifest_path, token)
 
 
-def apply_file_operations_stage(stage_dir: Path, confirm_token: str) -> dict[str, Any]:
+def apply_file_operations_stage(stage_dir: Path, confirm_token: str, continue_on_error: bool = False) -> dict[str, Any]:
     manifest_path = stage_dir / "file-operations-stage-manifest.json"
     manifest = read_json(manifest_path)
     require_install_token("INSTALL_FILE_OPS", manifest["operations"], manifest["install_token"], confirm_token)
     backup_dir = stage_dir / "file-operation-backups"
     backup_dir.mkdir(parents=True, exist_ok=True)
     applied = []
+    backups = []
+    errors = []
     for operation in manifest["operations"]:
-        applied.append(_apply_operation(operation, backup_dir))
+        try:
+            result = _apply_operation(operation, backup_dir)
+            applied.append(result)
+            backups.extend(result.get("backups", ()))
+        except Exception as exc:
+            errors.append({"operation_id": operation.get("operation_id", ""), "operation": operation.get("operation", ""), "error": str(exc)})
+            if continue_on_error:
+                continue
+            _rollback(backups)
+            raise RuntimeError(f"File operation stage failed and was rolled back at {operation.get('operation_id', '')}: {exc}") from exc
     report = {
         "schema_version": FILE_OPS_INSTALL_SCHEMA_VERSION,
-        "passed": True,
+        "passed": not errors,
         "stage_manifest": str(manifest_path),
         "backup_dir": str(backup_dir),
         "applied": applied,
+        "errors": errors,
+        "rollback": "not_needed" if not errors else "skipped_continue_on_error",
     }
     report_path = stage_dir / "file-operations-install-report.json"
     write_json(report_path, report)
@@ -114,18 +127,36 @@ def _apply_operation(operation: dict[str, Any], backup_dir: Path) -> dict[str, A
         target = Path(operation["target"])
         staged = Path(operation["staged_path"])
         require_sha256(staged, operation["staged_sha256"], "Staged file")
-        target.parent.mkdir(parents=True, exist_ok=True)
-        if target.exists():
-            shutil.copy2(target, backup_dir / backup_name(target))
-        shutil.copy2(staged, target)
         if kind == "move":
             require_sha256(source, operation["source_sha256"], "Move source")
-            shutil.copy2(source, backup_dir / backup_name(source))
+        backups = []
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if target.exists():
+            backup = backup_dir / backup_name(target)
+            shutil.copy2(target, backup)
+            backups.append({"path": str(target), "backup": str(backup), "existed": True})
+        else:
+            backups.append({"path": str(target), "backup": "", "existed": False})
+        shutil.copy2(staged, target)
+        if kind == "move":
+            backup = backup_dir / backup_name(source)
+            shutil.copy2(source, backup)
+            backups.append({"path": str(source), "backup": str(backup), "existed": True})
             source.unlink()
-        return {"operation_id": operation["operation_id"], "operation": kind, "target": str(target)}
+        return {"operation_id": operation["operation_id"], "operation": kind, "target": str(target), "backups": backups}
     if kind == "delete":
         require_sha256(source, operation["source_sha256"], "Delete source")
-        shutil.copy2(source, backup_dir / backup_name(source))
+        backup = backup_dir / backup_name(source)
+        shutil.copy2(source, backup)
         source.unlink()
-        return {"operation_id": operation["operation_id"], "operation": kind, "source": str(source)}
+        return {"operation_id": operation["operation_id"], "operation": kind, "source": str(source), "backups": [{"path": str(source), "backup": str(backup), "existed": True}]}
     raise ValueError(f"Unsupported file operation: {kind}")
+
+
+def _rollback(backups: list[dict[str, Any]]) -> None:
+    for item in reversed(backups):
+        path = Path(item["path"])
+        if item.get("existed"):
+            shutil.copy2(Path(item["backup"]), path)
+        elif path.exists():
+            path.unlink()

@@ -60,7 +60,7 @@ def handle_install(args: argparse.Namespace) -> int:
             print(f"Serato audio tags installed: {args.stage_dir / 'serato-audio-tag-install-report.json'}")
             print(f"Tagged files installed: {len(report['installed'])}")
         elif args.install_command == "file-ops":
-            report = apply_file_operations_stage(args.stage_dir, args.confirm_token)
+            report = apply_file_operations_stage(args.stage_dir, args.confirm_token, continue_on_error=args.continue_on_error)
             print(f"File operations applied: {args.stage_dir / 'file-operations-install-report.json'}")
             print(f"Operations applied: {len(report['applied'])}")
         elif args.install_command == "rekordbox-db":

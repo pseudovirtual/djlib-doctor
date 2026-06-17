@@ -3,6 +3,7 @@ from tempfile import TemporaryDirectory
 import json
 import unittest
 
+from djlib_doctor.cli import main
 from djlib_doctor.file_operations import apply_file_operations_stage, stage_file_operations
 
 
@@ -79,6 +80,98 @@ class FileOperationsTests(unittest.TestCase):
                 apply_file_operations_stage(tmp / "stage", confirm_token=stage.install_token)
 
             self.assertEqual(source.read_bytes(), b"changed")
+
+    def test_apply_rolls_back_prior_operations_on_failure(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            source1 = tmp / "source1.aiff"
+            target1 = tmp / "target1.aiff"
+            source2 = tmp / "source2.aiff"
+            target2 = tmp / "target2.aiff"
+            source1.write_bytes(b"new-one")
+            target1.write_bytes(b"old-one")
+            source2.write_bytes(b"two")
+            manifest = tmp / "file-ops.json"
+            manifest.write_text(
+                json.dumps(
+                    {
+                        "operations": [
+                            {"operation": "copy", "source": str(source1), "target": str(target1)},
+                            {"operation": "move", "source": str(source2), "target": str(target2)},
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            stage = stage_file_operations(manifest, tmp / "stage")
+            source2.write_bytes(b"changed")
+
+            with self.assertRaises(RuntimeError):
+                apply_file_operations_stage(tmp / "stage", confirm_token=stage.install_token)
+
+            self.assertEqual(target1.read_bytes(), b"old-one")
+            self.assertEqual(source2.read_bytes(), b"changed")
+            self.assertFalse(target2.exists())
+
+    def test_apply_continue_on_error_keeps_prior_operations_and_reports_failure(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            source1 = tmp / "source1.aiff"
+            target1 = tmp / "target1.aiff"
+            source2 = tmp / "source2.aiff"
+            target2 = tmp / "target2.aiff"
+            source1.write_bytes(b"new-one")
+            source2.write_bytes(b"two")
+            manifest = tmp / "file-ops.json"
+            manifest.write_text(
+                json.dumps(
+                    {
+                        "operations": [
+                            {"operation": "copy", "source": str(source1), "target": str(target1)},
+                            {"operation": "move", "source": str(source2), "target": str(target2)},
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            stage = stage_file_operations(manifest, tmp / "stage")
+            source2.write_bytes(b"changed")
+
+            report = apply_file_operations_stage(tmp / "stage", confirm_token=stage.install_token, continue_on_error=True)
+
+            self.assertFalse(report["passed"])
+            self.assertEqual(target1.read_bytes(), b"new-one")
+            self.assertEqual(report["errors"][0]["operation_id"], "OP-0002")
+
+    def test_cli_install_file_ops_accepts_continue_on_error(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            source1 = tmp / "source1.aiff"
+            target1 = tmp / "target1.aiff"
+            source2 = tmp / "source2.aiff"
+            target2 = tmp / "target2.aiff"
+            source1.write_bytes(b"new-one")
+            source2.write_bytes(b"two")
+            manifest = tmp / "file-ops.json"
+            manifest.write_text(
+                json.dumps(
+                    {
+                        "operations": [
+                            {"operation": "copy", "source": str(source1), "target": str(target1)},
+                            {"operation": "move", "source": str(source2), "target": str(target2)},
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            stage = stage_file_operations(manifest, tmp / "stage")
+            source2.write_bytes(b"changed")
+
+            exit_code = main(["install", "file-ops", "--stage-dir", str(tmp / "stage"), "--confirm-token", stage.install_token, "--continue-on-error"])
+            report = json.loads((tmp / "stage" / "file-operations-install-report.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(exit_code, 0)
+        self.assertFalse(report["passed"])
 
 
 if __name__ == "__main__":

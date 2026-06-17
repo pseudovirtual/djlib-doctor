@@ -16,6 +16,8 @@ The current code must not:
 - quarantine files
 - delete files except through staged file operations with exact confirmation tokens
 
+Staged file operations are all-or-nothing by default. If one operation fails, previously applied file copies, moves, converts, or deletes are rolled back from stage-local backups. `install file-ops --continue-on-error` is available for explicit partial-apply workflows and records errors in the install report.
+
 ## Write-Capable Rule
 
 Write-capable features must require:
