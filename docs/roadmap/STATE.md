@@ -6,11 +6,11 @@ Primary-library foundation through Phase E complete; cleanup and bug-fix pass in
 
 ## Last Done
 
-R2 centralized sync required-path lookup.
+R3 reused the shared SQLite table-column helper in Serato inspection and porting.
 
 ## Next
 
-R3: replace private SQLite table-column lookups with the shared helper.
+R4: centralize transfer-mode choices and validation.
 
 ## Blockers
 

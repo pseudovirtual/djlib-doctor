@@ -10,7 +10,7 @@ from urllib.parse import quote
 from .io_utils import render_json, write_json
 from .serato_crate import read_serato_crate
 from .serato_file_tags import read_serato_markers2_file_tags
-from .sqlite_utils import quote_identifier
+from .sqlite_utils import quote_identifier, table_columns
 
 REKORDBOX_PORT_SCHEMA_VERSION = "1.0"
 TagReader = Callable[[Path], tuple[dict[str, Any], ...]]
@@ -208,7 +208,7 @@ def _cues(path: Path, tag_reader: TagReader | None) -> tuple[RekordboxPortCue, .
 def _read_assets_by_portable_id(root_sqlite: Path) -> dict[str, dict[str, Any]]:
     conn = sqlite3.connect(f"file:{root_sqlite}?mode=ro", uri=True)
     try:
-        columns = _table_columns(conn, "asset")
+        columns = table_columns(conn, "asset")
         wanted = [
             column
             for column in ("portable_id", "name", "artist", "album", "genre", "key", "bpm", "length_ms")
@@ -230,10 +230,6 @@ def _assets_by_portable_id(columns: list[str], rows: list[tuple[Any, ...]]) -> d
         if portable_id:
             assets[portable_id.lower()] = item
     return assets
-
-
-def _table_columns(conn: sqlite3.Connection, table: str) -> tuple[str, ...]:
-    return tuple(row[1] for row in conn.execute(f"PRAGMA table_info({quote_identifier(table)})"))
 
 
 def _is_local_portable_id(value: str) -> bool:

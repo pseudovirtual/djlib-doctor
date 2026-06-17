@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from .io_utils import render_json, write_json
-from .sqlite_utils import quote_identifier
+from .sqlite_utils import quote_identifier, table_columns
 
 SERATO_INSPECTION_SCHEMA_VERSION = "1.0"
 
@@ -67,7 +67,7 @@ def inspect_serato_root_sqlite(path: Path) -> SeratoInspection:
         tables = []
         schema_parts = []
         for name in table_names:
-            columns = tuple(row[1] for row in conn.execute(f"PRAGMA table_info({quote_identifier(name)})"))
+            columns = table_columns(conn, name)
             row_count = int(conn.execute(f"SELECT COUNT(*) FROM {quote_identifier(name)}").fetchone()[0])
             tables.append(SeratoTableInspection(name=name, columns=columns, row_count=row_count))
             schema_parts.append(f"{name}:{','.join(columns)}")

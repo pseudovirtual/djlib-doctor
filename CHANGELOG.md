@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] R3: Reused shared SQLite table-column helper in Serato inspection and porting.
 - [x] R2: Centralized sync required-path lookup.
 - [x] R1: Centralized CLI error handling behind one shared helper.
 - [x] E4: Added TestPyPI trusted-publishing workflow path and cross-OS clean-venv smoke install job.
