@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] R2: Centralized sync required-path lookup.
 - [x] R1: Centralized CLI error handling behind one shared helper.
 - [x] E4: Added TestPyPI trusted-publishing workflow path and cross-OS clean-venv smoke install job.
 - [x] E3: Added package metadata, project URLs, typed classifiers, and `py.typed` package data.

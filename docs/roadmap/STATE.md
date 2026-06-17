@@ -6,11 +6,11 @@ Primary-library foundation through Phase E complete; cleanup and bug-fix pass in
 
 ## Last Done
 
-R1 centralized CLI error handling behind one shared helper.
+R2 centralized sync required-path lookup.
 
 ## Next
 
-R2: move duplicated sync config path lookup into one shared helper.
+R3: replace private SQLite table-column lookups with the shared helper.
 
 ## Blockers
 

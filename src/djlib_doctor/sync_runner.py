@@ -6,6 +6,7 @@ from typing import Any
 
 from .rekordbox_db_stage import install_rekordbox_db_stage, stage_rekordbox_db_import
 from .serato_stage import install_serato_stage, stage_serato_from_port_manifest
+from .sync_common import required_path
 from .sync_planner import SyncPlanResult, plan_sync
 
 
@@ -50,8 +51,8 @@ def _run_rekordbox_to_serato(
     install_token: str | None,
     process_lines: tuple[str, ...],
 ) -> SyncRunResult:
-    library = _required_path(config, "serato_library_dir")
-    music = _required_path(config, "serato_music_dir")
+    library = required_path(config, "serato_library_dir")
+    music = required_path(config, "serato_music_dir")
     stage = stage_serato_from_port_manifest(plan.port_manifest, library, music, out_dir / "serato-stage")
     token = install_token or stage.install_token
     report = install_serato_stage(stage.stage_dir, library, music, token, process_lines)
@@ -65,15 +66,8 @@ def _run_serato_to_rekordbox(
     install_token: str | None,
     process_lines: tuple[str, ...],
 ) -> SyncRunResult:
-    db = _required_path(config, "rekordbox_db")
+    db = required_path(config, "rekordbox_db")
     stage = stage_rekordbox_db_import(db, plan.port_manifest, out_dir / "rekordbox-stage")
     token = install_token or stage.install_token
     install_rekordbox_db_stage(stage.stage_dir, db, token, process_lines)
     return SyncRunResult(plan, stage.stage_manifest_path, stage.stage_dir / "rekordbox-db-install-report.json")
-
-
-def _required_path(config: dict[str, Any], key: str) -> Path:
-    value = str(config.get(key) or "")
-    if not value:
-        raise ValueError(f"Config {key} is required for sync")
-    return Path(value)

@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from .certify import CertificationReport, certify_port_manifest, write_certification_report
+from .sync_common import required_path
 from .workflows import migrate_rekordbox_to_serato, migrate_serato_to_rekordbox
 
 
@@ -45,7 +46,7 @@ def _plan_rekordbox_primary(
     collection: bool,
     transfer_mode: str,
 ) -> SyncPlanResult:
-    rekordbox_xml = _required_path(config, "rekordbox_xml")
+    rekordbox_xml = required_path(config, "rekordbox_xml")
     result = migrate_rekordbox_to_serato(
         rekordbox_xml=rekordbox_xml,
         out_dir=out_dir,
@@ -69,8 +70,8 @@ def _plan_serato_primary(
     transfer_mode: str,
 ) -> SyncPlanResult:
     result = migrate_serato_to_rekordbox(
-        serato_library_dir=_required_path(config, "serato_library_dir"),
-        collection_root=_required_path(config, "music_root"),
+        serato_library_dir=required_path(config, "serato_library_dir"),
+        collection_root=required_path(config, "music_root"),
         out_dir=out_dir,
         crate=crate,
         portable_id=portable_id,
@@ -86,10 +87,3 @@ def _certified(direction: str, port_manifest: Path, out_dir: Path) -> SyncPlanRe
     certification_path = out_dir / "certification.json"
     write_certification_report(report, certification_path)
     return SyncPlanResult(direction, port_manifest, certification_path, report)
-
-
-def _required_path(config: dict[str, Any], key: str) -> Path:
-    value = str(config.get(key) or "")
-    if not value:
-        raise ValueError(f"Config {key} is required for sync planning")
-    return Path(value)
