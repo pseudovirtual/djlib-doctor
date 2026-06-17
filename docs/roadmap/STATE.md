@@ -6,11 +6,11 @@ Primary-library foundation through Phase E complete; cleanup and bug-fix pass in
 
 ## Last Done
 
-F2 expanded `doctor --config` to check configured Rekordbox DB and Serato database V2 paths.
+F3 added machine-readable `doctor --json` output.
 
 ## Next
 
-F3: add a machine-readable `doctor --json` mode for agents and smoke tests.
+F4: make interactive review undo persist correctly without leaving undone decisions in the saved log.
 
 ## Blockers
 

@@ -1,5 +1,6 @@
 import contextlib
 import io
+import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -82,6 +83,23 @@ class DoctorTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertIn("Rekordbox DB: FAIL", output)
         self.assertIn("encrypted SQLCipher", output)
+
+    def test_doctor_json_outputs_machine_readable_report(self):
+        with TemporaryDirectory() as tmpdir:
+            home = Path(tmpdir) / "home"
+            desktop = home / "Desktop"
+            desktop.mkdir(parents=True)
+            (desktop / "rekordbox.xml").write_text(FIXTURE.read_text(encoding="utf-8"), encoding="utf-8")
+            stdout = io.StringIO()
+
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(["doctor", "--home", str(home), "--json"])
+
+        report = json.loads(stdout.getvalue())
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(report["schema_version"], "1.0")
+        self.assertEqual(report["checks"][0]["label"], "Rekordbox XML")
+        self.assertEqual(report["checks"][0]["status"], "PASS")
 
 
 def _write_serato_database_v2(path: Path) -> None:

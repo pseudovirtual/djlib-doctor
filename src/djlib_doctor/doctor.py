@@ -14,6 +14,8 @@ from .serato_sqlite import inspect_serato_root_sqlite
 from .sqlite_utils import quote_identifier, table_columns
 from .verify import verify_library
 
+DOCTOR_SCHEMA_VERSION = "1.0"
+
 
 def build_doctor_report(
     home: Path | None = None, volumes: tuple[Path, ...] | None = None, config_path: Path | None = None
@@ -21,7 +23,12 @@ def build_doctor_report(
     detection = _with_config_findings(detect_libraries(home, volumes), config_path)
     checkable = {"xml_export", "master_db", "root_sqlite", "database_v2"}
     checks = [_check_finding(item) for item in detection["findings"] if item["kind"] in checkable]
-    return {"detection": detection, "checks": checks, "punch_list": _punch_list(detection, checks)}
+    return {
+        "schema_version": DOCTOR_SCHEMA_VERSION,
+        "detection": detection,
+        "checks": checks,
+        "punch_list": _punch_list(detection, checks),
+    }
 
 
 def render_doctor_report(report: dict[str, Any]) -> str:
