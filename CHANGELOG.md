@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] B3: Made `sync` dry-run by default and required `--apply` before staged installs.
 - [x] B2: Added `sync` staged/install pipeline with preview-first approval and both primary directions.
 - [x] B1: Added config-primary `sync plan` for dry-run port manifests and certification in both directions.
 - [x] A3: Added config/detection fallback for `verify` when the Rekordbox XML argument is omitted.

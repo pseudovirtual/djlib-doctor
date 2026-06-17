@@ -2,16 +2,16 @@
 
 ## Phase
 
-Primary-library foundation complete; one-command porting in progress.
+Primary-library foundation complete; one-command porting complete.
 
 ## Last Done
 
-B2 added `sync`, which previews/certifies first, then stages and installs through the existing token-gated Serato or Rekordbox DB installers after explicit approval.
+B3 made `sync` dry-run by default. Staged installs now require `--apply` plus explicit approval, and backups remain handled by the existing install engines.
 
 ## Next
 
-B3: keep destructive paths dry-run by default and require explicit confirmation or `--apply`, with automatic backups.
+Pause for maintainer review before Phase C.
 
 ## Blockers
 
-None.
+Phase C requires maintainer approval to continue from porting into friendly entry points.

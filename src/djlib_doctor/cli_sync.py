@@ -27,6 +27,7 @@ def add_sync_parser(sub: argparse._SubParsersAction) -> None:
     sync.add_argument("--collection", action="store_true")
     sync.add_argument("--playlist-name")
     sync.add_argument("--transfer-mode", default="full", choices=("full", "cues-only", "match-only"))
+    sync.add_argument("--apply", action="store_true")
     sync.add_argument("--yes", action="store_true")
     sync.add_argument("--confirm-token")
     sync.add_argument("--skip-process-check", action="store_true")
@@ -42,6 +43,9 @@ def handle_sync(args: argparse.Namespace) -> int:
             return 0 if result.certification.passed else 1
         plan = plan_sync(config, args.out, **plan_kwargs)
         _print_plan(plan)
+        if not args.apply:
+            print("Dry-run only. Re-run with --apply to stage and install.")
+            return 0 if plan.certification.passed else 1
         _require_sync_approval(args)
         lines = () if args.skip_process_check else _process_lines(config)
         result = install_sync_plan(config, args.out, plan, install_token=args.confirm_token, process_lines=lines)

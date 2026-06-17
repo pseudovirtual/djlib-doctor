@@ -23,3 +23,43 @@ def make_serato_root(path: Path) -> None:
         conn.commit()
     finally:
         conn.close()
+
+
+def insert_serato_asset(root_sqlite: Path, portable_id: str) -> None:
+    conn = sqlite3.connect(root_sqlite)
+    try:
+        conn.execute(
+            "INSERT INTO asset(revision, portable_id, file_name, name, artist) VALUES(?, ?, ?, ?, ?)",
+            (1, portable_id, Path(portable_id).name, Path(portable_id).stem, "Artist One"),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def make_rekordbox_import_db(path: Path) -> None:
+    conn = sqlite3.connect(path)
+    try:
+        conn.executescript(
+            """
+            CREATE TABLE djmdContent(
+                ID INTEGER PRIMARY KEY,
+                FolderPath TEXT,
+                FileNameL TEXT,
+                Title TEXT,
+                ArtistName TEXT
+            );
+            CREATE TABLE djmdCue(
+                ID INTEGER PRIMARY KEY,
+                ContentID INTEGER,
+                InMsec INTEGER,
+                OutMsec INTEGER,
+                Kind INTEGER,
+                HotCue INTEGER,
+                Name TEXT
+            );
+            """
+        )
+        conn.commit()
+    finally:
+        conn.close()

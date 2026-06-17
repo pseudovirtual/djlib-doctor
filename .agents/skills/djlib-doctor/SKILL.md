@@ -54,7 +54,7 @@ PYTHONPATH=src python3 -m djlib_doctor.cli inspect serato --library-dir "/path/t
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --out run/rb-to-serato --verify-preview
 PYTHONPATH=src python3 -m djlib_doctor.cli certify rb-to-serato --port-manifest run/rb-to-serato/port-manifest.json --out run/rb-to-serato/certification.json
 PYTHONPATH=src python3 -m djlib_doctor.cli sync plan --config run/djlib-doctor.json --collection --out run/sync-plan
-PYTHONPATH=src python3 -m djlib_doctor.cli sync --config run/djlib-doctor.json --collection --out run/sync-run --yes
+PYTHONPATH=src python3 -m djlib_doctor.cli sync --config run/djlib-doctor.json --collection --out run/sync-run --apply --yes
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml export.xml --playlists-file playlists.txt --summary-only --out run/unused
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml export.xml --track-id 123 --transfer-mode cues-only --out run/rb-track-cues
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml export.xml --collection --transfer-mode match-only --out run/rb-collection-match
@@ -91,7 +91,7 @@ PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline baseline.x
 11. Use `--transfer-mode full`, `--transfer-mode cues-only`, or `--transfer-mode match-only` to make migration intent explicit.
 12. Certify generated migration outputs with `certify rb-to-serato` or `certify serato-to-rb` before staging or installing.
 13. Use `sync plan` when a config primary should choose the migration direction; it supports both Rekordbox and Serato as primary and remains dry-run-only.
-14. Use `sync` only when the user wants the approved stage/install pipeline; it previews and certifies before requiring typed `yes`, `--yes`, or an exact install token.
+14. Use `sync` as a dry-run by default; add `--apply` only when the user wants the approved stage/install pipeline, then require typed `yes`, `--yes`, or an exact install token.
 15. For Rekordbox-to-Serato, prefer `--summary-only` first for batch playlist files, then generate crate previews with `--verify-preview` for single-playlist checks.
 16. For Serato-to-Rekordbox, do not stop at “import the XML preview” when the user wants a write workflow. Use `stage rekordbox-db-import` or `migrate serato-to-rb --stage-db`, then `install rekordbox-db`; the DB importer currently supports only tested plain-SQLite schemas and fails closed for unsupported schemas or encrypted SQLCipher DBs.
 17. For Serato install, require the exact stage token, keep Serato closed, and verify the install report.
