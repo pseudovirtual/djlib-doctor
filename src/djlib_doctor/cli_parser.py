@@ -10,6 +10,7 @@ from .cli_fingerprint import add_fingerprint_parser
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="djlib-doctor", allow_abbrev=False)
     sub = parser.add_subparsers(dest="command", required=True)
+    _add_detect(sub)
     _add_verify(sub)
     _add_snapshot(sub)
     _add_plan(sub)
@@ -21,6 +22,14 @@ def build_parser() -> argparse.ArgumentParser:
     _add_migrate_port_compare(sub)
     sub.add_parser("self-test", help="Run a fast built-in smoke test using synthetic fixtures.")
     return parser
+
+
+def _add_detect(sub: argparse._SubParsersAction) -> None:
+    p = sub.add_parser("detect", help="Read-only probe for Rekordbox and Serato library paths.")
+    p.add_argument("--home", type=Path, default=Path.home())
+    p.add_argument("--volume", action="append", type=Path)
+    p.add_argument("--json", action="store_true")
+    p.add_argument("--pretty", action="store_true")
 
 
 def _add_verify(sub: argparse._SubParsersAction) -> None:

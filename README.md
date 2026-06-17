@@ -9,6 +9,7 @@ This is an open-source project from [@pseudovirtual](https://github.com/pseudovi
 ## What It Does
 
 - verifies Rekordbox XML exports
+- detects local Rekordbox and Serato library paths read-only
 - separates collection tracks from playlist references
 - treats streaming placeholders as placeholders, not missing files
 - parses memory cues, hotcues, cue loops, and loop end times
@@ -49,10 +50,9 @@ git clone https://github.com/pseudovirtual/djlib-doctor.git
 cd djlib-doctor
 python3 -m pip install -e .
 djlib-doctor verify tests/fixtures/rekordbox/simple.xml --no-file-check
+djlib-doctor detect
 djlib-doctor self-test
 ```
-
-Before installing, run commands from a clone with `PYTHONPATH=src python3 -m djlib_doctor.cli ...`.
 
 Serato audio tag staging needs optional dependencies: `python3 -m pip install -e ".[audio-tags]"`.
 
@@ -74,6 +74,7 @@ These examples use `run/` as a scratch folder. Planning commands are read-only. 
 Export your collection from Rekordbox, then verify the XML:
 
 ```bash
+djlib-doctor detect
 djlib-doctor verify ~/Desktop/rekordbox-export.xml
 ```
 
@@ -184,8 +185,6 @@ In Codex, Claude Desktop, or another local coding agent, ask for read-only help 
 ```text
 Use djlib-doctor to inspect my Rekordbox XML export. Stay read-only, explain the findings in DJ language, and do not modify my library.
 ```
-
-The repo includes [AGENTS.md](AGENTS.md) and a packaged skill under `.agents/skills/djlib-doctor/`.
 
 ## Project Status
 

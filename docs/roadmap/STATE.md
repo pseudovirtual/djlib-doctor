@@ -6,11 +6,11 @@ Primary-library foundation.
 
 ## Last Done
 
-A1 added `primary` plus Rekordbox/Serato target paths to config defaults, validation, schemas, and `config init` / `config show`.
+A2 added read-only `detect` path probes for Rekordbox and Serato, with text and JSON output.
 
 ## Next
 
-A2: add read-only `djlib-doctor detect` for Rekordbox and Serato default locations, with text and `--json` output.
+A3: use config-driven defaults for commands, falling back to detection when explicit paths are omitted.
 
 ## Blockers
 
