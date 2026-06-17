@@ -4,8 +4,10 @@ import contextlib
 import io
 import json
 import unittest
+from unittest import mock
 
 from djlib_doctor.cli import main
+from djlib_doctor import cli_read
 
 
 FIXTURE = Path(__file__).parent / "fixtures" / "rekordbox" / "simple.xml"
@@ -16,6 +18,22 @@ class CliTests(unittest.TestCase):
         stdout = io.StringIO()
         with contextlib.redirect_stdout(stdout):
             exit_code = main(["self-test"])
+
+        self.assertEqual(exit_code, 0)
+        self.assertIn("djlib-doctor self-test: PASS", stdout.getvalue())
+
+    def test_self_test_does_not_require_repo_tests_fixture(self):
+        real_parse = cli_read.parse_rekordbox_xml
+
+        def parse_without_repo_fixture(path):
+            if "/tests/fixtures/" in str(path):
+                raise FileNotFoundError(path)
+            return real_parse(path)
+
+        stdout = io.StringIO()
+        with mock.patch("djlib_doctor.cli_read.parse_rekordbox_xml", side_effect=parse_without_repo_fixture):
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(["self-test"])
 
         self.assertEqual(exit_code, 0)
         self.assertIn("djlib-doctor self-test: PASS", stdout.getvalue())

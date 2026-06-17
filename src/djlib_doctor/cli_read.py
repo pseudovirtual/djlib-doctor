@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import sqlite3
 import sys
+from tempfile import TemporaryDirectory
 import xml.etree.ElementTree as ET
 
 from .apply_manifest import build_apply_manifest, write_apply_manifest
@@ -166,16 +167,41 @@ def handle_inspect(args: argparse.Namespace) -> int:
 
 
 def handle_self_test(args: argparse.Namespace) -> int:
-    fixture = Path(__file__).resolve().parents[2] / "tests" / "fixtures" / "rekordbox" / "simple.xml"
     try:
-        report = verify_library(parse_rekordbox_xml(fixture), check_files=False, source_path=str(fixture))
-        build_rekordbox_to_serato_plan(fixture, "ROOT / Fixture Playlist")
+        with TemporaryDirectory() as tmpdir:
+            fixture = _write_self_test_fixture(Path(tmpdir))
+            report = verify_library(parse_rekordbox_xml(fixture), check_files=False, source_path=str(fixture))
+            build_rekordbox_to_serato_plan(fixture, "ROOT / Fixture Playlist")
     except Exception as exc:
         return _fail("self-test", exc)
     print("djlib-doctor self-test: PASS")
-    print(f"Fixture: {fixture}")
+    print("Fixture: generated synthetic Rekordbox XML")
     print(f"Tracks: {report.collection_tracks}")
     return 0
+
+
+def _write_self_test_fixture(tmpdir: Path) -> Path:
+    fixture = tmpdir / "self-test-rekordbox.xml"
+    fixture.write_text(
+        """<?xml version="1.0" encoding="UTF-8"?>
+<DJ_PLAYLISTS Version="1.0.0">
+  <COLLECTION Entries="1">
+    <TRACK TrackID="1" Name="Self Test Track" Artist="Fixture Artist" TotalTime="120" Kind="AIFF File" Location="file://localhost/tmp/djlib-doctor-self-test.aiff">
+      <POSITION_MARK Name="Hotcue A" Type="0" Start="24.000" Num="0"/>
+    </TRACK>
+  </COLLECTION>
+  <PLAYLISTS>
+    <NODE Type="0" Name="ROOT" Count="1">
+      <NODE Name="Fixture Playlist" Type="1" KeyType="0" Entries="1">
+        <TRACK Key="1"/>
+      </NODE>
+    </NODE>
+  </PLAYLISTS>
+</DJ_PLAYLISTS>
+""",
+        encoding="utf-8",
+    )
+    return fixture
 
 
 def handle_compare(args: argparse.Namespace) -> int:

@@ -15,6 +15,7 @@
 - [x] P4.11: Made staged file operations rollback on failure by default, with opt-in `--continue-on-error`.
 - [x] P4.12: Added clear missing-`ffmpeg` detection for staged convert operations.
 - [x] P4.13: Changed staged file-operation live writes to temp-copy plus atomic rename.
+- [x] P5.14: Made `self-test` generate its own synthetic Rekordbox XML fixture for non-editable installs.
 - [x] Backlog 1: Rescoped fingerprinting as exact-duplicate/raw-byte similarity instead of audio identity.
 - [x] Backlog 2: Added adversarial Serato install refusal tests and hardened stage manifest/backup verification.
 - [x] Backlog 3: Documented Rekordbox DB import support boundaries and added a clear encrypted SQLCipher refusal.
