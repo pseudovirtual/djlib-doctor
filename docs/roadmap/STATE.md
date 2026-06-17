@@ -6,11 +6,11 @@ Primary-library foundation through review polish complete; Phase E polish/distri
 
 ## Last Done
 
-E1 added Ruff lint/format configuration, dev extra, and CI checks.
+E2 expanded tests CI to Ubuntu, macOS, and Windows on Python 3.9 and 3.13.
 
 ## Next
 
-E2: add cross-OS CI matrix for Python 3.9 and 3.13.
+E3: complete package metadata and ship `py.typed`.
 
 ## Blockers
 

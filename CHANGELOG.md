@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] E2: Expanded tests CI to Ubuntu, macOS, and Windows on Python 3.9 and 3.13.
 - [x] E1: Added Ruff lint/format configuration, dev extra, and CI checks.
 - [x] D1: Polished interactive review with default Enter, high-confidence accept-remaining, undo, and progress output.
 - [x] C2: Added a TTY-only no-arg interactive menu for doctor, sync, fix, config, and quit.
