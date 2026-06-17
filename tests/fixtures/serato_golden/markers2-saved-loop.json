@@ -1,0 +1,16 @@
+{
+  "name": "markers2-saved-loop",
+  "provenance": "Derived from Holzhaus/serato-tags scripts/serato_markers2.py LoopEntry FMT '>cBII4s4sB?' and docs/fileformats.md Markers2 version/storage notes.",
+  "payload_hex": "01 01 4c 4f 4f 50 00 00 00 00 1b 00 03 00 00 fa 00 00 01 38 80 00 00 00 00 00 00 00 ff cc 00 4c 6f 6f 70 20 44 00",
+  "expected_markers": [
+    {
+      "kind": "loop",
+      "cue_type": "loop",
+      "start_ms": 64000,
+      "end_ms": 80000,
+      "slot": 3,
+      "label": "Loop D",
+      "color": "cc"
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- [x] P0.1: Added Serato Markers2 golden-vector tests for hotcue and saved-loop parsing.
+- [x] P0.1: Vendored Serato Markers2 golden-vector fixtures for hotcue and saved-loop parsing.
 - [x] P0.2: Added real-fixture capture documentation and skip-safe fixture layout.
 - [x] P1.3: Added optional-mutagen Serato Markers2 file-tag reading and rewired Serato-to-Rekordbox cues to file tags.
 - [x] P1.4: Added Markers2 decode/encode/decode golden-vector coverage for supported cue and loop entries.

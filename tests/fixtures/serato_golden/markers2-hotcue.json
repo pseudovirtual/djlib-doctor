@@ -1,0 +1,16 @@
+{
+  "name": "markers2-hotcue",
+  "provenance": "Derived from Holzhaus/serato-tags scripts/serato_markers2.py CueEntry FMT '>cBIc3s2s' and docs/fileformats.md Markers2 version/storage notes.",
+  "payload_hex": "01 01 43 55 45 00 00 00 00 12 00 02 00 00 56 ce 00 cc cc 00 00 00 43 75 65 20 43 00",
+  "expected_markers": [
+    {
+      "kind": "hotcue",
+      "cue_type": "cue",
+      "start_ms": 22222,
+      "end_ms": null,
+      "slot": 2,
+      "label": "Cue C",
+      "color": "cccc00"
+    }
+  ]
+}
