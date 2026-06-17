@@ -24,7 +24,7 @@ This is an open-source project from [@pseudovirtual](https://github.com/pseudovi
 - certifies migration previews and staged artifacts with machine-readable scorecards
 - scopes migration plans to one track, one playlist/crate, many playlists, or a whole collection
 - supports transfer modes: `full`, `cues-only`, and `match-only`
-- stages implemented write workflows behind explicit install tokens
+- stages implemented write workflows behind explicit approvals and install tokens
 
 ## Experimental / Limited Coverage
 

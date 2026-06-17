@@ -43,6 +43,7 @@ PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline tests/fixt
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlist "ROOT / Fixture Playlist" --out work/serato-port-demo --verify-preview
 PYTHONPATH=src python3 -m djlib_doctor.cli certify rb-to-serato --port-manifest work/serato-port-demo/port-manifest.json --out work/serato-port-demo/certification.json
 PYTHONPATH=src python3 -m djlib_doctor.cli sync plan --config work/djlib-doctor.json --collection --out work/sync-plan
+PYTHONPATH=src python3 -m djlib_doctor.cli sync --config work/djlib-doctor.json --collection --out work/sync-run --yes --skip-process-check
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlists-file playlists.txt --summary-only --out work/unused
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --track-id 1 --transfer-mode cues-only --out work/serato-track-demo
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --collection --transfer-mode match-only --out work/serato-collection-demo

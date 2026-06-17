@@ -20,7 +20,7 @@ Scope: Rekordbox and Serato only. Do not add other DJ apps or a neutral universa
 ## Phase B - One-Command Porting
 
 - [x] B1: Add a projection/sync planner that takes the configured primary and target, then produces the existing dry-run port manifest and certification. Reuse current port and certify code. Direction is chosen by `primary`.
-- [ ] B2: Add `djlib-doctor sync` for the full safe interactive pipeline: preview, typed confirmation, stage, and install. Non-interactive mode uses `--yes` or `--confirm-token`.
+- [x] B2: Add `djlib-doctor sync` for the full safe interactive pipeline: preview, typed confirmation, stage, and install. Non-interactive mode uses `--yes` or `--confirm-token`.
 - [ ] B3: Keep destructive paths dry-run by default: show preview/diff and require explicit confirmation or `--apply`. Backups are automatic.
 
 ## Phase C - Friendly Entry Points

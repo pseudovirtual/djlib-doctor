@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] B2: Added `sync` staged/install pipeline with preview-first approval and both primary directions.
 - [x] B1: Added config-primary `sync plan` for dry-run port manifests and certification in both directions.
 - [x] A3: Added config/detection fallback for `verify` when the Rekordbox XML argument is omitted.
 - [x] A2: Added read-only Rekordbox/Serato library path detection with text and JSON output.
