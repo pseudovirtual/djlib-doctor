@@ -47,6 +47,18 @@ class PackagingTests(unittest.TestCase):
         self.assertIn("python -m build", text)
         self.assertIn("tags:", text)
 
+    def test_package_metadata_and_py_typed_marker(self):
+        pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+
+        self.assertTrue((ROOT / "src" / "djlib_doctor" / "py.typed").exists())
+        self.assertIn('name = "Vinayak Ranade"', pyproject)
+        self.assertIn("[project.urls]", pyproject)
+        self.assertIn('"Development Status :: 3 - Alpha"', pyproject)
+        self.assertIn('"Programming Language :: Python :: 3.13"', pyproject)
+        self.assertIn('"Typing :: Typed"', pyproject)
+        self.assertIn("[tool.setuptools.package-data]", pyproject)
+        self.assertIn('djlib_doctor = ["py.typed"]', pyproject)
+
 
 if __name__ == "__main__":
     unittest.main()

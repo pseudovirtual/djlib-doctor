@@ -6,11 +6,11 @@ Primary-library foundation through review polish complete; Phase E polish/distri
 
 ## Last Done
 
-E2 expanded tests CI to Ubuntu, macOS, and Windows on Python 3.9 and 3.13.
+E3 completed package metadata, project URLs, typed classifiers, and `py.typed` package data.
 
 ## Next
 
-E3: complete package metadata and ship `py.typed`.
+E4: add TestPyPI dry-run publishing and clean-venv smoke install workflow.
 
 ## Blockers
 

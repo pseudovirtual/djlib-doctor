@@ -10,15 +10,32 @@ readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
 authors = [
-  { name = "djlib-doctor contributors" }
+  { name = "Vinayak Ranade", email = "vinayak.ranade@gmail.com" }
+]
+maintainers = [
+  { name = "Vinayak Ranade", email = "vinayak.ranade@gmail.com" }
 ]
 keywords = ["dj", "rekordbox", "serato", "music-library", "verification", "cue-points"]
 classifiers = [
-  "Development Status :: 2 - Pre-Alpha",
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: End Users/Desktop",
+  "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Topic :: Multimedia :: Sound/Audio",
+  "Typing :: Typed",
 ]
+
+[project.urls]
+Homepage = "https://github.com/pseudovirtual/djlib-doctor"
+Repository = "https://github.com/pseudovirtual/djlib-doctor"
+Issues = "https://github.com/pseudovirtual/djlib-doctor/issues"
+Changelog = "https://github.com/pseudovirtual/djlib-doctor/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 audio-tags = ["mutagen>=1.47"]
@@ -44,3 +61,6 @@ ignore = ["E501", "UP045"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+djlib_doctor = ["py.typed"]

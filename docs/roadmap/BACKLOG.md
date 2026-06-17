@@ -37,5 +37,5 @@ Scope: Rekordbox and Serato only. Do not add other DJ apps or a neutral universa
 
 - [x] E1: Add Ruff lint/format config, dev dependency, CI checks, and apply formatting.
 - [x] E2: Add cross-OS CI matrix for Python 3.9 and 3.13.
-- [ ] E3: Complete package metadata and ship `py.typed`.
+- [x] E3: Complete package metadata and ship `py.typed`.
 - [ ] E4: Add TestPyPI dry-run publishing and clean-venv smoke install workflow.
