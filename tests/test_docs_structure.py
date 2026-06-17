@@ -42,6 +42,20 @@ class DocsStructureTests(unittest.TestCase):
         for phrase in ("pyrekordbox", "djmdContent", "djmdCue", "StatsFull", "rb_local_usn", "UUID"):
             self.assertIn(phrase, text)
 
+    def test_roadmap_tracks_active_backlog_and_state(self):
+        backlog = ROOT / "docs" / "roadmap" / "BACKLOG.md"
+        state = ROOT / "docs" / "roadmap" / "STATE.md"
+
+        self.assertTrue(backlog.exists())
+        self.assertTrue(state.exists())
+
+        backlog_text = backlog.read_text(encoding="utf-8")
+        state_text = state.read_text(encoding="utf-8")
+        for label in ("Phase A", "A1", "Phase B", "B1", "Phase C", "C1", "Phase D", "D1"):
+            self.assertIn(label, backlog_text)
+        self.assertIn("Primary-library foundation", state_text)
+        self.assertIn("Next", state_text)
+
 
 if __name__ == "__main__":
     unittest.main()
