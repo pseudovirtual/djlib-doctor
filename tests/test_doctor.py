@@ -4,11 +4,13 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest import mock
 
 from tests.helpers import make_rekordbox_import_db, make_serato_root
 
 from djlib_doctor.cli import main
 from djlib_doctor.config import default_config, write_config
+from djlib_doctor.rekordbox_xml import RekordboxLibrary, Track
 from djlib_doctor.serato_tlv import record, text
 
 FIXTURE = Path(__file__).parent / "fixtures" / "rekordbox" / "simple.xml"
@@ -82,7 +84,28 @@ class DoctorTests(unittest.TestCase):
         output = stdout.getvalue()
         self.assertEqual(exit_code, 0)
         self.assertIn("Rekordbox DB: FAIL", output)
-        self.assertIn("encrypted SQLCipher", output)
+        self.assertTrue("SQLCipher backend is unavailable" in output or "could not unlock" in output)
+
+    def test_doctor_can_check_rekordbox_db_via_pyrekordbox_reader(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            db = tmp / "master.db"
+            config_path = tmp / "djlib-doctor.json"
+            db.write_bytes(b"encrypted placeholder")
+            write_config(config_path, default_config(rekordbox_db=db))
+            library = RekordboxLibrary(
+                tracks=(Track("1", "Track One", "Artist One", None, "unknown", None, "AIFF"),),
+                playlist_refs=(),
+            )
+            stdout = io.StringIO()
+
+            with mock.patch("djlib_doctor.doctor.read_rekordbox_master_db", return_value=library):
+                with contextlib.redirect_stdout(stdout):
+                    exit_code = main(["doctor", "--home", str(tmp / "empty-home"), "--config", str(config_path)])
+
+        output = stdout.getvalue()
+        self.assertEqual(exit_code, 0)
+        self.assertIn("Rekordbox DB: PASS", output)
 
     def test_doctor_json_outputs_machine_readable_report(self):
         with TemporaryDirectory() as tmpdir:

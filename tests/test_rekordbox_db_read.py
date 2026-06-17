@@ -1,0 +1,111 @@
+import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from types import SimpleNamespace
+
+from tests.support.rekordbox_encrypted_fixture import (
+    SqlcipherUnavailable,
+    generate_encrypted_rekordbox_fixture,
+    rekordbox_public_sqlcipher_key,
+)
+
+from djlib_doctor.cues import CueKind, CueType
+from djlib_doctor.rekordbox_db_read import read_rekordbox_master_db
+
+
+class RekordboxDbReadTests(unittest.TestCase):
+    def test_reads_pyrekordbox_rows_into_native_library(self):
+        db = _FakeRekordboxDb(
+            contents=[
+                SimpleNamespace(
+                    ID="1",
+                    FolderPath="/Music",
+                    FileNameL="Track One.aiff",
+                    Title="Track One",
+                    ArtistName="Artist One",
+                    AlbumName="Album",
+                    GenreName="House",
+                    KeyName="8A",
+                    BPM=124.0,
+                    Length=300000,
+                    FileType=12,
+                    Rating=3,
+                    Commnt="Ready",
+                )
+            ],
+            cues=[SimpleNamespace(ContentID="1", InMsec=12345, OutMsec=56000, Kind=4, HotCue=1, Comment="Loop B")],
+            playlists=[SimpleNamespace(ID="10", Name="Fixture Playlist", Attribute=0, ParentID=None)],
+            songs=[SimpleNamespace(PlaylistID="10", ContentID="1", TrackNo=1)],
+        )
+
+        library = read_rekordbox_master_db(Path("master.db"), opener=lambda *args, **kwargs: db)
+
+        self.assertTrue(db.closed)
+        self.assertEqual(len(library.tracks), 1)
+        track = library.tracks[0]
+        self.assertEqual(track.track_id, "1")
+        self.assertEqual(track.name, "Track One")
+        self.assertEqual(track.artist, "Artist One")
+        self.assertEqual(track.path, Path("/Music/Track One.aiff"))
+        self.assertEqual(track.format, "AIFF")
+        self.assertEqual(track.bpm, 124.0)
+        self.assertEqual(track.comments, "Ready")
+        self.assertEqual(len(track.cues), 1)
+        self.assertEqual(track.cues[0].kind, CueKind.HOTCUE)
+        self.assertEqual(track.cues[0].cue_type, CueType.LOOP)
+        self.assertEqual(track.cues[0].start, 12.345)
+        self.assertEqual(track.cues[0].end, 56.0)
+        self.assertEqual(track.cues[0].slot, 1)
+        self.assertEqual(library.playlists[0].entries, ("1",))
+        self.assertEqual(library.playlist_refs[0].playlist, "Fixture Playlist")
+
+    def test_reads_generated_encrypted_fixture_when_backends_are_available(self):
+        with TemporaryDirectory() as tmpdir:
+            try:
+                from pyrekordbox.db6 import database
+
+                fixture = generate_encrypted_rekordbox_fixture(Path(tmpdir) / "master.db")
+            except (ImportError, SqlcipherUnavailable) as exc:
+                self.skipTest(str(exc))
+            original_get_pid = database.get_rekordbox_pid
+            database.get_rekordbox_pid = lambda: 0
+            try:
+                library = read_rekordbox_master_db(fixture.encrypted_db, key=rekordbox_public_sqlcipher_key())
+            finally:
+                database.get_rekordbox_pid = original_get_pid
+
+        self.assertEqual(library.tracks[0].track_id, "1")
+        self.assertEqual(library.tracks[0].cues[0].start, 12.345)
+
+
+class _FakeQuery(tuple):
+    def all(self):
+        return list(self)
+
+
+class _FakeRekordboxDb:
+    def __init__(self, contents=(), cues=(), playlists=(), songs=()):
+        self.contents = _FakeQuery(contents)
+        self.cues = _FakeQuery(cues)
+        self.playlists = _FakeQuery(playlists)
+        self.songs = _FakeQuery(songs)
+        self.closed = False
+
+    def get_content(self):
+        return self.contents
+
+    def get_cue(self):
+        return self.cues
+
+    def get_playlist(self):
+        return self.playlists
+
+    def get_playlist_songs(self):
+        return self.songs
+
+    def close(self):
+        self.closed = True
+
+
+if __name__ == "__main__":
+    unittest.main()

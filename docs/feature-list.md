@@ -33,7 +33,7 @@
 ## Experimental / Limited Coverage
 
 - Serato audio tag writes and Markers2 cue imports are fixture-tested and need broader real-world validation.
-- No real Rekordbox `master.db` version is certified yet; modern encrypted SQLCipher databases are unsupported.
+- Rekordbox encrypted `master.db` reads are generated-fixture tested through pyrekordbox; real captured DB certification is still pending.
 - Acoustic fingerprinting is planned; current fingerprinting is byte-level only.
 
 ## Main Commands

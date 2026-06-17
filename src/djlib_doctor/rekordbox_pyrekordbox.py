@@ -25,10 +25,10 @@ def _master_database(importer: Callable[[], Any] | None) -> Any:
         except ImportError as exc:
             raise _unavailable(exc) from exc
     try:
-        from pyrekordbox.masterdb import MasterDatabase
+        from pyrekordbox.db6 import Rekordbox6Database
     except ImportError as exc:
         raise _unavailable(exc) from exc
-    return MasterDatabase
+    return Rekordbox6Database
 
 
 def _unavailable(exc: ImportError) -> PyrekordboxUnavailable:

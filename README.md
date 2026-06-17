@@ -29,7 +29,7 @@ This is an open-source project from [@pseudovirtual](https://github.com/pseudovi
 ## Experimental / Limited Coverage
 
 - Serato audio tag writes and Serato Markers2 cue import are fixture-tested and need broader real-world validation.
-- No real Rekordbox DB version is certified yet; only tested plain-SQLite `master.db` schemas are supported.
+- Rekordbox encrypted `master.db` reads are generated-fixture tested through pyrekordbox; real captured DB certification is still pending.
 - Acoustic fingerprinting is planned behind an optional backend; current fingerprinting is byte-level only.
 
 ## Safety Model
@@ -177,7 +177,7 @@ djlib-doctor install rekordbox-db --stage-dir run/rekordbox-stage --db /path/to/
 djlib-doctor migrate serato-to-rb --serato-library-dir /path/to/serato-library --crate /path/to/_Serato_/Subcrates/MySet.crate --collection-root ~/Music --out run/serato-to-rb --stage-db --rekordbox-db /path/to/rekordbox/master.db
 ```
 
-The DB importer currently supports only plain SQLite `master.db` files with the tested `djmdContent` columns and optional `djmdCue` cue table. Modern encrypted SQLCipher Rekordbox databases are not supported and fail closed with a specific error.
+The DB importer currently writes only to plain SQLite `master.db` files with the tested `djmdContent` columns and optional `djmdCue` cue table. Encrypted Rekordbox DB reads/checks use pyrekordbox; encrypted staged writes are planned in Phase F and fail closed until that lands.
 
 ### 9. Let An Agent Help, Safely
 

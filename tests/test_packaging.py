@@ -57,7 +57,7 @@ class PackagingTests(unittest.TestCase):
 
         self.assertTrue((ROOT / "src" / "djlib_doctor" / "py.typed").exists())
         self.assertIn('name = "Vinayak Ranade"', pyproject)
-        self.assertIn('dependencies = ["pyrekordbox>=0.5", "sqlcipher3-wheels>=0.5"]', pyproject)
+        self.assertIn('dependencies = ["pyrekordbox>=0.4.4", "sqlcipher3-wheels>=0.5"]', pyproject)
         self.assertNotIn('rekordbox = ["pyrekordbox', pyproject)
         self.assertIn("[project.urls]", pyproject)
         self.assertIn('"Development Status :: 3 - Alpha"', pyproject)

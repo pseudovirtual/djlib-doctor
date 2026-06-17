@@ -6,11 +6,11 @@ Primary-library foundation through Phase E complete; cleanup and bug-fix pass co
 
 ## Last Done
 
-F1 made pyrekordbox and SQLCipher default dependencies and kept distinct fail-closed messages for missing backend versus unsupported/key-locked DBs.
+F2 added a pyrekordbox-backed encrypted Rekordbox `master.db` reader that maps tracks, cues, playlists, and playlist refs into the existing Rekordbox library model.
 
 ## Next
 
-F2: read an encrypted Rekordbox `master.db` via pyrekordbox into the native Rekordbox/Serato-specific model using generated encrypted fixture coverage.
+F3: write to encrypted Rekordbox `master.db` through the existing stage/install engine, preserving token/hash/backup/app-closed safety checks.
 
 ## Blockers
 

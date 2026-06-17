@@ -2,7 +2,7 @@
 
 This page records the Rekordbox `master.db` schema subset targeted by `djlib-doctor` generated fixtures and staged imports.
 
-Source of truth: pyrekordbox `pyrekordbox.masterdb.models`, especially `StatsFull`, `DjmdContent`, and `DjmdCue`. `djlib-doctor` should use pyrekordbox for broader encrypted Rekordbox 6/7 DB behavior instead of inventing a parallel ORM.
+Source of truth: pyrekordbox `pyrekordbox.db6.tables`, especially `StatsFull`, `DjmdContent`, `DjmdCue`, `DjmdPlaylist`, and `DjmdSongPlaylist`. `djlib-doctor` should use pyrekordbox for encrypted Rekordbox 6/7 DB behavior instead of inventing a parallel ORM.
 
 ## Scope
 

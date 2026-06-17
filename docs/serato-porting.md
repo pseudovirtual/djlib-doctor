@@ -63,10 +63,11 @@ djlib-doctor install rekordbox-db --stage-dir run/rekordbox-stage --db /path/to/
 Supported DB boundary today:
 
 - certified real Rekordbox versions: none yet
-- supported format: plain SQLite `master.db`
+- supported read/check formats: plain SQLite `master.db`; encrypted SQLCipher `master.db` through pyrekordbox when the backend can unlock it
+- supported staged write format: plain SQLite `master.db`
 - required content table: `djmdContent` with `ID`, `FolderPath`, `FileNameL`, and `Title`
 - optional cue table: `djmdCue` with `ID`, `ContentID`, `InMsec`, `OutMsec`, `Kind`, `HotCue`, and `Name`
-- unsupported format: encrypted SQLCipher `master.db`
+- unsupported staged write format: encrypted SQLCipher `master.db` until Phase F write support lands
 
 ## Scopes And Transfer Modes
 

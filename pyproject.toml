@@ -9,7 +9,7 @@ description = "Read-only DJ library verification, cleanup planning, and dry-run 
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
-dependencies = ["pyrekordbox>=0.5", "sqlcipher3-wheels>=0.5"]
+dependencies = ["pyrekordbox>=0.4.4", "sqlcipher3-wheels>=0.5"]
 authors = [
   { name = "Vinayak Ranade", email = "vinayak.ranade@gmail.com" }
 ]
