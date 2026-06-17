@@ -48,6 +48,8 @@ Markers2 codec coverage:
 - BeatGrid GEOB parsing supports version `1.0` marker rows from the Holzhaus reference layout. Carrying BeatGrid through migration manifests is a later task and should be reported separately until implemented.
 - WAV cue import is out of scope today because WAV has no Serato audio-tag container; plans record `wav_has_no_serato_tag_container` instead of silently dropping cues.
 
+Rekordbox XML BeatGrid `TEMPO` rows are parsed and surfaced in port manifests as `beatgrid_status` until Serato BeatGrid writing is implemented.
+
 The lower-level staged DB safety path exists:
 
 ```bash

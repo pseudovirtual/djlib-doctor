@@ -40,6 +40,9 @@ class LibraryTrack:
     bpm: float | None = None
     length_seconds: int | None = None
     comments: str = ""
+    color: str = ""
+    rating: int | None = None
+    beatgrid: tuple[dict[str, object], ...] = field(default_factory=tuple)
     location_kind: str = ""
     format: str = ""
     cues: tuple[LibraryCue, ...] = field(default_factory=tuple)
@@ -75,7 +78,13 @@ def rekordbox_xml_to_library(library: RekordboxLibrary) -> Library:
             path=track.path,
             title=track.name or "",
             artist=track.artist or "",
+            key=track.key,
+            bpm=track.bpm,
             length_seconds=None,
+            comments=track.comments,
+            color=track.color,
+            rating=track.rating,
+            beatgrid=track.beatgrid,
             location_kind=track.location_kind.value,
             format=track.format or "",
             cues=tuple(

@@ -68,6 +68,24 @@ Loop:
 <POSITION_MARK Type="4" Start="48.000" End="56.000" Num="1" />
 ```
 
+## Track Metadata And BeatGrid
+
+`djlib-doctor` parses common collection metadata from `TRACK` attributes:
+
+- `AverageBpm`
+- `Tonality`
+- `Colour` / `Color`
+- `Rating`
+- `Comments`
+
+Beatgrid rows appear as `TEMPO` children:
+
+```xml
+<TEMPO Inizio="0.000" Bpm="124.50" Metro="4/4" Battito="1" />
+```
+
+Rekordbox-to-Serato port manifests carry parsed track metadata today. BeatGrid rows are parsed and reported with an explicit unsupported status until BeatGrid writing is implemented.
+
 ## Why Counts Can Look Confusing
 
 A Rekordbox export can contain:

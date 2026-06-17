@@ -1,4 +1,5 @@
 from pathlib import Path
+from tempfile import TemporaryDirectory
 import unittest
 
 from djlib_doctor.cues import CueKind, CueType
@@ -50,6 +51,38 @@ class RekordboxXmlTests(unittest.TestCase):
         self.assertIs(cues[2].cue_type, CueType.LOOP)
         self.assertEqual(cues[2].start, 48.0)
         self.assertEqual(cues[2].end, 56.0)
+
+    def test_track_metadata_and_beatgrid_are_parsed(self):
+        with TemporaryDirectory() as tmpdir:
+            xml = Path(tmpdir) / "metadata.xml"
+            xml.write_text(
+                """<?xml version="1.0" encoding="UTF-8"?>
+<DJ_PLAYLISTS Version="1.0.0">
+  <COLLECTION Entries="1">
+    <TRACK TrackID="1" Name="Meta Track" Artist="Artist" AverageBpm="124.50" Tonality="8A" Colour="4" Rating="5" Comments="Fixture comment" Location="file://localhost/tmp/meta.aiff">
+      <TEMPO Inizio="0.000" Bpm="124.50" Metro="4/4" Battito="1"/>
+      <TEMPO Inizio="32.000" Bpm="125.00" Metro="4/4" Battito="1"/>
+    </TRACK>
+  </COLLECTION>
+</DJ_PLAYLISTS>
+""",
+                encoding="utf-8",
+            )
+
+            track = parse_rekordbox_xml(xml).tracks[0]
+
+        self.assertEqual(track.bpm, 124.5)
+        self.assertEqual(track.key, "8A")
+        self.assertEqual(track.color, "4")
+        self.assertEqual(track.rating, 5)
+        self.assertEqual(track.comments, "Fixture comment")
+        self.assertEqual(
+            track.beatgrid,
+            (
+                {"position": 0.0, "bpm": 124.5, "meter": "4/4", "beat": 1},
+                {"position": 32.0, "bpm": 125.0, "meter": "4/4", "beat": 1},
+            ),
+        )
 
 
 if __name__ == "__main__":

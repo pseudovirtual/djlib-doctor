@@ -94,6 +94,34 @@ class PortSeratoTests(unittest.TestCase):
         self.assertEqual(manifest["summary"]["tracks"], 1)
         self.assertEqual(len(crate.tracks), 1)
 
+    def test_port_manifest_carries_rekordbox_metadata_and_beatgrid_status(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            xml = tmp / "metadata.xml"
+            xml.write_text(
+                """<?xml version="1.0" encoding="UTF-8"?>
+<DJ_PLAYLISTS Version="1.0.0">
+  <COLLECTION Entries="1">
+    <TRACK TrackID="1" Name="Meta Track" Artist="Artist" AverageBpm="124.50" Tonality="8A" Colour="4" Rating="5" Comments="Fixture comment" Location="file://localhost/tmp/meta.aiff">
+      <TEMPO Inizio="0.000" Bpm="124.50" Metro="4/4" Battito="1"/>
+    </TRACK>
+  </COLLECTION>
+  <PLAYLISTS><NODE Type="0" Name="ROOT"><NODE Name="Meta" Type="1"><TRACK Key="1"/></NODE></NODE></PLAYLISTS>
+</DJ_PLAYLISTS>
+""",
+                encoding="utf-8",
+            )
+
+            plan = build_rekordbox_to_serato_plan(xml, "ROOT / Meta")
+            track = plan.to_dict()["tracks"][0]
+
+        self.assertEqual(track["key"], "8A")
+        self.assertEqual(track["bpm"], 124.5)
+        self.assertEqual(track["comments"], "Fixture comment")
+        self.assertEqual(track["color"], "4")
+        self.assertEqual(track["rating"], 5)
+        self.assertEqual(track["beatgrid_status"], "unsupported_not_written_to_serato_yet")
+
     def test_write_batch_plan_returns_crate_preview_paths_as_list(self):
         with TemporaryDirectory() as tmpdir:
             plan = build_rekordbox_to_serato_plans(FIXTURE, ["ROOT / Fixture Playlist"])

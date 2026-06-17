@@ -56,6 +56,12 @@ class PortTrack:
     cue_intents: tuple[SeratoCueIntent, ...]
     unsupported: tuple[str, ...]
     source_cue_count: int = 0
+    key: str = ""
+    bpm: float | None = None
+    comments: str = ""
+    color: str = ""
+    rating: int | None = None
+    beatgrid_status: str = ""
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -65,6 +71,12 @@ class PortTrack:
             "path": self.path,
             "serato_portable_id": self.serato_portable_id,
             "source_cue_count": self.source_cue_count,
+            "key": self.key,
+            "bpm": self.bpm,
+            "comments": self.comments,
+            "color": self.color,
+            "rating": self.rating,
+            "beatgrid_status": self.beatgrid_status,
             "format_capability": serato_format_capability(self.path),
             "cue_intents": [intent.to_dict() for intent in self.cue_intents],
             "unsupported": list(self.unsupported),
@@ -252,7 +264,8 @@ def _build_scoped_plan(source: Any, track_ids: tuple[str, ...], source_name: str
 
 def _port_track(track: LibraryTrack, include_cues: bool = True) -> PortTrack:
     cue_intents, unsupported = _cue_intents(track.cues) if include_cues else ((), ())
-    return PortTrack(track.source_id, track.title, track.artist, str(track.path or ""), track.serato_portable_id, cue_intents, unsupported, len(track.cues))
+    beatgrid_status = "unsupported_not_written_to_serato_yet" if track.beatgrid else ""
+    return PortTrack(track.source_id, track.title, track.artist, str(track.path or ""), track.serato_portable_id, cue_intents, unsupported, len(track.cues), track.key, track.bpm, track.comments, track.color, track.rating, beatgrid_status)
 
 
 def _validate_transfer_mode(value: str) -> None:

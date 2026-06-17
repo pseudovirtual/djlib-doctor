@@ -19,6 +19,12 @@ class Track:
     path: Optional[Path]
     format: Optional[str]
     cues: tuple[Cue, ...] = field(default_factory=tuple)
+    bpm: float | None = None
+    key: str = ""
+    color: str = ""
+    rating: int | None = None
+    comments: str = ""
+    beatgrid: tuple[dict[str, object], ...] = field(default_factory=tuple)
 
 
 @dataclass(frozen=True)
@@ -60,6 +66,7 @@ def _parse_track(element: ET.Element) -> Track:
     location = element.attrib.get("Location")
     kind, local_path = parse_location(location)
     cues = tuple(_parse_position_mark(mark) for mark in element.findall("POSITION_MARK"))
+    beatgrid = tuple(_parse_tempo(tempo) for tempo in element.findall("TEMPO"))
 
     return Track(
         track_id=element.attrib.get("TrackID", ""),
@@ -70,6 +77,12 @@ def _parse_track(element: ET.Element) -> Track:
         path=local_path,
         format=element.attrib.get("Kind"),
         cues=cues,
+        bpm=_optional_float(element.attrib.get("AverageBpm")),
+        key=element.attrib.get("Tonality", ""),
+        color=element.attrib.get("Colour") or element.attrib.get("Color", ""),
+        rating=_optional_int(element.attrib.get("Rating")),
+        comments=element.attrib.get("Comments", ""),
+        beatgrid=beatgrid,
     )
 
 
@@ -90,6 +103,23 @@ def _parse_position_mark(element: ET.Element) -> Cue:
         name=element.attrib.get("Name"),
         color=element.attrib.get("Red"),
     )
+
+
+def _parse_tempo(element: ET.Element) -> dict[str, object]:
+    return {
+        "position": _optional_float(element.attrib.get("Inizio")) or 0.0,
+        "bpm": _optional_float(element.attrib.get("Bpm")) or 0.0,
+        "meter": element.attrib.get("Metro", ""),
+        "beat": _optional_int(element.attrib.get("Battito")) or 0,
+    }
+
+
+def _optional_float(value: str | None) -> float | None:
+    return None if value in (None, "") else float(value)
+
+
+def _optional_int(value: str | None) -> int | None:
+    return None if value in (None, "") else int(value)
 
 
 def _iter_playlist_refs(root: Optional[ET.Element]) -> Iterable[PlaylistRef]:
