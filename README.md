@@ -56,6 +56,8 @@ Before installing, run commands from a clone with `PYTHONPATH=src python3 -m djl
 
 Serato audio tag staging needs optional dependencies: `python3 -m pip install -e ".[audio-tags]"`.
 
+Encrypted Rekordbox DB fixture generation and future Rekordbox DB adapters need optional dependencies: `python3 -m pip install -e ".[rekordbox]"`.
+
 Run the full suite:
 
 ```bash

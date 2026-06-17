@@ -23,6 +23,7 @@ classifiers = [
 [project.optional-dependencies]
 audio-tags = ["mutagen>=1.47"]
 fingerprint = []
+rekordbox = ["pyrekordbox>=0.5", "sqlcipher3-wheels>=0.5"]
 dev = ["pytest>=7"]
 
 [project.scripts]

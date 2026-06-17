@@ -3,7 +3,7 @@
 ## Unreleased
 
 - [x] P0.1: Vendored Serato Markers2 golden-vector fixtures for hotcue and saved-loop parsing.
-- [x] P0.2: Added real-fixture capture documentation and skip-safe fixture layout.
+- [x] P0.2: Added real-fixture capture docs, skip-safe layout, and SQLCipher-backed encrypted Rekordbox fixture generation.
 - [x] P1.3: Added optional-mutagen Serato Markers2 file-tag reading and rewired Serato-to-Rekordbox cues to file tags.
 - [x] P1.4: Added Markers2 decode/encode/decode golden-vector coverage for supported cue and loop entries.
 - [x] P1.5: Added explicit WAV cue skip status for Serato-to-Rekordbox plans.
