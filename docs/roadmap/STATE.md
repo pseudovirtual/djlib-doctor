@@ -6,11 +6,11 @@ Primary-library foundation through Phase E complete; cleanup and bug-fix pass in
 
 ## Last Done
 
-V1 moved the encrypted Rekordbox fixture generator out of the shipped package.
+V2 removed the no-op `fingerprint` package extra.
 
 ## Next
 
-V2: remove the no-op `fingerprint` extra.
+V3: confirm `.gitignore` and tracked files exclude Python bytecode artifacts.
 
 ## Blockers
 

@@ -129,7 +129,7 @@ djlib-doctor fingerprint compare ~/Music/copy-a.wav ~/Music/copy-b.wav --out run
 djlib-doctor fingerprint scan ~/Music --out run/fingerprints.json --redact-paths
 ```
 
-This is not acoustic matching. A future optional `fingerprint` extra can add a real acoustic backend without changing the read-only safety boundary.
+This is not acoustic matching. A future optional acoustic backend can be added without changing the read-only safety boundary.
 
 ### 6. Dry-Run A Rekordbox To Serato Playlist Port
 
