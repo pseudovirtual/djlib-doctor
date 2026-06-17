@@ -79,6 +79,6 @@ Cue semantics must remain explicit: cue vs loop type, loop end, hotcue slot, and
 
 ## Encryption Boundary
 
-Rekordbox 6/7 `master.db` files are SQLCipher databases. The generated encrypted fixture path uses the public SQLCipher key exposed by pyrekordbox and SQLCipher4 settings. Tests skip clearly when `djlib-doctor[rekordbox]` dependencies are not installed.
+Rekordbox 6/7 `master.db` files are SQLCipher databases. The generated encrypted fixture path uses the public SQLCipher key exposed by pyrekordbox and SQLCipher4 settings. Tests skip clearly when the SQLCipher backend cannot import.
 
-The optional pyrekordbox seam lives behind `djlib-doctor[rekordbox]`. When the dependency is absent, encrypted `master.db` commands must fail closed with an install-extra message. Real app acceptance remains a manual smoke test.
+pyrekordbox and SQLCipher are default dependencies because Rekordbox DB support is core scope. Runtime failures must distinguish a missing SQLCipher backend from a key-locked or unsupported `master.db`. Real app acceptance remains a manual smoke test.

@@ -56,7 +56,7 @@ djlib-doctor self-test
 
 Serato audio tag staging needs optional dependencies: `python3 -m pip install -e ".[audio-tags]"`.
 
-Encrypted Rekordbox DB fixture generation and future Rekordbox DB adapters need optional dependencies: `python3 -m pip install -e ".[rekordbox]"`.
+Rekordbox `master.db` work uses default dependencies: `pyrekordbox` and `sqlcipher3-wheels`. If SQLCipher cannot import on your platform, Rekordbox DB commands fail closed with a backend-unavailable message.
 
 Run the full suite:
 

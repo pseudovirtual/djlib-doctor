@@ -84,7 +84,7 @@ def _sqlcipher() -> object:
         from sqlcipher3 import dbapi2 as sqlcipher
     except ImportError as exc:
         raise SqlcipherUnavailable(
-            "sqlcipher3 is unavailable; install djlib-doctor[rekordbox] to generate encrypted Rekordbox fixtures"
+            "sqlcipher3 is unavailable; reinstall djlib-doctor with its default Rekordbox DB dependencies"
         ) from exc
     return sqlcipher
 

@@ -9,6 +9,7 @@ description = "Read-only DJ library verification, cleanup planning, and dry-run 
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
+dependencies = ["pyrekordbox>=0.5", "sqlcipher3-wheels>=0.5"]
 authors = [
   { name = "Vinayak Ranade", email = "vinayak.ranade@gmail.com" }
 ]
@@ -39,7 +40,6 @@ Changelog = "https://github.com/pseudovirtual/djlib-doctor/blob/main/CHANGELOG.m
 
 [project.optional-dependencies]
 audio-tags = ["mutagen>=1.47"]
-rekordbox = ["pyrekordbox>=0.5", "sqlcipher3-wheels>=0.5"]
 dev = ["pytest>=7", "ruff>=0.8"]
 
 [project.scripts]

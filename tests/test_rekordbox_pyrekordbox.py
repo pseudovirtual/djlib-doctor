@@ -13,8 +13,16 @@ class FakeMasterDatabase:
 
 class RekordboxPyrekordboxTests(unittest.TestCase):
     def test_open_master_database_fails_closed_without_dependency(self):
-        with self.assertRaisesRegex(PyrekordboxUnavailable, r"djlib-doctor\[rekordbox\]"):
+        with self.assertRaisesRegex(PyrekordboxUnavailable, r"Rekordbox SQLCipher backend is unavailable"):
             open_master_database(Path("master.db"), importer=lambda: (_ for _ in ()).throw(ImportError("missing")))
+
+    def test_open_master_database_reports_unsupported_or_locked_database(self):
+        class LockedMasterDatabase:
+            def __init__(self, path=None, key="", unlock=True):
+                raise RuntimeError("file is encrypted or is not a database")
+
+        with self.assertRaisesRegex(PyrekordboxUnavailable, r"could not unlock or read Rekordbox master.db"):
+            open_master_database(Path("master.db"), importer=lambda: LockedMasterDatabase)
 
     def test_open_master_database_uses_pyrekordbox_master_database(self):
         FakeMasterDatabase.calls.clear()

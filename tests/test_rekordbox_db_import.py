@@ -203,7 +203,7 @@ class RekordboxDbImportTests(unittest.TestCase):
             db.write_bytes(b"SQLCipher encrypted Rekordbox database placeholder")
             make_port_manifest(manifest)
 
-            with self.assertRaisesRegex(ValueError, r"encrypted SQLCipher.*djlib-doctor\[rekordbox\]"):
+            with self.assertRaisesRegex(ValueError, r"encrypted SQLCipher.*pyrekordbox-backed importer"):
                 stage_rekordbox_db_import(db, manifest, tmp / "stage")
 
 

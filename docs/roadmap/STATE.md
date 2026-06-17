@@ -2,15 +2,15 @@
 
 ## Phase
 
-Primary-library foundation through Phase E complete; cleanup and bug-fix pass complete.
+Primary-library foundation through Phase E complete; cleanup and bug-fix pass complete. Feature completion Phase F is in progress.
 
 ## Last Done
 
-F4 added persisted review-log coverage proving undo removes the undone decision from disk.
+F1 made pyrekordbox and SQLCipher default dependencies and kept distinct fail-closed messages for missing backend versus unsupported/key-locked DBs.
 
 ## Next
 
-No active repo backlog item. TestPyPI trusted publisher setup remains a maintainer/account action.
+F2: read an encrypted Rekordbox `master.db` via pyrekordbox into the native Rekordbox/Serato-specific model using generated encrypted fixture coverage.
 
 ## Blockers
 

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] F1: Made pyrekordbox and SQLCipher default dependencies with distinct fail-closed runtime messages.
 - [x] F4: Added persisted review-log coverage proving undo removes the undone decision from disk.
 - [x] F3: Added machine-readable `doctor --json` output.
 - [x] F2: Expanded `doctor --config` to check configured Rekordbox DB and Serato database V2 paths.

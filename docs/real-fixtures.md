@@ -64,4 +64,4 @@ Tests that use this manifest must call `unittest.skipTest(...)` when the manifes
 
 ## Generated Rekordbox Fixtures
 
-Encrypted Rekordbox fixture generation is available for tests when `djlib-doctor[rekordbox]` is installed. The generator builds a small plain SQLite `master.db` with the target `djmdContent` and `djmdCue` schema, then encrypts a copy using the public Rekordbox 6/7 SQLCipher key and SQLCipher4 settings. If the SQLCipher backend is unavailable, tests skip with a clear message.
+Encrypted Rekordbox fixture generation is available when the default SQLCipher backend imports successfully. The generator builds a small plain SQLite `master.db` with the target `djmdContent` and `djmdCue` schema, then encrypts a copy using the public Rekordbox 6/7 SQLCipher key and SQLCipher4 settings. If the SQLCipher backend is unavailable, tests skip with a clear message.

@@ -44,7 +44,7 @@ def _unsupported_database_message(path: Path) -> str:
         f"Unsupported Rekordbox DB format for import: {path}. "
         "This command supports plain SQLite master.db fixtures/schemas with djmdContent "
         "and optional djmdCue tables. encrypted SQLCipher Rekordbox databases require "
-        "the optional djlib-doctor[rekordbox] backend."
+        "the pyrekordbox-backed importer planned for Phase F."
     )
 
 

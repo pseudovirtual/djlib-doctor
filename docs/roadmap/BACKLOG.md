@@ -39,3 +39,36 @@ Scope: Rekordbox and Serato only. Do not add other DJ apps or a neutral universa
 - [x] E2: Add cross-OS CI matrix for Python 3.9 and 3.13.
 - [x] E3: Complete package metadata and ship `py.typed`.
 - [ ] E4: Add TestPyPI dry-run publishing and clean-venv smoke install workflow. Repo workflow is added; blocked on maintainer TestPyPI trusted-publisher setup.
+
+## Phase F - Real Rekordbox master.db Read/Write
+
+- [x] F1: Make pyrekordbox a default dependency. Keep graceful runtime fallback when the SQLCipher backend or key/database support is unavailable, with distinct messages for backend missing versus key/unsupported DB. Update README/docs.
+- [ ] F2: Read a real encrypted `master.db` via pyrekordbox into the native Rekordbox/Serato-specific model: tracks, playlists, and cues. Test against the generated encrypted DB fixture. Fail closed with clear messages on unsupported or locked DBs.
+- [ ] F3: Write to a real encrypted `master.db` through the existing stage/install engine. Generalize Serato-to-Rekordbox import so one track, one playlist, or whole collection land through the same staged path.
+
+## Phase G - Easy One-Off Ports
+
+- [ ] G1: Extend detect -> config -> explicit-flag fallback to `port` verbs so ad-hoc directional ports need minimal flags while ignoring configured primary.
+- [ ] G2: Confirm both directions and all scopes work end-to-end after F3: track, playlist/crate, and collection.
+
+## Phase H - In-Place Rekordbox Doctoring
+
+- [ ] H1: Apply reviewed cleanup plans back into Rekordbox via staged `master.db` writes.
+- [ ] H2: Convert files without losing cues: re-encode with presets, update `master.db` and ANLZ references, carry cues across, and compensate for AAC/M4A encoder delay.
+- [ ] H3: Move/rename files and update Rekordbox references in the same staged write.
+
+## Phase I - Real-World Validation
+
+- [ ] I1: Validate `master.db` read/write against one real captured library. Blocked until captured data is available.
+- [ ] I2: Validate Serato cue/tag fidelity against real Serato output and extend golden vectors. Blocked until captured data is available.
+- [ ] I3: Prove a manually corrected beatgrid survives a port/convert end-to-end.
+
+## Phase J - Release
+
+- [ ] J1: Execute the TestPyPI smoke after maintainer trusted-publisher setup, then flip README install instructions only after smoke passes.
+- [ ] J2: Cut a real pre-release tag and confirm the release workflow.
+
+## Phase K - Docs Polish
+
+- [ ] K1: Add short how-to docs for "convert without losing cues" and "port one crate", plus a concise README section on why cue-safe migration is hard.
+- [ ] K2: Add public API examples and a `djlib-doctor examples` command.
