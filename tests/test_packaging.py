@@ -46,6 +46,11 @@ class PackagingTests(unittest.TestCase):
         self.assertIn("pypa/gh-action-pypi-publish", text)
         self.assertIn("python -m build", text)
         self.assertIn("tags:", text)
+        self.assertIn("environment: testpypi", text)
+        self.assertIn("repository-url: https://test.pypi.org/legacy/", text)
+        self.assertIn("testpypi-smoke", text)
+        self.assertIn("djlib-doctor.exe", text)
+        self.assertIn("self-test", text)
 
     def test_package_metadata_and_py_typed_marker(self):
         pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
