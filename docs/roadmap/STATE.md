@@ -6,11 +6,11 @@ Primary-library foundation through Phase E complete; cleanup and bug-fix pass in
 
 ## Last Done
 
-V3 confirmed Python bytecode/cache artifacts are ignored and untracked.
+F1 made the root menu invoke real sync, fix, and config commands instead of placeholder suggestions.
 
 ## Next
 
-F1: make the root menu invoke accurate commands and fix the misleading `fix` option.
+F2: expand `doctor` beyond Rekordbox XML by checking configured Rekordbox DB and Serato database V2 paths.
 
 ## Blockers
 

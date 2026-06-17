@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] F1: Made the root menu invoke real sync, fix, and config commands instead of placeholder suggestions.
 - [x] V3: Confirmed Python bytecode/cache artifacts are ignored and untracked.
 - [x] V2: Removed the no-op `fingerprint` package extra.
 - [x] V1: Moved the encrypted Rekordbox fixture generator out of the shipped package.

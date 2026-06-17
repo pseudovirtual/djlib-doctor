@@ -38,6 +38,64 @@ class MenuTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertEqual(calls, [["doctor"]])
 
+    def test_menu_sync_option_calls_sync_plan_with_prompted_paths(self):
+        calls = []
+        stdout = io.StringIO()
+
+        with contextlib.redirect_stdout(stdout):
+            exit_code = handle_menu(
+                lambda argv: calls.append(argv) or 0,
+                input_func=_Input(["sync", "library.json", "sync-preview"]),
+            )
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(
+            calls,
+            [
+                [
+                    "sync",
+                    "plan",
+                    "--config",
+                    "library.json",
+                    "--collection",
+                    "--out",
+                    "sync-preview",
+                ]
+            ],
+        )
+
+    def test_menu_config_option_calls_config_init_with_prompted_output(self):
+        calls = []
+        stdout = io.StringIO()
+
+        with contextlib.redirect_stdout(stdout):
+            exit_code = handle_menu(
+                lambda argv: calls.append(argv) or 0,
+                input_func=_Input(["config", "library.json"]),
+            )
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(calls, [["config", "init", "--out", "library.json"]])
+
+    def test_menu_fix_option_runs_plan_then_review(self):
+        calls = []
+        stdout = io.StringIO()
+
+        with contextlib.redirect_stdout(stdout):
+            exit_code = handle_menu(
+                lambda argv: calls.append(argv) or 0,
+                input_func=_Input(["fix", "snapshot.json", "missing.json", "decisions.json"]),
+            )
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(
+            calls,
+            [
+                ["plan", "missing-files", "--snapshot", "snapshot.json", "--out", "missing.json"],
+                ["review", "--plan", "missing.json", "--out", "decisions.json"],
+            ],
+        )
+
 
 class _InteractiveInput(io.StringIO):
     def isatty(self):
