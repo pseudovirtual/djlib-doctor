@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -139,7 +140,7 @@ def _apply_operation(operation: dict[str, Any], backup_dir: Path) -> dict[str, A
             backups.append({"path": str(target), "backup": str(backup), "existed": True})
         else:
             backups.append({"path": str(target), "backup": "", "existed": False})
-        shutil.copy2(staged, target)
+        _copy_atomically(staged, target)
         if kind == "move":
             backup = backup_dir / backup_name(source)
             shutil.copy2(source, backup)
@@ -162,3 +163,13 @@ def _rollback(backups: list[dict[str, Any]]) -> None:
             shutil.copy2(Path(item["backup"]), path)
         elif path.exists():
             path.unlink()
+
+
+def _copy_atomically(source: Path, target: Path) -> None:
+    temp = target.with_name(f".{target.name}.djlib-doctor-tmp")
+    try:
+        shutil.copy2(source, temp)
+        os.replace(temp, target)
+    finally:
+        if temp.exists():
+            temp.unlink()

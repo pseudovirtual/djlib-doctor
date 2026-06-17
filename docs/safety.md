@@ -20,6 +20,8 @@ Staged file operations are all-or-nothing by default. If one operation fails, pr
 
 Convert operations require `ffmpeg` on `PATH` at staging time. If it is missing, staging fails before any staged convert output is produced.
 
+Live file writes from staged file operations copy to a temporary file beside the target and then use an atomic rename into place.
+
 ## Write-Capable Rule
 
 Write-capable features must require:

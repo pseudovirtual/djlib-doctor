@@ -1,6 +1,7 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import json
+import os
 import unittest
 from unittest import mock
 
@@ -189,6 +190,33 @@ class FileOperationsTests(unittest.TestCase):
             with mock.patch("djlib_doctor.file_operations.shutil.which", return_value=None):
                 with self.assertRaisesRegex(RuntimeError, "ffmpeg.*install"):
                     stage_file_operations(manifest, tmp / "stage")
+
+    def test_apply_copy_writes_target_with_atomic_replace(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            source = tmp / "source.aiff"
+            target = tmp / "target.aiff"
+            source.write_bytes(b"audio")
+            manifest = tmp / "file-ops.json"
+            manifest.write_text(
+                json.dumps({"operations": [{"operation": "copy", "source": str(source), "target": str(target)}]}),
+                encoding="utf-8",
+            )
+            stage = stage_file_operations(manifest, tmp / "stage")
+            real_replace = os.replace
+            calls = []
+
+            def record_replace(src, dst):
+                calls.append((Path(src), Path(dst)))
+                real_replace(src, dst)
+
+            with mock.patch("djlib_doctor.file_operations.os.replace", side_effect=record_replace):
+                apply_file_operations_stage(tmp / "stage", confirm_token=stage.install_token)
+            target_bytes = target.read_bytes()
+
+        self.assertEqual(target_bytes, b"audio")
+        self.assertEqual(calls[0][1], target)
+        self.assertNotEqual(calls[0][0], target)
 
 
 if __name__ == "__main__":
