@@ -147,7 +147,15 @@ def handle_schema(args: argparse.Namespace) -> int:
 def handle_config(args: argparse.Namespace) -> int:
     try:
         if args.config_command == "init":
-            config = default_config(args.rekordbox_xml, args.serato_library_dir, args.serato_music_dir, args.music_root, args.crate_prefix)
+            config = default_config(
+                rekordbox_xml=args.rekordbox_xml,
+                rekordbox_db=args.rekordbox_db,
+                serato_library_dir=args.serato_library_dir,
+                serato_music_dir=args.serato_music_dir,
+                music_root=args.music_root,
+                crate_prefix=args.crate_prefix,
+                primary=args.primary,
+            )
             write_config(args.out, config)
             print(f"Config written: {args.out}")
         else:

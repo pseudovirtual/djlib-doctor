@@ -88,6 +88,8 @@ def _add_schema_config_inspect(sub: argparse._SubParsersAction) -> None:
     init = cfg.add_parser("init")
     for arg in ("--rekordbox-xml", "--serato-library-dir", "--serato-music-dir", "--music-root"):
         init.add_argument(arg, type=Path)
+    init.add_argument("--rekordbox-db", type=Path)
+    init.add_argument("--primary", default="rekordbox", choices=("rekordbox", "serato"))
     init.add_argument("--out", required=True, type=Path)
     init.add_argument("--crate-prefix", default="RB - ")
     show = cfg.add_parser("show")

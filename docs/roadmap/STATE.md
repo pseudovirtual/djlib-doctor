@@ -6,11 +6,11 @@ Primary-library foundation.
 
 ## Last Done
 
-S0 created the durable roadmap backlog and state files from the active session backlog.
+A1 added `primary` plus Rekordbox/Serato target paths to config defaults, validation, schemas, and `config init` / `config show`.
 
 ## Next
 
-A1: add `primary` (`rekordbox` or `serato`) plus target paths to config and `config init` / `config show`, with load/validate/round-trip tests.
+A2: add read-only `djlib-doctor detect` for Rekordbox and Serato default locations, with text and `--json` output.
 
 ## Blockers
 

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] A1: Added primary-library config fields and Rekordbox/Serato target path round-trip validation.
 - [x] S0: Added durable roadmap backlog and state docs for the primary-library workflow milestone.
 - [x] P0.1: Vendored Serato Markers2 golden-vector fixtures for hotcue and saved-loop parsing.
 - [x] P0.2: Added real-fixture capture docs, skip-safe layout, and SQLCipher-backed encrypted Rekordbox fixture generation.

@@ -38,7 +38,7 @@ def _json_schema(version: str, fields: tuple[str, ...], **extra: Any) -> dict[st
 
 SCHEMAS: dict[str, dict[str, Any]] = {
     "verification": _json_schema(VERIFY_SCHEMA_VERSION, VERIFY_FIELDS, status_values=["pass", "fail"]),
-    "config": _json_schema(CONFIG_SCHEMA_VERSION, ("schema_version", "rekordbox_xml", "serato_library_dir", "serato_music_dir", "music_root", "crate_prefix")),
+    "config": _json_schema(CONFIG_SCHEMA_VERSION, ("schema_version", "primary", "rekordbox_xml", "rekordbox_db", "serato_library_dir", "serato_music_dir", "music_root", "crate_prefix"), primary_values=["rekordbox", "serato"]),
     "snapshot": _json_schema(SNAPSHOT_SCHEMA_VERSION, SNAPSHOT_FIELDS, artifact_paths="relative to snapshot.json unless absolute paths are provided by an older snapshot"),
     "plan": _json_schema(PLAN_SCHEMA_VERSION, PLAN_FIELDS, action_fields=list(PLAN_ACTION_FIELDS)),
     "compare": _json_schema(COMPARE_SCHEMA_VERSION, ("schema_version", "status", "summary", "issues"), issue_codes=["missing_material", "cue_not_covered", "hotcue_regression", "playlist_order_or_entry_diff", "final_bad_path", "final_missing_local_file"]),
