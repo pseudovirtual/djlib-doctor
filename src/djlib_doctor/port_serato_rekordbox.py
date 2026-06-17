@@ -5,9 +5,9 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
-from urllib.parse import quote
 
 from .io_utils import render_json, write_json
+from .rekordbox_uri import path_to_file_url
 from .serato_crate import read_serato_crate
 from .serato_file_tags import read_serato_markers2_file_tags
 from .sqlite_utils import quote_identifier, table_columns
@@ -276,7 +276,7 @@ def _cue_attrs(cue: RekordboxPortCue) -> dict[str, str]:
 
 
 def _file_url(path: str) -> str:
-    return "file://localhost" + quote(path)
+    return path_to_file_url(path)
 
 
 def _indent(element: ET.Element, level: int = 0) -> None:

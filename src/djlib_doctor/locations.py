@@ -3,7 +3,9 @@ from __future__ import annotations
 from enum import Enum
 from pathlib import Path
 from typing import Optional
-from urllib.parse import unquote, urlparse
+from urllib.parse import unquote
+
+from .rekordbox_uri import file_url_to_path
 
 STREAMING_MARKERS = (
     "soundcloud:",
@@ -24,13 +26,9 @@ def parse_location(raw_location: Optional[str]) -> tuple[LocationKind, Optional[
     if not raw_location:
         return LocationKind.UNKNOWN, None
 
-    raw_lowered = raw_location.lower()
-    if raw_lowered.startswith("file://localhost/"):
-        return LocationKind.LOCAL_FILE, Path(unquote(raw_location[len("file://localhost") :]))
-
-    if raw_lowered.startswith("file:///"):
-        parsed = urlparse(raw_location)
-        return LocationKind.LOCAL_FILE, Path(unquote(parsed.path))
+    file_path = file_url_to_path(raw_location)
+    if file_path is not None:
+        return LocationKind.LOCAL_FILE, file_path
 
     decoded = unquote(raw_location)
     lowered = decoded.lower()

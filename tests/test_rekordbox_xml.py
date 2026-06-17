@@ -4,6 +4,8 @@ from tempfile import TemporaryDirectory
 
 from djlib_doctor.cues import CueKind, CueType
 from djlib_doctor.locations import LocationKind, parse_location
+from djlib_doctor.redaction import redact_uri_or_path
+from djlib_doctor.rekordbox_uri import path_to_file_url
 from djlib_doctor.rekordbox_xml import parse_rekordbox_xml
 
 FIXTURE = Path(__file__).parent / "fixtures" / "rekordbox" / "simple.xml"
@@ -37,6 +39,13 @@ class RekordboxXmlTests(unittest.TestCase):
 
         self.assertIs(kind, LocationKind.LOCAL_FILE)
         self.assertEqual(str(path), "/Users/example/Music/Track #1?.aiff")
+
+    def test_file_url_helper_builds_parses_and_redacts_localhost_urls(self):
+        url = path_to_file_url("/Users/example/Music/Track #1?.aiff")
+
+        self.assertEqual(url, "file://localhost/Users/example/Music/Track%20%231%3F.aiff")
+        self.assertEqual(parse_location(url), (LocationKind.LOCAL_FILE, Path("/Users/example/Music/Track #1?.aiff")))
+        self.assertEqual(redact_uri_or_path(url), "file://localhost<redacted>/Track #1?.aiff")
 
     def test_cues_decode_memory_hotcue_and_loop(self):
         library = parse_rekordbox_xml(FIXTURE)

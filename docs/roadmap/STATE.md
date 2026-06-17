@@ -6,11 +6,11 @@ Primary-library foundation through Phase E complete; cleanup and bug-fix pass in
 
 ## Last Done
 
-R5 removed the half-used library model abstraction from Rekordbox-to-Serato porting.
+R6 centralized Rekordbox file URL helpers.
 
 ## Next
 
-R6: centralize Rekordbox `file://localhost` URL helpers.
+V1: move the encrypted Rekordbox fixture generator out of the shipped package.
 
 ## Blockers
 
