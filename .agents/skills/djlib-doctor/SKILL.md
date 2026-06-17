@@ -50,6 +50,7 @@ PYTHONPATH=src python3 -m djlib_doctor.cli review --plan run/plan-missing-files.
 PYTHONPATH=src python3 -m djlib_doctor.cli decision-sheet --plan run/plan-missing-files.json --out run/decision-sheet.csv
 PYTHONPATH=src python3 -m djlib_doctor.cli apply-manifest --plan run/plan-missing-files.json --review-log run/review-decisions.json --only-reviewed --out run/apply-manifest.json
 PYTHONPATH=src python3 -m djlib_doctor.cli schema --pretty
+PYTHONPATH=src python3 -m djlib_doctor.cli doctor
 PYTHONPATH=src python3 -m djlib_doctor.cli inspect serato --library-dir "/path/to/serato-library" --out run/inspect-serato
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --out run/rb-to-serato --verify-preview
 PYTHONPATH=src python3 -m djlib_doctor.cli certify rb-to-serato --port-manifest run/rb-to-serato/port-manifest.json --out run/rb-to-serato/certification.json
@@ -79,7 +80,7 @@ PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline baseline.x
 ## Workflow
 
 1. Identify the Rekordbox XML export and optional music root.
-2. Run `verify` or `snapshot`.
+2. Run `doctor`, `verify`, or `snapshot`.
 3. Explain collection tracks, playlist references, local files, streaming placeholders, and cue counts in normal DJ language.
 4. If missing files exist, run `plan missing-files`.
 5. If duplicate or risky active folder references exist, run `plan duplicates` or `plan bad-paths`.

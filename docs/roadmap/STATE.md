@@ -10,7 +10,7 @@ B3 made `sync` dry-run by default. Staged installs now require `--apply` plus ex
 
 ## Next
 
-C1: add `djlib-doctor doctor` to detect libraries, verify each found library, and print a prioritized punch list with exact next commands.
+C2: make bare `djlib-doctor` open a small interactive menu for doctor, sync, fix, config, and quit.
 
 ## Blockers
 

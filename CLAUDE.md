@@ -10,6 +10,7 @@ Start with read-only commands. Writes are allowed only through explicit staged i
 PYTHONPATH=src python3 -m unittest discover -s tests
 PYTHONPATH=src python3 -m djlib_doctor.cli self-test
 PYTHONPATH=src python3 -m djlib_doctor.cli detect --json
+PYTHONPATH=src python3 -m djlib_doctor.cli doctor
 PYTHONPATH=src python3 -m djlib_doctor.cli verify tests/fixtures/rekordbox/simple.xml --no-file-check
 PYTHONPATH=src python3 -m djlib_doctor.cli snapshot --rekordbox-xml tests/fixtures/rekordbox/simple.xml --out work/snapshot-demo --no-file-check
 PYTHONPATH=src python3 -m djlib_doctor.cli plan missing-files --snapshot work/snapshot-demo/snapshot.json --out work/snapshot-demo/plan-missing-files.json

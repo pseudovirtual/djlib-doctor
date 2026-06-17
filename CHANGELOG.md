@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] C1: Added read-only `doctor` detection, verification, Serato inspection, and punch-list output.
 - [x] C0: Enriched `sync` preview output with certification summary counts before confirmation.
 - [x] B3: Made `sync` dry-run by default and required `--apply` before staged installs.
 - [x] B2: Added `sync` staged/install pipeline with preview-first approval and both primary directions.

@@ -5,6 +5,7 @@ from pathlib import Path
 
 from .cli_certify import add_certify_parser
 from .cli_detect import add_detect_parser
+from .cli_doctor import add_doctor_parser
 from .cli_fingerprint import add_fingerprint_parser
 from .cli_sync import add_sync_parser
 
@@ -13,6 +14,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="djlib-doctor", allow_abbrev=False)
     sub = parser.add_subparsers(dest="command", required=True)
     add_detect_parser(sub)
+    add_doctor_parser(sub)
     _add_verify(sub)
     _add_snapshot(sub)
     _add_plan(sub)

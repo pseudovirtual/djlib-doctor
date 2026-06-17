@@ -23,6 +23,7 @@
 PYTHONPATH=src python3 -m unittest discover -s tests
 PYTHONPATH=src python3 -m djlib_doctor.cli self-test
 PYTHONPATH=src python3 -m djlib_doctor.cli detect --json
+PYTHONPATH=src python3 -m djlib_doctor.cli doctor
 PYTHONPATH=src python3 -m djlib_doctor.cli verify tests/fixtures/rekordbox/simple.xml --no-file-check
 PYTHONPATH=src python3 -m djlib_doctor.cli verify --schema-version
 PYTHONPATH=src python3 -m djlib_doctor.cli snapshot --rekordbox-xml tests/fixtures/rekordbox/simple.xml --out work/snapshot-demo --no-file-check
@@ -65,6 +66,7 @@ The current milestone is safe verification, planning, staged writes, and migrati
 
 - parse Rekordbox XML collection records
 - detect local Rekordbox and Serato library paths read-only
+- run `doctor` for detection, lightweight verification, and exact next commands
 - parse playlist references separately
 - parse `POSITION_MARK` memory cues, hotcues, and loops
 - classify local file tracks, streaming placeholders, and unknown locations
