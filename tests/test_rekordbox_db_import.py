@@ -183,7 +183,7 @@ class RekordboxDbImportTests(unittest.TestCase):
             db.write_bytes(b"SQLCipher encrypted Rekordbox database placeholder")
             make_port_manifest(manifest)
 
-            with self.assertRaisesRegex(ValueError, "encrypted SQLCipher.*not supported"):
+            with self.assertRaisesRegex(ValueError, r"encrypted SQLCipher.*djlib-doctor\[rekordbox\]"):
                 stage_rekordbox_db_import(db, manifest, tmp / "stage")
 def _make_serato_root(path: Path) -> None:
     conn = sqlite3.connect(path)

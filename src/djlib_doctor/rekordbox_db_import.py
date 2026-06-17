@@ -42,8 +42,9 @@ def _require_serato_to_rekordbox_manifest(manifest: dict[str, Any]) -> None:
 def _unsupported_database_message(path: Path) -> str:
     return (
         f"Unsupported Rekordbox DB format for import: {path}. "
-        "This build supports only plain SQLite master.db fixtures/schemas with djmdContent "
-        "and optional djmdCue tables. encrypted SQLCipher Rekordbox databases are not supported."
+        "This command supports plain SQLite master.db fixtures/schemas with djmdContent "
+        "and optional djmdCue tables. encrypted SQLCipher Rekordbox databases require "
+        "the optional djlib-doctor[rekordbox] backend."
     )
 
 
