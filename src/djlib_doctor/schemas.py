@@ -51,7 +51,7 @@ SCHEMAS: dict[str, dict[str, Any]] = {
     "fingerprint": _json_schema(FINGERPRINT_SCHEMA_VERSION, FINGERPRINT_FIELDS),
     "fingerprint-comparison": _json_schema(FINGERPRINT_SCHEMA_VERSION, ("schema_version", "comparison_basis", "claims_audio_identity", "classification", "byte_similarity", "left", "right"), classification_values=["exact_duplicate", "byte_similar", "different"]),
     "fingerprint-manifest": _json_schema(FINGERPRINT_SCHEMA_VERSION, ("schema_version", "root", "redacted_paths", "file_count", "files")),
-    "certification": _json_schema(CERTIFICATION_SCHEMA_VERSION, CERTIFICATION_FIELDS, severity_values=["info", "warning", "error"]),
+    "certification": _json_schema(CERTIFICATION_SCHEMA_VERSION, CERTIFICATION_FIELDS, severity_values=["info", "warning", "error"], summary_fields=["matched_tracks", "unmatched_tracks", "cues", "loops", "playlists", "unsupported_rows"]),
     "serato-inspection": _json_schema(SERATO_INSPECTION_SCHEMA_VERSION, ("schema_version", "source", "summary", "schema_fingerprint", "tables", "asset_identity")),
     "port-manifest": _json_schema(PORT_MANIFEST_SCHEMA_VERSION, PORT_FIELDS, summary_fields=["crates", "tracks", "cue_intents", "skipped", "unsupported_tracks", "format_counts", "cue_counts", "warnings"], mode_values=["dry_run_only"]),
     "rekordbox-port-manifest": _json_schema(REKORDBOX_PORT_SCHEMA_VERSION, ("schema_version", "mode", "transfer_mode", "scope", "source_platform", "target_platform", "source_crate", "target_playlist", "summary", "tracks", "skipped"), mode_values=["dry_run_only"]),

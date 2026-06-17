@@ -75,6 +75,14 @@ def _print_plan(result) -> None:
     print(f"Direction: {result.direction}")
     print(f"Port manifest: {result.port_manifest}")
     print(f"Certification: {result.certification_path}")
+    _print_preview_summary(result.certification.summary)
+
+
+def _print_preview_summary(summary: dict[str, object]) -> None:
+    print("Preview summary:")
+    print(f"Tracks: matched {summary.get('matched_tracks', summary.get('tracks', 0))}, unmatched {summary.get('unmatched_tracks', summary.get('skipped', 0))}")
+    print(f"Cues: {summary.get('cues', 0)}, loops: {summary.get('loops', 0)}, playlists: {summary.get('playlists', 0)}")
+    print(f"Unsupported rows: {summary.get('unsupported_rows', summary.get('unsupported_tracks', 0))}")
 
 
 def _require_sync_approval(args: argparse.Namespace) -> None:

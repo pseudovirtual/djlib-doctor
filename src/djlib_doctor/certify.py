@@ -63,17 +63,23 @@ def write_certification_report(report: CertificationReport, out: Path) -> None:
 
 def _summary(manifest: dict[str, Any]) -> dict[str, Any]:
     tracks = _tracks(manifest)
-    cue_count = sum(len(track.get("cue_intents", track.get("cues", []))) for track in tracks)
+    cues = [cue for track in tracks for cue in _cue_rows(track)]
     skipped = _skipped(manifest)
     warnings = manifest.get("warnings", [])
+    unsupported_rows = sum(len(track.get("unsupported", ())) for track in tracks) + len(skipped)
     return {
         "scope": manifest.get("scope", "unknown"),
         "transfer_mode": manifest.get("transfer_mode", "unknown"),
         "tracks": len(tracks),
-        "cues": cue_count,
+        "matched_tracks": len(tracks),
+        "unmatched_tracks": len(skipped),
+        "cues": len(cues),
+        "loops": sum(1 for cue in cues if cue.get("cue_type") == "loop"),
+        "playlists": _playlist_count(manifest),
         "skipped": len(skipped),
         "warnings": len(warnings),
         "unsupported_tracks": sum(1 for track in tracks if track.get("unsupported")),
+        "unsupported_rows": unsupported_rows,
     }
 
 
@@ -87,6 +93,16 @@ def _skipped(manifest: dict[str, Any]) -> list[dict[str, Any]]:
     if "crates" in manifest:
         return [row for crate in manifest.get("crates", []) for row in crate.get("skipped", [])]
     return list(manifest.get("skipped", []))
+
+
+def _cue_rows(track: dict[str, Any]) -> list[dict[str, Any]]:
+    return list(track.get("cue_intents", track.get("cues", [])))
+
+
+def _playlist_count(manifest: dict[str, Any]) -> int:
+    if "crates" in manifest:
+        return len(manifest.get("crates", []))
+    return 1 if manifest.get("source_crate") or manifest.get("target_crate_name") or manifest.get("target_playlist") else 0
 
 
 def _manifest_issues(manifest: dict[str, Any]) -> list[CertificationIssue]:

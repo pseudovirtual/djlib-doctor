@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] C0: Enriched `sync` preview output with certification summary counts before confirmation.
 - [x] B3: Made `sync` dry-run by default and required `--apply` before staged installs.
 - [x] B2: Added `sync` staged/install pipeline with preview-first approval and both primary directions.
 - [x] B1: Added config-primary `sync plan` for dry-run port manifests and certification in both directions.

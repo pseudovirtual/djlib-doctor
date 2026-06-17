@@ -3,14 +3,13 @@ from tempfile import TemporaryDirectory
 import contextlib
 import io
 import json
-import sqlite3
 import unittest
 
 from djlib_doctor.certify import certify_port_manifest
 from djlib_doctor.cli import main
 from djlib_doctor.io_utils import write_json
 from djlib_doctor.serato_crate import write_serato_crate
-from tests.helpers import make_serato_root
+from tests.helpers import insert_serato_asset, make_serato_root
 
 
 def _rb_to_serato_manifest() -> dict:
@@ -46,7 +45,9 @@ class CertificationTests(unittest.TestCase):
         with TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             manifest = root / "port-manifest.json"
-            write_json(manifest, _rb_to_serato_manifest())
+            data = _rb_to_serato_manifest()
+            data["tracks"][0]["cue_intents"].append({"slot": 2, "cue_type": "loop"})
+            write_json(manifest, data)
             (root / "RB - Set.crate").write_text("crate", encoding="utf-8")
             (root / "unsupported.csv").write_text("track_id,artist,title,issue\n", encoding="utf-8")
 
@@ -54,7 +55,11 @@ class CertificationTests(unittest.TestCase):
 
         self.assertTrue(report.passed)
         self.assertEqual(report.summary["tracks"], 1)
-        self.assertEqual(report.summary["cues"], 1)
+        self.assertEqual(report.summary["matched_tracks"], 1)
+        self.assertEqual(report.summary["unmatched_tracks"], 0)
+        self.assertEqual(report.summary["cues"], 2)
+        self.assertEqual(report.summary["loops"], 1)
+        self.assertEqual(report.summary["playlists"], 1)
 
     def test_missing_preview_artifact_is_error(self):
         with TemporaryDirectory() as tmpdir:
@@ -82,6 +87,7 @@ class CertificationTests(unittest.TestCase):
 
         self.assertTrue(report.passed)
         self.assertEqual([issue.severity for issue in report.issues], ["warning", "warning"])
+        self.assertEqual(report.summary["unsupported_rows"], 2)
 
     def test_certify_cli_writes_json(self):
         with TemporaryDirectory() as tmpdir:
@@ -158,15 +164,7 @@ class CertificationTests(unittest.TestCase):
             library = root / "Library"
             library.mkdir()
             make_serato_root(library / "root.sqlite")
-            conn = sqlite3.connect(library / "root.sqlite")
-            try:
-                conn.execute(
-                    "INSERT INTO asset(revision, portable_id, file_name, name, artist) VALUES(?, ?, ?, ?, ?)",
-                    (1, "Music/Track One.aiff", "Track One.aiff", "Track One", "Artist One"),
-                )
-                conn.commit()
-            finally:
-                conn.close()
+            insert_serato_asset(library / "root.sqlite", "Music/Track One.aiff")
             crate = root / "Test.crate"
             write_serato_crate(crate, ("Music/Track One.aiff",))
             out = root / "srb"

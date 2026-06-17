@@ -10,8 +10,8 @@ B3 made `sync` dry-run by default. Staged installs now require `--apply` plus ex
 
 ## Next
 
-Pause for maintainer review before Phase C.
+C1: add `djlib-doctor doctor` to detect libraries, verify each found library, and print a prioritized punch list with exact next commands.
 
 ## Blockers
 
-Phase C requires maintainer approval to continue from porting into friendly entry points.
+None.

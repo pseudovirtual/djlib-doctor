@@ -34,13 +34,17 @@ class SyncRunnerTests(unittest.TestCase):
             tmp = Path(tmpdir)
             config_path = tmp / "config.json"
             write_config(config_path, default_config(primary="rekordbox", rekordbox_xml=FIXTURE))
+            stdout = io.StringIO()
             stderr = io.StringIO()
 
-            with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(stderr):
+            with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
                 exit_code = main(_sync_args(config_path, tmp / "sync", apply=True, yes=False))
             self.assertFalse((tmp / "sync" / "serato-stage").exists())
 
         self.assertEqual(exit_code, 3)
+        self.assertIn("Preview summary:", stdout.getvalue())
+        self.assertIn("Tracks: matched", stdout.getvalue())
+        self.assertIn("Unsupported rows:", stdout.getvalue())
         self.assertIn("--yes", stderr.getvalue())
 
     def test_sync_cli_is_dry_run_without_apply_even_with_yes(self):
