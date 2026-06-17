@@ -14,7 +14,9 @@ BEATGRID_DESC = "Serato BeatGrid"
 SERATO_MARKERS2_VERSION = b"\x01\x01"
 
 
-def read_serato_markers2_file_tags(path: Path, file_loader: Callable[[Path], Any] | None = None) -> tuple[dict[str, Any], ...]:
+def read_serato_markers2_file_tags(
+    path: Path, file_loader: Callable[[Path], Any] | None = None
+) -> tuple[dict[str, Any], ...]:
     if file_loader is None and not path.exists():
         return ()
     audio = _load_audio(path, file_loader)
@@ -22,7 +24,9 @@ def read_serato_markers2_file_tags(path: Path, file_loader: Callable[[Path], Any
     return parse_markers2_payload(decode_serato_geob_payload(data)) if data else ()
 
 
-def read_serato_file_tags(path: Path, file_loader: Callable[[Path], Any] | None = None) -> dict[str, tuple[dict[str, Any], ...]]:
+def read_serato_file_tags(
+    path: Path, file_loader: Callable[[Path], Any] | None = None
+) -> dict[str, tuple[dict[str, Any], ...]]:
     if file_loader is None and not path.exists():
         return {"markers2": (), "beatgrid": ()}
     audio = _load_audio(path, file_loader)

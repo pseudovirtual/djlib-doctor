@@ -8,7 +8,6 @@ from typing import Any
 
 from .audio import iter_audio_files
 
-
 SCHEMA_VERSION = "1.0"
 BUCKETS = 16
 
@@ -79,7 +78,9 @@ def scan_fingerprints(root: Path, redact_paths: bool = False) -> FingerprintMani
     if not root.exists() or not root.is_dir():
         raise ValueError(f"Fingerprint scan root is not a directory: {root}")
     paths = sorted(iter_audio_files(root), key=lambda path: (path.name.lower(), str(path).lower()))
-    files = tuple(_with_path(fingerprint_file(path), _scan_path(path, index, redact_paths)) for index, path in enumerate(paths, 1))
+    files = tuple(
+        _with_path(fingerprint_file(path), _scan_path(path, index, redact_paths)) for index, path in enumerate(paths, 1)
+    )
     return FingerprintManifest("<redacted>" if redact_paths else str(root), files, redacted_paths=redact_paths)
 
 

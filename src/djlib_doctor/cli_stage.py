@@ -20,7 +20,9 @@ def _fail(label: str, exc: Exception) -> int:
 def handle_stage(args: argparse.Namespace) -> int:
     try:
         if args.stage_command == "serato":
-            report = stage_serato_from_port_manifest(args.port_manifest, args.serato_library_dir, args.serato_music_dir, args.stage_dir)
+            report = stage_serato_from_port_manifest(
+                args.port_manifest, args.serato_library_dir, args.serato_music_dir, args.stage_dir
+            )
             print(f"Serato stage written: {report.stage_manifest_path}")
             print(f"Staged root.sqlite: {report.staged_root_sqlite}")
             for crate_path in report.crate_paths:
@@ -52,7 +54,9 @@ def handle_install(args: argparse.Namespace) -> int:
     try:
         if args.install_command == "serato-stage":
             lines = () if args.skip_process_check else _serato_process_lines()
-            report = install_serato_stage(args.stage_dir, args.serato_library_dir, args.serato_music_dir, args.confirm_token, lines)
+            report = install_serato_stage(
+                args.stage_dir, args.serato_library_dir, args.serato_music_dir, args.confirm_token, lines
+            )
             print(f"Serato stage installed: {report.report_path}")
             print(f"Backup directory: {report.backup_dir}")
         elif args.install_command == "serato-tags":
@@ -60,7 +64,9 @@ def handle_install(args: argparse.Namespace) -> int:
             print(f"Serato audio tags installed: {args.stage_dir / 'serato-audio-tag-install-report.json'}")
             print(f"Tagged files installed: {len(report['installed'])}")
         elif args.install_command == "file-ops":
-            report = apply_file_operations_stage(args.stage_dir, args.confirm_token, continue_on_error=args.continue_on_error)
+            report = apply_file_operations_stage(
+                args.stage_dir, args.confirm_token, continue_on_error=args.continue_on_error
+            )
             print(f"File operations applied: {args.stage_dir / 'file-operations-install-report.json'}")
             print(f"Operations applied: {len(report['applied'])}")
         elif args.install_command == "rekordbox-db":

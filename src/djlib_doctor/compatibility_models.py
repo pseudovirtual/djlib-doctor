@@ -23,7 +23,7 @@ class AudioProbe:
     probe_ok: bool = True
 
     @classmethod
-    def from_dict(cls, row: dict[str, str]) -> "AudioProbe":
+    def from_dict(cls, row: dict[str, str]) -> AudioProbe:
         path = row.get("path", "")
         return cls(
             path=path,

@@ -1,9 +1,9 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
 import contextlib
 import io
 import json
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from djlib_doctor.cli import main
 from djlib_doctor.compatibility import (
@@ -13,7 +13,6 @@ from djlib_doctor.compatibility import (
     get_audio_compatibility_profile,
 )
 from djlib_doctor.plan import build_audio_compatibility_plan
-
 
 PROBE_FIXTURE = Path(__file__).parent / "fixtures" / "audio" / "compatibility_probes.csv"
 
@@ -96,7 +95,9 @@ class CompatibilityTests(unittest.TestCase):
         )
 
         self.assertFalse(aiff.passed)
-        self.assertEqual({issue.code for issue in aiff.issues}, {"unsupported_extension", "unsupported_codec", "bit_depth_too_high"})
+        self.assertEqual(
+            {issue.code for issue in aiff.issues}, {"unsupported_extension", "unsupported_codec", "bit_depth_too_high"}
+        )
 
     def test_audio_compatibility_plan_uses_probe_csv(self):
         report = build_audio_compatibility_plan(PROBE_FIXTURE)

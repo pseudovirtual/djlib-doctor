@@ -1,9 +1,8 @@
-from pathlib import Path
 import unittest
+from pathlib import Path
 
 from djlib_doctor.rekordbox_xml import parse_rekordbox_xml
 from djlib_doctor.verify import verify_library
-
 
 FIXTURE = Path(__file__).parent / "fixtures" / "rekordbox" / "simple.xml"
 VALIDATION_FIXTURE = Path(__file__).parent / "fixtures" / "rekordbox" / "validation_issues.xml"
@@ -34,11 +33,15 @@ class VerifyCountsTests(unittest.TestCase):
         report = verify_library(parse_rekordbox_xml(VALIDATION_FIXTURE), check_files=False)
 
         self.assertFalse(report.passed)
-        self.assertEqual({finding.code for finding in report.failures}, {"duplicate_track_id", "missing_playlist_track"})
+        self.assertEqual(
+            {finding.code for finding in report.failures}, {"duplicate_track_id", "missing_playlist_track"}
+        )
         self.assertEqual({finding.code for finding in report.warnings}, {"unknown_location", "unknown_cue_type"})
 
     def test_json_report_has_stable_shape(self):
-        report = verify_library(parse_rekordbox_xml(VALIDATION_FIXTURE), check_files=False, source_path=str(VALIDATION_FIXTURE))
+        report = verify_library(
+            parse_rekordbox_xml(VALIDATION_FIXTURE), check_files=False, source_path=str(VALIDATION_FIXTURE)
+        )
         data = report.to_dict()
 
         self.assertEqual(data["schema_version"], "1.0")

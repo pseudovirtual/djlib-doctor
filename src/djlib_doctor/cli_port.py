@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
 import sqlite3
 import sys
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
-from .port_serato_rekordbox import build_serato_collection_to_rekordbox_plan, build_serato_to_rekordbox_plan, build_serato_track_to_rekordbox_plan, write_serato_to_rekordbox_plan
 from .port_rekordbox_serato import (
     build_rekordbox_collection_to_serato_plan,
     build_rekordbox_to_serato_plan,
@@ -17,6 +16,12 @@ from .port_rekordbox_serato import (
     render_rekordbox_to_serato_summary,
     verify_rekordbox_to_serato_plan,
     write_rekordbox_to_serato_plan,
+)
+from .port_serato_rekordbox import (
+    build_serato_collection_to_rekordbox_plan,
+    build_serato_to_rekordbox_plan,
+    build_serato_track_to_rekordbox_plan,
+    write_serato_to_rekordbox_plan,
 )
 from .workflows import migrate_rekordbox_to_serato, migrate_serato_to_rekordbox
 
@@ -102,16 +107,22 @@ def _port_rb_to_serato(args: argparse.Namespace) -> int:
     _require_one_scope(args, ("playlist", "playlists_file", "track_id", "collection"))
     try:
         if args.track_id:
-            plan = build_rekordbox_track_to_serato_plan(args.rekordbox_xml, args.track_id, args.crate_prefix, args.transfer_mode)
+            plan = build_rekordbox_track_to_serato_plan(
+                args.rekordbox_xml, args.track_id, args.crate_prefix, args.transfer_mode
+            )
         elif args.collection:
             plan = build_rekordbox_collection_to_serato_plan(args.rekordbox_xml, args.crate_prefix, args.transfer_mode)
         elif args.playlists_file:
             playlist_names = read_playlist_names(args.playlists_file)
             if not playlist_names:
                 raise ValueError(f"No playlist names found in {args.playlists_file}")
-            plan = build_rekordbox_to_serato_plans(args.rekordbox_xml, playlist_names, args.crate_prefix, args.transfer_mode)
+            plan = build_rekordbox_to_serato_plans(
+                args.rekordbox_xml, playlist_names, args.crate_prefix, args.transfer_mode
+            )
         else:
-            plan = build_rekordbox_to_serato_plan(args.rekordbox_xml, args.playlist, args.crate_prefix, args.transfer_mode)
+            plan = build_rekordbox_to_serato_plan(
+                args.rekordbox_xml, args.playlist, args.crate_prefix, args.transfer_mode
+            )
         if args.summary_only:
             print(render_rekordbox_to_serato_summary(plan))
             return 0
@@ -120,7 +131,7 @@ def _port_rb_to_serato(args: argparse.Namespace) -> int:
     except (ET.ParseError, OSError, ValueError) as exc:
         return _fail("port", exc)
     print(f"Port manifest written: {outputs['manifest']}")
-    for crate_path in ([outputs["crate_preview"]] if "crate_preview" in outputs else outputs["crate_previews"]):
+    for crate_path in [outputs["crate_preview"]] if "crate_preview" in outputs else outputs["crate_previews"]:
         print(f"Serato crate preview written: {crate_path}")
     print(f"Unsupported report written: {outputs['unsupported_csv']}")
     if verification is not None:
@@ -132,9 +143,13 @@ def _port_rb_to_serato(args: argparse.Namespace) -> int:
 def _build_serato_to_rb_from_args(args: argparse.Namespace):
     _require_one_scope(args, ("crate", "portable_id", "collection"))
     if args.portable_id:
-        return build_serato_track_to_rekordbox_plan(args.serato_library_dir, args.portable_id, args.collection_root, args.playlist_name, args.transfer_mode)
+        return build_serato_track_to_rekordbox_plan(
+            args.serato_library_dir, args.portable_id, args.collection_root, args.playlist_name, args.transfer_mode
+        )
     if args.collection:
-        return build_serato_collection_to_rekordbox_plan(args.serato_library_dir, args.collection_root, args.playlist_name, args.transfer_mode)
+        return build_serato_collection_to_rekordbox_plan(
+            args.serato_library_dir, args.collection_root, args.playlist_name, args.transfer_mode
+        )
     return build_serato_to_rekordbox_plan(args.serato_library_dir, args.crate, args.collection_root, args.playlist_name)
 
 

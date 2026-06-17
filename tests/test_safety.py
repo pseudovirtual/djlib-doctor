@@ -1,7 +1,7 @@
+import unittest
 from datetime import datetime
 from pathlib import Path
 from tempfile import TemporaryDirectory
-import unittest
 
 from djlib_doctor.safety import (
     all_checks_passed,

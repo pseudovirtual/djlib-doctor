@@ -1,6 +1,6 @@
+import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
-import unittest
 
 from djlib_doctor.serato_database_v2 import read_serato_database_v2
 from djlib_doctor.serato_tlv import record, text

@@ -5,7 +5,6 @@ from typing import Any
 
 from .io_utils import render_json
 
-
 DETECT_SCHEMA_VERSION = "1.0"
 
 

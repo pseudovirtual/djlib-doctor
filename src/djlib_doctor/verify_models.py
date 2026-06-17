@@ -88,7 +88,20 @@ class VerificationReport:
             "schema_version": self.schema_version,
             "status": "pass" if self.passed else "fail",
             "source": {"type": "rekordbox_xml", "path": self.source_path, "check_files": self.check_files},
-            "counts": {"collection_tracks": self.collection_tracks, "playlist_references": self.playlist_refs, "local_file_tracks": self.local_file_tracks, "streaming_placeholders": self.streaming_placeholders, "unknown_location_tracks": self.unknown_location_tracks, "missing_local_files": len(self.missing_local_files), "cues": self.cue_count, "hotcues": self.hotcue_count, "memory_cues": self.memory_cue_count, "loops": self.loop_count, "failures": len(self.failures), "warnings": len(self.warnings)},
+            "counts": {
+                "collection_tracks": self.collection_tracks,
+                "playlist_references": self.playlist_refs,
+                "local_file_tracks": self.local_file_tracks,
+                "streaming_placeholders": self.streaming_placeholders,
+                "unknown_location_tracks": self.unknown_location_tracks,
+                "missing_local_files": len(self.missing_local_files),
+                "cues": self.cue_count,
+                "hotcues": self.hotcue_count,
+                "memory_cues": self.memory_cue_count,
+                "loops": self.loop_count,
+                "failures": len(self.failures),
+                "warnings": len(self.warnings),
+            },
             "failures": [finding.to_dict() for finding in self.failures],
             "warnings": [finding.to_dict() for finding in self.warnings],
             "next_actions": list(self.next_actions),
@@ -99,7 +112,20 @@ class VerificationReport:
 
 
 def _summary_lines(report: VerificationReport) -> list[str]:
-    return [f"djlib-doctor verification: {'PASS' if report.passed else 'FAIL'}", f"Source: {report.source_path or '(in-memory library)'}", f"File existence check: {'on' if report.check_files else 'off'}", f"Collection tracks: {report.collection_tracks}", f"Playlist references: {report.playlist_refs}", f"Local file-backed tracks: {report.local_file_tracks}", f"Streaming placeholders: {report.streaming_placeholders}", f"Unknown location tracks: {report.unknown_location_tracks}", f"Missing local files: {len(report.missing_local_files)}", f"Cues: {report.cue_count} ({report.hotcue_count} hotcue, {report.memory_cue_count} memory, {report.loop_count} loop)", f"Failures: {len(report.failures)}", f"Warnings: {len(report.warnings)}"]
+    return [
+        f"djlib-doctor verification: {'PASS' if report.passed else 'FAIL'}",
+        f"Source: {report.source_path or '(in-memory library)'}",
+        f"File existence check: {'on' if report.check_files else 'off'}",
+        f"Collection tracks: {report.collection_tracks}",
+        f"Playlist references: {report.playlist_refs}",
+        f"Local file-backed tracks: {report.local_file_tracks}",
+        f"Streaming placeholders: {report.streaming_placeholders}",
+        f"Unknown location tracks: {report.unknown_location_tracks}",
+        f"Missing local files: {len(report.missing_local_files)}",
+        f"Cues: {report.cue_count} ({report.hotcue_count} hotcue, {report.memory_cue_count} memory, {report.loop_count} loop)",
+        f"Failures: {len(report.failures)}",
+        f"Warnings: {len(report.warnings)}",
+    ]
 
 
 def _append_findings(lines: list[str], title: str, findings: tuple[Finding, ...]) -> None:

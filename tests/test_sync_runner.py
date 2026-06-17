@@ -1,15 +1,15 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
 import contextlib
 import io
 import sqlite3
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
+from tests.helpers import insert_serato_asset, make_rekordbox_import_db, make_serato_root
 
 from djlib_doctor.cli import main
 from djlib_doctor.config import default_config, write_config
 from djlib_doctor.serato_crate import read_serato_crate
-from tests.helpers import insert_serato_asset, make_rekordbox_import_db, make_serato_root
-
 
 FIXTURE = Path(__file__).parent / "fixtures" / "rekordbox" / "simple.xml"
 
@@ -101,7 +101,9 @@ def _serato_config(tmp: Path) -> tuple[Path, Path]:
     db = tmp / "master.db"
     make_rekordbox_import_db(db)
     config_path = tmp / "config.json"
-    write_config(config_path, default_config(primary="serato", serato_library_dir=library, music_root=tmp, rekordbox_db=db))
+    write_config(
+        config_path, default_config(primary="serato", serato_library_dir=library, music_root=tmp, rekordbox_db=db)
+    )
     return db, config_path
 
 

@@ -1,16 +1,14 @@
-from pathlib import Path
 import base64
 import unittest
+from pathlib import Path
 
-from djlib_doctor.serato_file_tags import decode_serato_geob_payload, read_serato_file_tags, read_serato_markers2_file_tags
-
-
-INNER_MARKERS2 = bytes.fromhex(
-    "01 01"
-    " 43 55 45 00 00 00 00 12"
-    " 00 02 00 00 56 ce 00 cc cc 00 00 00"
-    " 43 75 65 20 43 00"
+from djlib_doctor.serato_file_tags import (
+    decode_serato_geob_payload,
+    read_serato_file_tags,
+    read_serato_markers2_file_tags,
 )
+
+INNER_MARKERS2 = bytes.fromhex("01 01 43 55 45 00 00 00 00 12 00 02 00 00 56 ce 00 cc cc 00 00 00 43 75 65 20 43 00")
 INNER_BEATGRID = bytes.fromhex("01 00 00 00 00 02 00 00 00 00 00 00 00 40 41 f0 00 00 43 00 00 00 00")
 
 

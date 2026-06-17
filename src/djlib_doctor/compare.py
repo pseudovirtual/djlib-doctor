@@ -12,6 +12,14 @@ from .rekordbox_xml import RekordboxLibrary, Track, parse_rekordbox_xml
 
 CUE_TOLERANCE_SECONDS = 0.11
 
+__all__ = [
+    "COMPARE_SCHEMA_VERSION",
+    "CompareIssue",
+    "CompareReport",
+    "compare_exports",
+    "write_compare_report",
+]
+
 
 def compare_exports(baseline_xml: Path, final_xml: Path, check_files: bool = False) -> CompareReport:
     baseline = parse_rekordbox_xml(baseline_xml)
@@ -74,7 +82,10 @@ def _cue_issues(baseline: RekordboxLibrary, final: RekordboxLibrary) -> list[Com
                     )
                 )
         baseline_hotcues = sum(1 for cue in track.cues if cue.kind is CueKind.HOTCUE)
-        final_hotcues = max((sum(1 for cue in final_track.cues if cue.kind is CueKind.HOTCUE) for final_track in final_tracks), default=0)
+        final_hotcues = max(
+            (sum(1 for cue in final_track.cues if cue.kind is CueKind.HOTCUE) for final_track in final_tracks),
+            default=0,
+        )
         if baseline_hotcues > final_hotcues:
             issues.append(
                 CompareIssue(
@@ -103,8 +114,12 @@ def _playlist_issues(baseline: RekordboxLibrary, final: RekordboxLibrary) -> lis
                 )
             )
             continue
-        baseline_sequence = [_track_signature(baseline_tracks[track_id]) for track_id in playlist.entries if track_id in baseline_tracks]
-        final_sequence = [_track_signature(final_tracks[track_id]) for track_id in final_playlist.entries if track_id in final_tracks]
+        baseline_sequence = [
+            _track_signature(baseline_tracks[track_id]) for track_id in playlist.entries if track_id in baseline_tracks
+        ]
+        final_sequence = [
+            _track_signature(final_tracks[track_id]) for track_id in final_playlist.entries if track_id in final_tracks
+        ]
         if baseline_sequence != final_sequence:
             issues.append(
                 CompareIssue(

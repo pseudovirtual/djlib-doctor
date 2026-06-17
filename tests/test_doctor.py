@@ -1,12 +1,12 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
 import contextlib
 import io
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
-from djlib_doctor.cli import main
 from tests.helpers import make_serato_root
 
+from djlib_doctor.cli import main
 
 FIXTURE = Path(__file__).parent / "fixtures" / "rekordbox" / "simple.xml"
 

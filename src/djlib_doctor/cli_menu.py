@@ -3,13 +3,15 @@ from __future__ import annotations
 import sys
 from typing import Callable
 
-
 CommandRunner = Callable[[list[str]], int]
 
 
 def handle_menu(run_command: CommandRunner, input_func: Callable[[str], str] | None = None) -> int:
     if input_func is None and not sys.stdin.isatty():
-        print("djlib-doctor menu requires interactive stdin. Run `djlib-doctor doctor` or another command directly.", file=sys.stderr)
+        print(
+            "djlib-doctor menu requires interactive stdin. Run `djlib-doctor doctor` or another command directly.",
+            file=sys.stderr,
+        )
         return 3
     ask = input_func or input
     while True:

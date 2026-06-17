@@ -1,6 +1,6 @@
+import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
-import unittest
 
 from djlib_doctor.library_model import rekordbox_xml_to_library
 from djlib_doctor.rekordbox_xml import parse_rekordbox_xml

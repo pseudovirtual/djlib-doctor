@@ -1,9 +1,9 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
 import contextlib
 import io
 import json
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from djlib_doctor.cli import main
 from djlib_doctor.fingerprint import compare_files, fingerprint_file, scan_fingerprints

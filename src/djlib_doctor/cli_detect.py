@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import argparse
-from pathlib import Path
 import json
+from pathlib import Path
 
 from .detect import detect_libraries, render_detect_json, render_detect_text
 

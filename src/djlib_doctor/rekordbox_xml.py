@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import xml.etree.ElementTree as ET
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable, Optional
-import xml.etree.ElementTree as ET
+from typing import Optional
 
 from .cues import Cue, parse_cue_num, parse_cue_type, parse_position
 from .locations import LocationKind, parse_location

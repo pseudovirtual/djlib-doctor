@@ -1,9 +1,9 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
 import contextlib
 import io
 import json
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from djlib_doctor.cli import main
 from djlib_doctor.port_rekordbox_serato import (
@@ -16,7 +16,6 @@ from djlib_doctor.port_rekordbox_serato import (
     write_rekordbox_to_serato_plan,
 )
 from djlib_doctor.serato_crate import read_serato_crate
-
 
 FIXTURE = Path(__file__).parent / "fixtures" / "rekordbox" / "simple.xml"
 
@@ -62,7 +61,9 @@ class PortSeratoTests(unittest.TestCase):
             crate_prefix="RB - ",
         )
 
-        self.assertEqual([crate.source_playlist for crate in plan.crates], ["ROOT / Fixture Playlist", "ROOT / Fixture Playlist"])
+        self.assertEqual(
+            [crate.source_playlist for crate in plan.crates], ["ROOT / Fixture Playlist", "ROOT / Fixture Playlist"]
+        )
         self.assertEqual(plan.summary["crates"], 2)
         self.assertEqual(plan.summary["tracks"], 2)
         self.assertIn("playlist_name_matched_after_trimming", plan.warnings[0]["code"])

@@ -28,6 +28,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("self-test", help="Run a fast built-in smoke test using synthetic fixtures.")
     return parser
 
+
 def _add_verify(sub: argparse._SubParsersAction) -> None:
     p = sub.add_parser("verify", help="Verify a Rekordbox XML export without writing anything.")
     p.add_argument("xml", type=Path, nargs="?")
@@ -57,7 +58,9 @@ def _add_plan(sub: argparse._SubParsersAction) -> None:
         child = plans.add_parser(name)
         child.add_argument("--snapshot", required=True, type=Path)
         child.add_argument("--out", required=True, type=Path)
-    plans.choices["duplicates"].add_argument("--collision-policy", default="cue-safe", choices=("cue-safe", "quality", "keep-both"))
+    plans.choices["duplicates"].add_argument(
+        "--collision-policy", default="cue-safe", choices=("cue-safe", "quality", "keep-both")
+    )
     plans.choices["bad-paths"].add_argument("--marker", action="append", dest="markers")
     audio = plans.add_parser("audio-compatibility")
     audio.add_argument("--probe-csv", type=Path)

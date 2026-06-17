@@ -1,8 +1,8 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
 import json
 import os
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest import mock
 
 from djlib_doctor.cli import main
@@ -139,7 +139,9 @@ class FileOperationsTests(unittest.TestCase):
             stage = stage_file_operations(manifest, tmp / "stage")
             source2.write_bytes(b"changed")
 
-            report = apply_file_operations_stage(tmp / "stage", confirm_token=stage.install_token, continue_on_error=True)
+            report = apply_file_operations_stage(
+                tmp / "stage", confirm_token=stage.install_token, continue_on_error=True
+            )
 
             self.assertFalse(report["passed"])
             self.assertEqual(target1.read_bytes(), b"new-one")
@@ -169,7 +171,17 @@ class FileOperationsTests(unittest.TestCase):
             stage = stage_file_operations(manifest, tmp / "stage")
             source2.write_bytes(b"changed")
 
-            exit_code = main(["install", "file-ops", "--stage-dir", str(tmp / "stage"), "--confirm-token", stage.install_token, "--continue-on-error"])
+            exit_code = main(
+                [
+                    "install",
+                    "file-ops",
+                    "--stage-dir",
+                    str(tmp / "stage"),
+                    "--confirm-token",
+                    stage.install_token,
+                    "--continue-on-error",
+                ]
+            )
             report = json.loads((tmp / "stage" / "file-operations-install-report.json").read_text(encoding="utf-8"))
 
         self.assertEqual(exit_code, 0)

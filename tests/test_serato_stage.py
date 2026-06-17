@@ -1,10 +1,10 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
 import contextlib
 import io
 import json
 import sqlite3
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest import mock
 
 from djlib_doctor.cli import main
@@ -16,7 +16,6 @@ from djlib_doctor.serato_stage import (
     verify_serato_stage,
 )
 from helpers import make_serato_root
-
 
 FIXTURE = Path(__file__).parent / "fixtures" / "rekordbox" / "simple.xml"
 
@@ -52,7 +51,10 @@ class SeratoStageTests(unittest.TestCase):
 
             self.assertTrue(install_report.passed)
             self.assertTrue((live_music / "Subcrates" / "RB - ROOT - Fixture Playlist.crate").is_file())
-            self.assertEqual(read_serato_crate(live_music / "Subcrates" / "RB - ROOT - Fixture Playlist.crate").tracks[0], "private/tmp/djlib-doctor-fixture-present.aiff")
+            self.assertEqual(
+                read_serato_crate(live_music / "Subcrates" / "RB - ROOT - Fixture Playlist.crate").tracks[0],
+                "private/tmp/djlib-doctor-fixture-present.aiff",
+            )
 
     def test_install_stage_refuses_when_live_root_changed_after_stage(self):
         with TemporaryDirectory() as tmpdir:
@@ -74,7 +76,13 @@ class SeratoStageTests(unittest.TestCase):
             live_library, live_music, stage_report = _stage_fixture(tmp)
 
             with self.assertRaises(RuntimeError):
-                install_serato_stage(tmp / "stage", live_library, live_music, confirm_token=stage_report.install_token, process_lines=("123 Serato DJ Pro",))
+                install_serato_stage(
+                    tmp / "stage",
+                    live_library,
+                    live_music,
+                    confirm_token=stage_report.install_token,
+                    process_lines=("123 Serato DJ Pro",),
+                )
 
     def test_install_stage_refuses_when_manifest_contents_are_tampered(self):
         with TemporaryDirectory() as tmpdir:
@@ -153,7 +161,9 @@ class SeratoStageTests(unittest.TestCase):
                         str(tmp / "stage"),
                     ]
                 )
-            token = json.loads((tmp / "stage" / "serato-stage-manifest.json").read_text(encoding="utf-8"))["install_token"]
+            token = json.loads((tmp / "stage" / "serato-stage-manifest.json").read_text(encoding="utf-8"))[
+                "install_token"
+            ]
 
             with contextlib.redirect_stdout(io.StringIO()):
                 install_exit = main(
@@ -187,7 +197,9 @@ def _stage_fixture(tmp: Path):
         build_rekordbox_to_serato_plan(FIXTURE, "ROOT / Fixture Playlist"),
         tmp / "port",
     )
-    stage_report = stage_serato_from_port_manifest(Path(port_outputs["manifest"]), live_library, live_music, tmp / "stage")
+    stage_report = stage_serato_from_port_manifest(
+        Path(port_outputs["manifest"]), live_library, live_music, tmp / "stage"
+    )
     return live_library, live_music, stage_report
 
 

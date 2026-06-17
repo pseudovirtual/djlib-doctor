@@ -1,7 +1,7 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
 import sqlite3
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from djlib_doctor.rekordbox_encrypted_fixture import (
     SqlcipherUnavailable,

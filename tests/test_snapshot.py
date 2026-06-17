@@ -1,14 +1,13 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
 import contextlib
 import csv
 import io
 import json
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from djlib_doctor.cli import main
 from djlib_doctor.snapshot import create_snapshot
-
 
 FIXTURE = Path(__file__).parent / "fixtures" / "rekordbox" / "simple.xml"
 
@@ -94,7 +93,9 @@ class SnapshotTests(unittest.TestCase):
                 result.verification_json_path.read_text(encoding="utf-8"),
                 result.missing_files_path.read_text(encoding="utf-8"),
                 result.track_summary_path.read_text(encoding="utf-8"),
-                result.filesystem_inventory_path.read_text(encoding="utf-8") if result.filesystem_inventory_path else "",
+                result.filesystem_inventory_path.read_text(encoding="utf-8")
+                if result.filesystem_inventory_path
+                else "",
             ]
 
         combined = "\n".join(texts)
@@ -106,7 +107,9 @@ class SnapshotTests(unittest.TestCase):
         with TemporaryDirectory() as tmpdir:
             stdout = io.StringIO()
             with contextlib.redirect_stdout(stdout):
-                exit_code = main(["snapshot", "--rekordbox-xml", str(FIXTURE), "--out", str(Path(tmpdir) / "run"), "--no-file-check"])
+                exit_code = main(
+                    ["snapshot", "--rekordbox-xml", str(FIXTURE), "--out", str(Path(tmpdir) / "run"), "--no-file-check"]
+                )
 
             self.assertEqual(exit_code, 0)
             self.assertIn("Snapshot written:", stdout.getvalue())

@@ -8,7 +8,6 @@ from .io_utils import render_json
 from .plan import PlanReport
 from .reviewer import ReviewLog
 
-
 APPLY_MANIFEST_SCHEMA_VERSION = "1.0"
 
 

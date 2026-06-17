@@ -6,7 +6,9 @@ from .config import default_config, load_config
 from .detect import detect_libraries
 
 
-def resolve_rekordbox_xml(xml: Path | None, config_path: Path | None, home: Path | None, volumes: list[Path] | None) -> Path:
+def resolve_rekordbox_xml(
+    xml: Path | None, config_path: Path | None, home: Path | None, volumes: list[Path] | None
+) -> Path:
     if xml is not None:
         return xml
     config = load_config(config_path) if config_path else default_config()

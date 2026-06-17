@@ -32,3 +32,10 @@ Scope: Rekordbox and Serato only. Do not add other DJ apps or a neutral universa
 ## Phase D - Review Polish
 
 - [x] D1: Improve interactive review: Enter accepts recommended choice, `A` accepts recommended for remaining high-confidence rows, `u` undoes the last decision, and a live progress header is shown. Keep stdlib-only.
+
+## Phase E - Polish And Distribution
+
+- [x] E1: Add Ruff lint/format config, dev dependency, CI checks, and apply formatting.
+- [ ] E2: Add cross-OS CI matrix for Python 3.9 and 3.13.
+- [ ] E3: Complete package metadata and ship `py.typed`.
+- [ ] E4: Add TestPyPI dry-run publishing and clean-venv smoke install workflow.

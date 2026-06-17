@@ -1,15 +1,15 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
 import contextlib
 import io
 import json
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
+from tests.helpers import insert_serato_asset, make_serato_root
 
 from djlib_doctor.cli import main
 from djlib_doctor.config import default_config, write_config
 from djlib_doctor.sync_planner import plan_sync
-from tests.helpers import insert_serato_asset, make_serato_root
-
 
 FIXTURE = Path(__file__).parent / "fixtures" / "rekordbox" / "simple.xml"
 
@@ -53,7 +53,9 @@ class SyncPlannerTests(unittest.TestCase):
             stdout = io.StringIO()
 
             with contextlib.redirect_stdout(stdout):
-                exit_code = main(["sync", "plan", "--config", str(config_path), "--collection", "--out", str(tmp / "sync")])
+                exit_code = main(
+                    ["sync", "plan", "--config", str(config_path), "--collection", "--out", str(tmp / "sync")]
+                )
 
             manifest = json.loads((tmp / "sync" / "port" / "port-manifest.json").read_text(encoding="utf-8"))
 

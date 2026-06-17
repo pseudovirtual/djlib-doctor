@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from pathlib import Path
 import shutil
 import sqlite3
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from .io_utils import read_json, write_json
 from .safety import all_checks_passed, check_sqlite_sidecars
 from .sqlite_utils import quote_identifier, require_integrity
 from .stage_common import install_token, require_install_token, require_sha256, sha256_file
-
 
 SQLITE_STAGE_SCHEMA_VERSION = "1.0"
 SQLITE_INSTALL_SCHEMA_VERSION = "1.0"
@@ -24,7 +23,9 @@ class SqliteStage:
     install_token: str
 
 
-def stage_sqlite_operations(live_db: Path, operations_manifest: Path, stage_dir: Path, label: str = "sqlite", artifact_prefix: str | None = None) -> SqliteStage:
+def stage_sqlite_operations(
+    live_db: Path, operations_manifest: Path, stage_dir: Path, label: str = "sqlite", artifact_prefix: str | None = None
+) -> SqliteStage:
     sidecar_checks = check_sqlite_sidecars(live_db, code=f"{label}_sqlite_sidecar_absent")
     if not all_checks_passed(sidecar_checks):
         raise RuntimeError("Refusing to stage SQLite operations while sidecars exist")
@@ -62,7 +63,9 @@ def stage_sqlite_operations(live_db: Path, operations_manifest: Path, stage_dir:
     return SqliteStage(stage_dir, stage_manifest_path, staged_db, token)
 
 
-def install_sqlite_stage(stage_dir: Path, live_db: Path, confirm_token: str, label: str = "sqlite", artifact_prefix: str | None = None) -> dict[str, Any]:
+def install_sqlite_stage(
+    stage_dir: Path, live_db: Path, confirm_token: str, label: str = "sqlite", artifact_prefix: str | None = None
+) -> dict[str, Any]:
     output_prefix = artifact_prefix or f"{label}-sqlite"
     manifest_path = stage_dir / f"{output_prefix}-stage-manifest.json"
     manifest = read_json(manifest_path)

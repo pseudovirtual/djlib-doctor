@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+import sqlite3
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from pathlib import Path
-import sqlite3
 from typing import Any, Callable
 from urllib.parse import quote
-import xml.etree.ElementTree as ET
 
 from .io_utils import render_json, write_json
 from .serato_crate import read_serato_crate
@@ -83,25 +83,48 @@ class SeratoToRekordboxPlan:
         return render_json(self.to_dict(), pretty=pretty)
 
 
-def build_serato_to_rekordbox_plan(serato_library_dir: Path, crate_path: Path, collection_root: Path, playlist_name: str | None = None, tag_reader: TagReader | None = None) -> SeratoToRekordboxPlan:
+def build_serato_to_rekordbox_plan(
+    serato_library_dir: Path,
+    crate_path: Path,
+    collection_root: Path,
+    playlist_name: str | None = None,
+    tag_reader: TagReader | None = None,
+) -> SeratoToRekordboxPlan:
     crate = read_serato_crate(crate_path)
     assets = _read_assets_by_portable_id(serato_library_dir / "root.sqlite")
     tracks, skipped = _build_tracks(crate.tracks, assets, collection_root, tag_reader)
     return SeratoToRekordboxPlan(str(crate_path), playlist_name or crate_path.stem, tracks, skipped)
 
 
-def build_serato_track_to_rekordbox_plan(serato_library_dir: Path, portable_id: str, collection_root: Path, playlist_name: str | None = None, transfer_mode: str = "full", tag_reader: TagReader | None = None) -> SeratoToRekordboxPlan:
+def build_serato_track_to_rekordbox_plan(
+    serato_library_dir: Path,
+    portable_id: str,
+    collection_root: Path,
+    playlist_name: str | None = None,
+    transfer_mode: str = "full",
+    tag_reader: TagReader | None = None,
+) -> SeratoToRekordboxPlan:
     _validate_transfer_mode(transfer_mode)
     assets = _read_assets_by_portable_id(serato_library_dir / "root.sqlite")
     tracks, skipped = _build_tracks((portable_id,), assets, collection_root, tag_reader)
-    return SeratoToRekordboxPlan("TRACK", playlist_name or f"Track {Path(portable_id).stem}", tracks, skipped, "track", transfer_mode)
+    return SeratoToRekordboxPlan(
+        "TRACK", playlist_name or f"Track {Path(portable_id).stem}", tracks, skipped, "track", transfer_mode
+    )
 
 
-def build_serato_collection_to_rekordbox_plan(serato_library_dir: Path, collection_root: Path, playlist_name: str | None = None, transfer_mode: str = "full", tag_reader: TagReader | None = None) -> SeratoToRekordboxPlan:
+def build_serato_collection_to_rekordbox_plan(
+    serato_library_dir: Path,
+    collection_root: Path,
+    playlist_name: str | None = None,
+    transfer_mode: str = "full",
+    tag_reader: TagReader | None = None,
+) -> SeratoToRekordboxPlan:
     _validate_transfer_mode(transfer_mode)
     assets = _read_assets_by_portable_id(serato_library_dir / "root.sqlite")
     tracks, skipped = _build_tracks(tuple(assets), assets, collection_root, tag_reader)
-    return SeratoToRekordboxPlan("COLLECTION", playlist_name or "Serato Collection", tracks, skipped, "collection", transfer_mode)
+    return SeratoToRekordboxPlan(
+        "COLLECTION", playlist_name or "Serato Collection", tracks, skipped, "collection", transfer_mode
+    )
 
 
 def write_serato_to_rekordbox_plan(plan: SeratoToRekordboxPlan, out_dir: Path) -> dict[str, str]:
@@ -123,14 +146,21 @@ def render_rekordbox_xml_preview(plan: SeratoToRekordboxPlan) -> str:
             ET.SubElement(track_element, "POSITION_MARK", _cue_attrs(cue))
     playlists = ET.SubElement(root, "PLAYLISTS")
     root_node = ET.SubElement(playlists, "NODE", {"Type": "0", "Name": "ROOT", "Count": "1"})
-    playlist = ET.SubElement(root_node, "NODE", {"Name": plan.target_playlist, "Type": "1", "KeyType": "0", "Entries": str(len(plan.tracks))})
+    playlist = ET.SubElement(
+        root_node, "NODE", {"Name": plan.target_playlist, "Type": "1", "KeyType": "0", "Entries": str(len(plan.tracks))}
+    )
     for track in plan.tracks:
         ET.SubElement(playlist, "TRACK", {"Key": track.track_id})
     _indent(root)
     return '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(root, encoding="unicode")
 
 
-def _build_tracks(portable_ids: tuple[str, ...], assets: dict[str, dict[str, Any]], collection_root: Path, tag_reader: TagReader | None) -> tuple[tuple[RekordboxPortTrack, ...], tuple[dict[str, str], ...]]:
+def _build_tracks(
+    portable_ids: tuple[str, ...],
+    assets: dict[str, dict[str, Any]],
+    collection_root: Path,
+    tag_reader: TagReader | None,
+) -> tuple[tuple[RekordboxPortTrack, ...], tuple[dict[str, str], ...]]:
     tracks = []
     skipped = []
     for index, portable_id in enumerate(portable_ids, 1):
@@ -141,7 +171,9 @@ def _build_tracks(portable_ids: tuple[str, ...], assets: dict[str, dict[str, Any
     return tuple(tracks), tuple(skipped)
 
 
-def _track(index: int, portable_id: str, asset: dict[str, Any], collection_root: Path, tag_reader: TagReader | None) -> RekordboxPortTrack:
+def _track(
+    index: int, portable_id: str, asset: dict[str, Any], collection_root: Path, tag_reader: TagReader | None
+) -> RekordboxPortTrack:
     path = collection_root / portable_id
     cues, cue_status = _cue_data(path, tag_reader)
     return RekordboxPortTrack(
@@ -177,7 +209,11 @@ def _read_assets_by_portable_id(root_sqlite: Path) -> dict[str, dict[str, Any]]:
     conn = sqlite3.connect(f"file:{root_sqlite}?mode=ro", uri=True)
     try:
         columns = _table_columns(conn, "asset")
-        wanted = [column for column in ("portable_id", "name", "artist", "album", "genre", "key", "bpm", "length_ms") if column in columns]
+        wanted = [
+            column
+            for column in ("portable_id", "name", "artist", "album", "genre", "key", "bpm", "length_ms")
+            if column in columns
+        ]
         if "portable_id" not in wanted:
             raise ValueError("Serato asset table does not include portable_id")
         rows = conn.execute(f"SELECT {', '.join(quote_identifier(column) for column in wanted)} FROM asset").fetchall()
@@ -220,7 +256,13 @@ def _optional_int(value: Any) -> int | None:
 
 def _track_attrs(track: RekordboxPortTrack) -> dict[str, str]:
     attrs = {"TrackID": track.track_id, "Name": track.title, "Artist": track.artist, "Location": _file_url(track.path)}
-    attrs.update({key: value for key, value in {"Album": track.album, "Genre": track.genre, "Tonality": track.key}.items() if value})
+    attrs.update(
+        {
+            key: value
+            for key, value in {"Album": track.album, "Genre": track.genre, "Tonality": track.key}.items()
+            if value
+        }
+    )
     if track.bpm is not None:
         attrs["AverageBpm"] = f"{track.bpm:g}"
     if track.length_ms is not None:
@@ -229,7 +271,11 @@ def _track_attrs(track: RekordboxPortTrack) -> dict[str, str]:
 
 
 def _cue_attrs(cue: RekordboxPortCue) -> dict[str, str]:
-    attrs = {"Type": "4" if cue.cue_type == "loop" else "0", "Start": f"{cue.start_ms / 1000:.3f}", "Num": "" if cue.slot is None else str(cue.slot)}
+    attrs = {
+        "Type": "4" if cue.cue_type == "loop" else "0",
+        "Start": f"{cue.start_ms / 1000:.3f}",
+        "Num": "" if cue.slot is None else str(cue.slot),
+    }
     if cue.label:
         attrs["Name"] = cue.label
     if cue.end_ms is not None:

@@ -1,13 +1,12 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
 import contextlib
 import io
 import json
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from djlib_doctor.cli import main
 from djlib_doctor.compare import compare_exports
-
 
 FIXTURE = Path(__file__).parent / "fixtures" / "rekordbox" / "simple.xml"
 FINAL_MISSING = Path(__file__).parent / "fixtures" / "rekordbox" / "final_missing_material.xml"
@@ -48,7 +47,19 @@ class CompareTests(unittest.TestCase):
             out_path = Path(tmpdir) / "compare.json"
             stdout = io.StringIO()
             with contextlib.redirect_stdout(stdout):
-                exit_code = main(["compare", "exports", "--baseline", str(FIXTURE), "--final", str(FIXTURE), "--out", str(out_path), "--json"])
+                exit_code = main(
+                    [
+                        "compare",
+                        "exports",
+                        "--baseline",
+                        str(FIXTURE),
+                        "--final",
+                        str(FIXTURE),
+                        "--out",
+                        str(out_path),
+                        "--json",
+                    ]
+                )
 
             self.assertEqual(exit_code, 0)
             self.assertTrue(out_path.exists())
@@ -59,7 +70,9 @@ class CompareTests(unittest.TestCase):
     def test_compare_cli_check_files_adds_missing_status(self):
         stdout = io.StringIO()
         with contextlib.redirect_stdout(stdout):
-            exit_code = main(["compare", "exports", "--baseline", str(FIXTURE), "--final", str(FIXTURE), "--check-files", "--json"])
+            exit_code = main(
+                ["compare", "exports", "--baseline", str(FIXTURE), "--final", str(FIXTURE), "--check-files", "--json"]
+            )
 
         data = json.loads(stdout.getvalue())
 

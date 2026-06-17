@@ -1,16 +1,15 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
 import contextlib
 import io
 import json
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from djlib_doctor.cli import main
 from djlib_doctor.plan import MatchConfidence, PlanAction, PlanReport, build_missing_files_plan, write_plan
 from djlib_doctor.reviewer import load_review_log, run_interactive_review
 from djlib_doctor.snapshot import create_snapshot
-
 
 FIXTURE = Path(__file__).parent / "fixtures" / "rekordbox" / "simple.xml"
 
@@ -88,7 +87,9 @@ class ReviewerTests(unittest.TestCase):
             out_path = Path(tmpdir) / "review.json"
             answers = iter(["1", "first", "u", "2", "second", "q"])
 
-            decisions = run_interactive_review(report, out_path, input_func=lambda prompt: next(answers), output=io.StringIO())
+            decisions = run_interactive_review(
+                report, out_path, input_func=lambda prompt: next(answers), output=io.StringIO()
+            )
 
         self.assertEqual(len(decisions), 1)
         self.assertEqual(decisions[0].review_id, "MISSING-FILES-0001")
@@ -100,7 +101,9 @@ def _review_report(confidences: tuple[str, ...]) -> PlanReport:
     return PlanReport(
         "missing-files",
         tuple(
-            PlanAction("missing_file", str(index), "Artist", f"Track {index}", MatchConfidence(value), True, "missing", ())
+            PlanAction(
+                "missing_file", str(index), "Artist", f"Track {index}", MatchConfidence(value), True, "missing", ()
+            )
             for index, value in enumerate(confidences, 1)
         ),
     )

@@ -1,10 +1,10 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
 import contextlib
 import io
 import json
 import sqlite3
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from djlib_doctor.cli import main
 from djlib_doctor.io_utils import write_json
@@ -34,14 +34,30 @@ def make_port_manifest(path: Path) -> None:
                     "bpm": 124.0,
                     "length_ms": 300000,
                     "cues": [
-                        {"kind": "hotcue", "cue_type": "cue", "start_ms": 12345, "end_ms": None, "slot": 0, "label": "Cue A"},
-                        {"kind": "hotcue", "cue_type": "loop", "start_ms": 48000, "end_ms": 56000, "slot": 1, "label": "Loop B"},
+                        {
+                            "kind": "hotcue",
+                            "cue_type": "cue",
+                            "start_ms": 12345,
+                            "end_ms": None,
+                            "slot": 0,
+                            "label": "Cue A",
+                        },
+                        {
+                            "kind": "hotcue",
+                            "cue_type": "loop",
+                            "start_ms": 48000,
+                            "end_ms": 56000,
+                            "slot": 1,
+                            "label": "Loop B",
+                        },
                     ],
                 }
             ],
             "skipped": [],
         },
     )
+
+
 def make_rekordbox_db(path: Path, supported: bool = True) -> None:
     conn = sqlite3.connect(path)
     try:
@@ -80,6 +96,8 @@ def make_rekordbox_db(path: Path, supported: bool = True) -> None:
         conn.commit()
     finally:
         conn.close()
+
+
 class RekordboxDbImportTests(unittest.TestCase):
     def test_stage_rekordbox_db_import_from_serato_port_manifest(self):
         with TemporaryDirectory() as tmpdir:
@@ -94,7 +112,9 @@ class RekordboxDbImportTests(unittest.TestCase):
             conn = sqlite3.connect(stage.staged_db)
             try:
                 row = conn.execute("SELECT Title, ArtistName, BPM FROM djmdContent").fetchone()
-                cue_rows = conn.execute("SELECT ContentID, InMsec, OutMsec, Kind, HotCue, Name FROM djmdCue ORDER BY ID").fetchall()
+                cue_rows = conn.execute(
+                    "SELECT ContentID, InMsec, OutMsec, Kind, HotCue, Name FROM djmdCue ORDER BY ID"
+                ).fetchall()
             finally:
                 conn.close()
 
@@ -185,6 +205,8 @@ class RekordboxDbImportTests(unittest.TestCase):
 
             with self.assertRaisesRegex(ValueError, r"encrypted SQLCipher.*djlib-doctor\[rekordbox\]"):
                 stage_rekordbox_db_import(db, manifest, tmp / "stage")
+
+
 def _make_serato_root(path: Path) -> None:
     conn = sqlite3.connect(path)
     try:

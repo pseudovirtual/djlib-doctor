@@ -1,15 +1,14 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import os
-from pathlib import Path
 import shutil
 import subprocess
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from .io_utils import read_json, write_json
 from .stage_common import backup_name, install_token, require_install_token, require_sha256, sha256_file
-
 
 FILE_OPS_STAGE_SCHEMA_VERSION = "1.0"
 FILE_OPS_INSTALL_SCHEMA_VERSION = "1.0"
@@ -58,11 +57,19 @@ def apply_file_operations_stage(stage_dir: Path, confirm_token: str, continue_on
             applied.append(result)
             backups.extend(result.get("backups", ()))
         except Exception as exc:
-            errors.append({"operation_id": operation.get("operation_id", ""), "operation": operation.get("operation", ""), "error": str(exc)})
+            errors.append(
+                {
+                    "operation_id": operation.get("operation_id", ""),
+                    "operation": operation.get("operation", ""),
+                    "error": str(exc),
+                }
+            )
             if continue_on_error:
                 continue
             _rollback(backups)
-            raise RuntimeError(f"File operation stage failed and was rolled back at {operation.get('operation_id', '')}: {exc}") from exc
+            raise RuntimeError(
+                f"File operation stage failed and was rolled back at {operation.get('operation_id', '')}: {exc}"
+            ) from exc
     report = {
         "schema_version": FILE_OPS_INSTALL_SCHEMA_VERSION,
         "passed": not errors,
@@ -109,7 +116,9 @@ def _stage_operation(index: int, operation: dict[str, Any], staged_dir: Path) ->
         target = Path(operation["target"])
         staged = staged_dir / f"OP-{index:04d}-{target.name}"
         if shutil.which("ffmpeg") is None:
-            raise RuntimeError("ffmpeg is required for convert operations; install ffmpeg or stage copy/move/delete operations only")
+            raise RuntimeError(
+                "ffmpeg is required for convert operations; install ffmpeg or stage copy/move/delete operations only"
+            )
         subprocess.run(["ffmpeg", "-y", "-i", str(source), str(staged)], check=True, capture_output=True)
         return {
             "operation_id": f"OP-{index:04d}",
@@ -152,7 +161,12 @@ def _apply_operation(operation: dict[str, Any], backup_dir: Path) -> dict[str, A
         backup = backup_dir / backup_name(source)
         shutil.copy2(source, backup)
         source.unlink()
-        return {"operation_id": operation["operation_id"], "operation": kind, "source": str(source), "backups": [{"path": str(source), "backup": str(backup), "existed": True}]}
+        return {
+            "operation_id": operation["operation_id"],
+            "operation": kind,
+            "source": str(source),
+            "backups": [{"path": str(source), "backup": str(backup), "existed": True}],
+        }
     raise ValueError(f"Unsupported file operation: {kind}")
 
 

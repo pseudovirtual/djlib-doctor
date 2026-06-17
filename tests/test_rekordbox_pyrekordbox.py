@@ -1,5 +1,5 @@
-from pathlib import Path
 import unittest
+from pathlib import Path
 
 from djlib_doctor.rekordbox_pyrekordbox import PyrekordboxUnavailable, open_master_database
 

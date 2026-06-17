@@ -25,4 +25,9 @@ def file_hash_check(code: str, path: Path, expected_hash: str) -> dict[str, Any]
 
 
 def installed_file_record(source: Path, target: Path) -> dict[str, str]:
-    return {"source": str(source), "target": str(target), "source_sha256": sha256_file(source), "target_sha256": sha256_file(target)}
+    return {
+        "source": str(source),
+        "target": str(target),
+        "source_sha256": sha256_file(source),
+        "target_sha256": sha256_file(target),
+    }

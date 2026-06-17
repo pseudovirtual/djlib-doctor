@@ -1,11 +1,10 @@
+import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
-import unittest
 
 from djlib_doctor.cues import CueKind, CueType
 from djlib_doctor.locations import LocationKind, parse_location
 from djlib_doctor.rekordbox_xml import parse_rekordbox_xml
-
 
 FIXTURE = Path(__file__).parent / "fixtures" / "rekordbox" / "simple.xml"
 

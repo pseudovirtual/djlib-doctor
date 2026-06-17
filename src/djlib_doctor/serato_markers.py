@@ -6,7 +6,16 @@ from typing import Any
 VERSION = (1, 1)
 VERSION_FORMAT = ">2B"
 LOOP_PREFIX = b"\x00\x00\x00\xff"
-CUE_COLORS = (b"\xcc\x00\x00", b"\xcc\x88\x00", b"\xcc\xcc\x00", b"\x00\xcc\x00", b"\x00\xcc\xcc", b"\x00\x00\xcc", b"\x88\x00\xcc", b"\xcc\x00\x88")
+CUE_COLORS = (
+    b"\xcc\x00\x00",
+    b"\xcc\x88\x00",
+    b"\xcc\xcc\x00",
+    b"\x00\xcc\x00",
+    b"\x00\xcc\xcc",
+    b"\x00\x00\xcc",
+    b"\x88\x00\xcc",
+    b"\xcc\x00\x88",
+)
 
 
 def build_markers2_payload(cue_intents: list[dict[str, Any]] | tuple[dict[str, Any], ...]) -> bytes:
@@ -25,9 +34,22 @@ def encode_markers2_payload(markers: list[dict[str, Any]] | tuple[dict[str, Any]
         slot = int(marker.get("slot") or 0)
         label = str(marker.get("label") or "")
         if marker.get("cue_type") == "loop":
-            contents.append(_named_entry("LOOP", _loop_entry(slot, int(marker["start_ms"]), int(marker.get("end_ms") or marker["start_ms"]), label, str(marker.get("color") or ""))))
+            contents.append(
+                _named_entry(
+                    "LOOP",
+                    _loop_entry(
+                        slot,
+                        int(marker["start_ms"]),
+                        int(marker.get("end_ms") or marker["start_ms"]),
+                        label,
+                        str(marker.get("color") or ""),
+                    ),
+                )
+            )
         else:
-            contents.append(_named_entry("CUE", _cue_entry(slot, int(marker["start_ms"]), label, str(marker.get("color") or ""))))
+            contents.append(
+                _named_entry("CUE", _cue_entry(slot, int(marker["start_ms"]), label, str(marker.get("color") or "")))
+            )
     return b"".join(contents)
 
 
@@ -91,12 +113,26 @@ def _parse_marker(name: str, payload: bytes) -> dict[str, Any] | None:
 
 def _cue_entry(index: int, position_ms: int, label: str, color_hex: str = "") -> bytes:
     color = _cue_color(index, color_hex)
-    return b"".join((struct.pack(">cBIc3s2s", b"\x00", index, position_ms, b"\x00", color, b"\x00\x00"), label[:51].encode("utf-8"), b"\x00"))
+    return b"".join(
+        (
+            struct.pack(">cBIc3s2s", b"\x00", index, position_ms, b"\x00", color, b"\x00\x00"),
+            label[:51].encode("utf-8"),
+            b"\x00",
+        )
+    )
 
 
 def _loop_entry(index: int, start_ms: int, end_ms: int, label: str, color_hex: str = "") -> bytes:
     color = _loop_color(index, color_hex)
-    return b"".join((struct.pack(">cBII4s4sB?", b"\x00", index, start_ms, end_ms, b"\x00\x00\x00\x00", LOOP_PREFIX, color, False), label[:51].encode("utf-8"), b"\x00"))
+    return b"".join(
+        (
+            struct.pack(
+                ">cBII4s4sB?", b"\x00", index, start_ms, end_ms, b"\x00\x00\x00\x00", LOOP_PREFIX, color, False
+            ),
+            label[:51].encode("utf-8"),
+            b"\x00",
+        )
+    )
 
 
 def _named_entry(name: str, payload: bytes) -> bytes:

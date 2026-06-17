@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Optional
 from urllib.parse import unquote, urlparse
 
-
 STREAMING_MARKERS = (
     "soundcloud:",
     "spotify:",

@@ -1,7 +1,7 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
 import json
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from djlib_doctor.serato_crate import CRATE_VERSION, read_serato_crate, safe_crate_filename, write_serato_crate
 

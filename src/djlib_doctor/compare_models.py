@@ -38,7 +38,18 @@ class CompareReport:
         return {
             "schema_version": COMPARE_SCHEMA_VERSION,
             "status": "pass" if self.passed else "fail",
-            "summary": {code: sum(1 for issue in self.issues if issue.code == code) for code in ("missing_material", "cue_not_covered", "hotcue_regression", "playlist_order_or_entry_diff", "final_missing_local_file", "final_bad_path")} | {"issues": len(self.issues)},
+            "summary": {
+                code: sum(1 for issue in self.issues if issue.code == code)
+                for code in (
+                    "missing_material",
+                    "cue_not_covered",
+                    "hotcue_regression",
+                    "playlist_order_or_entry_diff",
+                    "final_missing_local_file",
+                    "final_bad_path",
+                )
+            }
+            | {"issues": len(self.issues)},
             "issues": [issue.to_dict() for issue in self.issues],
         }
 

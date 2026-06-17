@@ -51,19 +51,13 @@ def check_app_processes_closed(
     checks = []
     for app_name, patterns in app_patterns.items():
         normalized_patterns = tuple(pattern.lower() for pattern in patterns)
-        matches = [
-            line
-            for line in normalized_lines
-            if any(pattern in line for pattern in normalized_patterns)
-        ]
+        matches = [line for line in normalized_lines if any(pattern in line for pattern in normalized_patterns)]
         checks.append(
             SafetyCheck(
                 code=f"{app_name}_app_closed",
                 passed=not matches,
                 message=(
-                    f"{app_name} appears to be running"
-                    if matches
-                    else f"{app_name} does not appear to be running"
+                    f"{app_name} appears to be running" if matches else f"{app_name} does not appear to be running"
                 ),
             )
         )

@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import hashlib
-from pathlib import Path
 import sqlite3
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from .io_utils import render_json, write_json
 from .sqlite_utils import quote_identifier
-
 
 SERATO_INSPECTION_SCHEMA_VERSION = "1.0"
 

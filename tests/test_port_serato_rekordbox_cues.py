@@ -1,9 +1,9 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
 import json
 import sqlite3
 import unittest
 import xml.etree.ElementTree as ET
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from djlib_doctor.port_serato_rekordbox import build_serato_to_rekordbox_plan, write_serato_to_rekordbox_plan
 from djlib_doctor.serato_crate import write_serato_crate
@@ -95,7 +95,13 @@ class PortSeratoRekordboxCueTests(unittest.TestCase):
                 tag_reader=markers2_reader(
                     (
                         {"intent": "serato_hotcue", "slot": 0, "start_ms": 12345, "label": "Cue A"},
-                        {"intent": "serato_saved_loop", "slot": 1, "start_ms": 48000, "end_ms": 56000, "label": "Loop B"},
+                        {
+                            "intent": "serato_saved_loop",
+                            "slot": 1,
+                            "start_ms": 48000,
+                            "end_ms": 56000,
+                            "label": "Loop B",
+                        },
                     )
                 ),
             )
@@ -124,7 +130,13 @@ class PortSeratoRekordboxCueTests(unittest.TestCase):
                     build_markers2_payload(
                         (
                             {"intent": "serato_hotcue", "slot": 2, "start_ms": 22222, "label": "Cue C"},
-                            {"intent": "serato_saved_loop", "slot": 3, "start_ms": 64000, "end_ms": 80000, "label": "Loop D"},
+                            {
+                                "intent": "serato_saved_loop",
+                                "slot": 3,
+                                "start_ms": 64000,
+                                "end_ms": 80000,
+                                "label": "Loop D",
+                            },
                         )
                     )
                 ),
@@ -132,7 +144,13 @@ class PortSeratoRekordboxCueTests(unittest.TestCase):
                     build_markers2_payload(
                         (
                             {"intent": "serato_hotcue", "slot": 0, "start_ms": 12345, "label": "Cue A"},
-                            {"intent": "serato_saved_loop", "slot": 1, "start_ms": 48000, "end_ms": 56000, "label": "Loop B"},
+                            {
+                                "intent": "serato_saved_loop",
+                                "slot": 1,
+                                "start_ms": 48000,
+                                "end_ms": 56000,
+                                "label": "Loop B",
+                            },
                         )
                     )
                 ),
@@ -147,7 +165,9 @@ class PortSeratoRekordboxCueTests(unittest.TestCase):
             manifest = json.loads(Path(outputs["manifest"]).read_text(encoding="utf-8"))
             xml_root = ET.fromstring(Path(outputs["rekordbox_xml_preview"]).read_text(encoding="utf-8"))
 
-        self.assertEqual([track["portable_id"] for track in manifest["tracks"]], ["Music/Track Two.aiff", "Music/Track One.aiff"])
+        self.assertEqual(
+            [track["portable_id"] for track in manifest["tracks"]], ["Music/Track Two.aiff", "Music/Track One.aiff"]
+        )
         self.assertEqual(
             _cue_summary(manifest["tracks"][0]),
             [
@@ -163,11 +183,17 @@ class PortSeratoRekordboxCueTests(unittest.TestCase):
             ],
         )
         self.assertEqual([node.attrib["Key"] for node in xml_root.findall("./PLAYLISTS/NODE/NODE/TRACK")], ["1", "2"])
-        track_marks = {track.attrib["TrackID"]: track.findall("POSITION_MARK") for track in xml_root.findall("./COLLECTION/TRACK")}
+        track_marks = {
+            track.attrib["TrackID"]: track.findall("POSITION_MARK") for track in xml_root.findall("./COLLECTION/TRACK")
+        }
         self.assertEqual(track_marks["1"][0].attrib, {"Type": "0", "Start": "22.222", "Num": "2", "Name": "Cue C"})
-        self.assertEqual(track_marks["1"][1].attrib, {"Type": "4", "Start": "64.000", "Num": "3", "Name": "Loop D", "End": "80.000"})
+        self.assertEqual(
+            track_marks["1"][1].attrib, {"Type": "4", "Start": "64.000", "Num": "3", "Name": "Loop D", "End": "80.000"}
+        )
         self.assertEqual(track_marks["2"][0].attrib, {"Type": "0", "Start": "12.345", "Num": "0", "Name": "Cue A"})
-        self.assertEqual(track_marks["2"][1].attrib, {"Type": "4", "Start": "48.000", "Num": "1", "Name": "Loop B", "End": "56.000"})
+        self.assertEqual(
+            track_marks["2"][1].attrib, {"Type": "4", "Start": "48.000", "Num": "1", "Name": "Loop B", "End": "56.000"}
+        )
 
     def test_serato_to_rekordbox_reads_cues_from_file_tags_not_sqlite(self):
         with TemporaryDirectory() as tmpdir:
@@ -200,7 +226,10 @@ class PortSeratoRekordboxCueTests(unittest.TestCase):
 
 
 def _cue_summary(track: dict[str, object]) -> list[tuple[object, ...]]:
-    return [(cue["kind"], cue["cue_type"], cue["slot"], cue["start_ms"], cue["end_ms"], cue["label"]) for cue in track["cues"]]
+    return [
+        (cue["kind"], cue["cue_type"], cue["slot"], cue["start_ms"], cue["end_ms"], cue["label"])
+        for cue in track["cues"]
+    ]
 
 
 if __name__ == "__main__":

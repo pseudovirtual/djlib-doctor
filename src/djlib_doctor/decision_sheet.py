@@ -5,7 +5,6 @@ from pathlib import Path
 
 from .plan import PlanReport
 
-
 DECISION_SHEET_FIELDS = [
     "plan_type",
     "action",

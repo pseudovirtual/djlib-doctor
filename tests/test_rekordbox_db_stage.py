@@ -1,8 +1,8 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
 import json
 import sqlite3
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from djlib_doctor.rekordbox_db_stage import install_rekordbox_db_stage, stage_rekordbox_db_operations
 
@@ -108,7 +108,9 @@ class RekordboxDbStageTests(unittest.TestCase):
             stage = stage_rekordbox_db_operations(db, ops, tmp / "stage")
 
             with self.assertRaises(RuntimeError):
-                install_rekordbox_db_stage(tmp / "stage", db, confirm_token=stage.install_token, process_lines=("123 rekordbox",))
+                install_rekordbox_db_stage(
+                    tmp / "stage", db, confirm_token=stage.install_token, process_lines=("123 rekordbox",)
+                )
 
 
 if __name__ == "__main__":

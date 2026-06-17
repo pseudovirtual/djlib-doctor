@@ -1,13 +1,18 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
 import contextlib
 import io
 import json
 import sqlite3
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from djlib_doctor.cli import main
-from djlib_doctor.port_serato_rekordbox import build_serato_collection_to_rekordbox_plan, build_serato_to_rekordbox_plan, build_serato_track_to_rekordbox_plan, write_serato_to_rekordbox_plan
+from djlib_doctor.port_serato_rekordbox import (
+    build_serato_collection_to_rekordbox_plan,
+    build_serato_to_rekordbox_plan,
+    build_serato_track_to_rekordbox_plan,
+    write_serato_to_rekordbox_plan,
+)
 from djlib_doctor.serato_crate import write_serato_crate
 
 
@@ -81,7 +86,9 @@ class PortRekordboxTests(unittest.TestCase):
             library.mkdir()
             make_serato_root(library / "root.sqlite")
 
-            plan = build_serato_track_to_rekordbox_plan(library, "Music/Track One.aiff", Path("/Users/test"), transfer_mode="cues-only")
+            plan = build_serato_track_to_rekordbox_plan(
+                library, "Music/Track One.aiff", Path("/Users/test"), transfer_mode="cues-only"
+            )
 
         self.assertEqual(plan.scope, "track")
         self.assertEqual(plan.transfer_mode, "cues-only")

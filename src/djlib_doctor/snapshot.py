@@ -3,14 +3,21 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 from .io_utils import write_json
 from .redaction import redact_path
 from .rekordbox_xml import parse_rekordbox_xml
-from .snapshot_writers import redact_report, write_cue_summary, write_filesystem_inventory, write_missing_files, write_playlist_summary, write_streaming_placeholders, write_track_summary
+from .snapshot_writers import (
+    redact_report,
+    write_cue_summary,
+    write_filesystem_inventory,
+    write_missing_files,
+    write_playlist_summary,
+    write_streaming_placeholders,
+    write_track_summary,
+)
 from .verify import VerificationReport, verify_library
-
 
 SNAPSHOT_SCHEMA_VERSION = "1.0"
 
@@ -61,7 +68,9 @@ def create_snapshot(
     write_playlist_summary(playlist_summary_path, library)
     filesystem_summary = None
     if music_root is not None:
-        filesystem_summary = write_filesystem_inventory(filesystem_inventory_path, music_root, redact_paths=redact_paths)
+        filesystem_summary = write_filesystem_inventory(
+            filesystem_inventory_path, music_root, redact_paths=redact_paths
+        )
 
     snapshot = {
         "schema_version": SNAPSHOT_SCHEMA_VERSION,
@@ -77,7 +86,11 @@ def create_snapshot(
         },
         "source": {
             "rekordbox_xml": redact_path(rekordbox_xml) if redact_paths else str(rekordbox_xml),
-            "music_root": redact_path(music_root) if redact_paths and music_root else str(music_root) if music_root else None,
+            "music_root": redact_path(music_root)
+            if redact_paths and music_root
+            else str(music_root)
+            if music_root
+            else None,
             "check_files": check_files,
         },
         "artifacts": {

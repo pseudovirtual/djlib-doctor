@@ -7,7 +7,6 @@ from pathlib import Path
 from .io_utils import read_json, write_json
 from .plan import MatchConfidence, PlanAction, PlanReport
 
-
 REVIEW_SCHEMA_VERSION = "1.0"
 
 

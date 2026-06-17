@@ -20,7 +20,13 @@ def parse_beatgrid_payload(payload: bytes | None) -> tuple[dict[str, Any], ...]:
         if index == count - 1:
             markers.append({"kind": "beatgrid_terminal", "position": position, "bpm": struct.unpack(">f", data)[0]})
         else:
-            markers.append({"kind": "beatgrid_marker", "position": position, "beats_till_next_marker": struct.unpack(">I", data)[0]})
+            markers.append(
+                {
+                    "kind": "beatgrid_marker",
+                    "position": position,
+                    "beats_till_next_marker": struct.unpack(">I", data)[0],
+                }
+            )
         offset += 8
     if offset < len(payload):
         markers.append({"kind": "beatgrid_footer", "unknown": payload[offset]})

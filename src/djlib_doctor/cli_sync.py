@@ -7,8 +7,8 @@ import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-from .config import load_config
 from .cli_stage import _app_process_lines, _serato_process_lines
+from .config import load_config
 from .port_rekordbox_serato import read_playlist_names
 from .sync_planner import plan_sync
 from .sync_runner import install_sync_plan
@@ -80,7 +80,9 @@ def _print_plan(result) -> None:
 
 def _print_preview_summary(summary: dict[str, object]) -> None:
     print("Preview summary:")
-    print(f"Tracks: matched {summary.get('matched_tracks', summary.get('tracks', 0))}, unmatched {summary.get('unmatched_tracks', summary.get('skipped', 0))}")
+    print(
+        f"Tracks: matched {summary.get('matched_tracks', summary.get('tracks', 0))}, unmatched {summary.get('unmatched_tracks', summary.get('skipped', 0))}"
+    )
     print(f"Cues: {summary.get('cues', 0)}, loops: {summary.get('loops', 0)}, playlists: {summary.get('playlists', 0)}")
     print(f"Unsupported rows: {summary.get('unsupported_rows', summary.get('unsupported_tracks', 0))}")
 
@@ -95,4 +97,6 @@ def _require_sync_approval(args: argparse.Namespace) -> None:
 
 
 def _process_lines(config: dict[str, object]) -> tuple[str, ...]:
-    return _serato_process_lines() if config.get("primary") == "rekordbox" else _app_process_lines("rekordbox|Rekordbox")
+    return (
+        _serato_process_lines() if config.get("primary") == "rekordbox" else _app_process_lines("rekordbox|Rekordbox")
+    )

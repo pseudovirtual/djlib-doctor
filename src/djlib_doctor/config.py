@@ -5,7 +5,6 @@ from typing import Any
 
 from .io_utils import read_json, write_json
 
-
 CONFIG_SCHEMA_VERSION = "1.0"
 PRIMARY_VALUES = {"rekordbox", "serato"}
 CONFIG_KEYS = {

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 DEFAULT_BAD_PATH_MARKERS = (
     "trash",
     "staging",

@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Callable, Any
+from typing import Any, Callable
 
 
 class PyrekordboxUnavailable(ImportError):
     pass
 
 
-def open_master_database(path: Path, key: str = "", unlock: bool = True, importer: Callable[[], Any] | None = None) -> Any:
+def open_master_database(
+    path: Path, key: str = "", unlock: bool = True, importer: Callable[[], Any] | None = None
+) -> Any:
     master_database = _master_database(importer)
     return master_database(path=path, key=key, unlock=unlock)
 
@@ -27,6 +29,8 @@ def _master_database(importer: Callable[[], Any] | None) -> Any:
 
 
 def _unavailable(exc: ImportError) -> PyrekordboxUnavailable:
-    error = PyrekordboxUnavailable("Install djlib-doctor[rekordbox] to read or write encrypted Rekordbox master.db files")
+    error = PyrekordboxUnavailable(
+        "Install djlib-doctor[rekordbox] to read or write encrypted Rekordbox master.db files"
+    )
     error.__cause__ = exc
     return error

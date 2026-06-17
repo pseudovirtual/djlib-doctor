@@ -1,7 +1,13 @@
 from __future__ import annotations
 
 from .compatibility_check import check_audio_compatibility
-from .compatibility_models import AudioCompatibilityProfile, AudioProbe, CompatibilityIssue, CompatibilityResult, CompatibilitySeverity
+from .compatibility_models import (
+    AudioCompatibilityProfile,
+    AudioProbe,
+    CompatibilityIssue,
+    CompatibilityResult,
+    CompatibilitySeverity,
+)
 from .compatibility_profiles import (
     AUDIO_COMPATIBILITY_PROFILES,
     BROAD_SOFTWARE_LIBRARY_PROFILE,

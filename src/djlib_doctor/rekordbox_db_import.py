@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from pathlib import Path
 import sqlite3
+from pathlib import Path
 from typing import Any
 
 from .io_utils import read_json, write_json
@@ -58,7 +58,9 @@ def _require_supported_content_schema(columns: tuple[str, ...]) -> None:
         )
 
 
-def _build_operations(conn: sqlite3.Connection, columns: tuple[str, ...], cue_columns: tuple[str, ...], tracks: tuple[dict[str, Any], ...]) -> list[dict[str, Any]]:
+def _build_operations(
+    conn: sqlite3.Connection, columns: tuple[str, ...], cue_columns: tuple[str, ...], tracks: tuple[dict[str, Any], ...]
+) -> list[dict[str, Any]]:
     operations = []
     existing = _existing_paths(conn)
     next_id = _next_content_id(conn)
@@ -68,7 +70,14 @@ def _build_operations(conn: sqlite3.Connection, columns: tuple[str, ...], cue_co
         key = (values["FolderPath"], values["FileNameL"])
         if key in existing:
             content_id = existing[key]
-            operations.append({"operation": "update", "table": CONTENT_TABLE, "values": _update_values(values), "where": {"ID": existing[key]}})
+            operations.append(
+                {
+                    "operation": "update",
+                    "table": CONTENT_TABLE,
+                    "values": _update_values(values),
+                    "where": {"ID": existing[key]},
+                }
+            )
         else:
             content_id = next_id
             values["ID"] = next_id
@@ -104,7 +113,9 @@ def _content_values(track: dict[str, Any], columns: tuple[str, ...]) -> dict[str
         "BPM": track.get("bpm"),
         "Length": track.get("length_ms"),
     }
-    values.update({column: value for column, value in optional.items() if column in columns and value not in (None, "")})
+    values.update(
+        {column: value for column, value in optional.items() if column in columns and value not in (None, "")}
+    )
     return values
 
 
@@ -118,7 +129,9 @@ def _split_db_path(path: str) -> tuple[str, str]:
     return folder, item.name
 
 
-def _cue_operations(track: dict[str, Any], columns: tuple[str, ...], content_id: int, next_id: int) -> tuple[list[dict[str, Any]], int]:
+def _cue_operations(
+    track: dict[str, Any], columns: tuple[str, ...], content_id: int, next_id: int
+) -> tuple[list[dict[str, Any]], int]:
     cues = tuple(track.get("cues") or ())
     if not cues:
         return [], next_id
@@ -149,7 +162,9 @@ def _cue_values(cue: dict[str, Any], content_id: int, cue_id: int) -> dict[str, 
 
 
 def _operations_manifest(port_manifest: Path, operations: list[dict[str, Any]]) -> dict[str, Any]:
-    counts = {kind: sum(1 for operation in operations if operation["operation"] == kind) for kind in ("insert", "update")}
+    counts = {
+        kind: sum(1 for operation in operations if operation["operation"] == kind) for kind in ("insert", "update")
+    }
     return {
         "schema_version": IMPORT_SCHEMA_VERSION,
         "mode": "rekordbox_db_import_operations",

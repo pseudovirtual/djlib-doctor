@@ -2,21 +2,33 @@ from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
 import sqlite3
 import sys
-from tempfile import TemporaryDirectory
 import xml.etree.ElementTree as ET
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from .apply_manifest import build_apply_manifest, write_apply_manifest
+from .cli_defaults import resolve_rekordbox_xml
 from .collision_policy import get_duplicate_collision_policy
 from .compare import compare_exports, write_compare_report
-from .compatibility import customize_audio_compatibility_profile, get_audio_compatibility_profile, list_audio_compatibility_profiles
+from .compatibility import (
+    customize_audio_compatibility_profile,
+    get_audio_compatibility_profile,
+    list_audio_compatibility_profiles,
+)
 from .config import default_config, load_config, write_config
-from .cli_defaults import resolve_rekordbox_xml
 from .decision_sheet import write_decision_sheet
 from .io_utils import render_json
-from .plan import build_audio_compatibility_plan, build_bad_paths_plan, build_cues_plan, build_duplicates_plan, build_missing_files_plan, load_plan, write_plan
+from .plan import (
+    build_audio_compatibility_plan,
+    build_bad_paths_plan,
+    build_cues_plan,
+    build_duplicates_plan,
+    build_missing_files_plan,
+    load_plan,
+    write_plan,
+)
 from .port_rekordbox_serato import build_rekordbox_to_serato_plan
 from .rekordbox_xml import parse_rekordbox_xml
 from .reviewer import load_review_log, run_interactive_review
@@ -53,7 +65,9 @@ def handle_verify(args: argparse.Namespace) -> int:
 
 def handle_snapshot(args: argparse.Namespace) -> int:
     try:
-        result = create_snapshot(args.rekordbox_xml, args.out, args.music_root, not args.no_file_check, args.redact_paths)
+        result = create_snapshot(
+            args.rekordbox_xml, args.out, args.music_root, not args.no_file_check, args.redact_paths
+        )
     except (ET.ParseError, OSError, ValueError) as exc:
         return _fail("snapshot", exc)
     print(f"Snapshot written: {result.snapshot_path}")
@@ -80,7 +94,9 @@ def _build_plan(args: argparse.Namespace):
     if args.plan_command == "missing-files":
         return build_missing_files_plan(args.snapshot)
     if args.plan_command == "duplicates":
-        return build_duplicates_plan(args.snapshot, collision_policy=get_duplicate_collision_policy(args.collision_policy))
+        return build_duplicates_plan(
+            args.snapshot, collision_policy=get_duplicate_collision_policy(args.collision_policy)
+        )
     if args.plan_command == "bad-paths":
         markers = tuple(args.markers) if args.markers else None
         return build_bad_paths_plan(args.snapshot, markers=markers) if markers else build_bad_paths_plan(args.snapshot)

@@ -2,15 +2,15 @@
 
 ## Phase
 
-Primary-library foundation, one-command porting, friendly entry points, and review polish complete.
+Primary-library foundation through review polish complete; Phase E polish/distribution pass in progress.
 
 ## Last Done
 
-D1 polished interactive review with Enter-to-accept, high-confidence accept-remaining, undo, and progress output.
+E1 added Ruff lint/format configuration, dev extra, and CI checks.
 
 ## Next
 
-Maintainer review, then choose the next roadmap slice.
+E2: add cross-OS CI matrix for Python 3.9 and 3.13.
 
 ## Blockers
 

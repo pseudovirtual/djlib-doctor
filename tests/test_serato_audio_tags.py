@@ -1,9 +1,9 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
 import contextlib
 import io
 import json
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest import mock
 
 from djlib_doctor.cli import main
@@ -13,7 +13,6 @@ from djlib_doctor.serato_audio_tags import (
     build_serato_audio_tag_stage,
     install_serato_audio_tag_stage,
 )
-
 
 FIXTURE = Path(__file__).parent / "fixtures" / "rekordbox" / "simple.xml"
 
@@ -50,7 +49,7 @@ class SeratoAudioTagsTests(unittest.TestCase):
                 build_rekordbox_to_serato_plan(FIXTURE, "ROOT / Fixture Playlist"),
                 tmp / "port",
             )
-            report = build_serato_audio_tag_stage(Path(outputs["manifest"]), tmp / "tag-stage")
+            build_serato_audio_tag_stage(Path(outputs["manifest"]), tmp / "tag-stage")
 
             with self.assertRaises(ValueError):
                 install_serato_audio_tag_stage(tmp / "tag-stage", confirm_token="wrong")
@@ -77,7 +76,10 @@ class SeratoAudioTagsTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
-            with mock.patch("djlib_doctor.serato_audio_tags._write_tags", side_effect=lambda path, track: path.write_bytes(b"tagged")):
+            with mock.patch(
+                "djlib_doctor.serato_audio_tags._write_tags",
+                side_effect=lambda path, track: path.write_bytes(b"tagged"),
+            ):
                 report = build_serato_audio_tag_stage(manifest, tmp / "tag-stage")
             source.write_bytes(b"changed")
 

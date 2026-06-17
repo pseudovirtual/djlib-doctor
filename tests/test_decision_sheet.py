@@ -1,15 +1,14 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
 import contextlib
 import csv
 import io
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from djlib_doctor.cli import main
 from djlib_doctor.decision_sheet import write_decision_sheet
 from djlib_doctor.plan import build_missing_files_plan, write_plan
 from djlib_doctor.snapshot import create_snapshot
-
 
 FIXTURE = Path(__file__).parent / "fixtures" / "rekordbox" / "simple.xml"
 

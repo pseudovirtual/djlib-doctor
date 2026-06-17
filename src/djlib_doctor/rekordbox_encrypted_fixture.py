@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from pathlib import Path
 import base64
 import shutil
 import sqlite3
-from tempfile import TemporaryDirectory
 import zlib
+from dataclasses import dataclass
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 PUBLIC_KEY_BLOB = b"PN_Pq^*N>(JYe*u^8;Yg76HuZ)b9;DpoTXV(6ItkU`}8*m6tx_I{Solh_N#dfe{v="
 BLOB_KEY = b"657f48f84c437cc1"
@@ -83,7 +83,9 @@ def _sqlcipher() -> object:
     try:
         from sqlcipher3 import dbapi2 as sqlcipher
     except ImportError as exc:
-        raise SqlcipherUnavailable("sqlcipher3 is unavailable; install djlib-doctor[rekordbox] to generate encrypted Rekordbox fixtures") from exc
+        raise SqlcipherUnavailable(
+            "sqlcipher3 is unavailable; install djlib-doctor[rekordbox] to generate encrypted Rekordbox fixtures"
+        ) from exc
     return sqlcipher
 
 
@@ -127,7 +129,22 @@ def _insert_fixture_rows(conn: sqlite3.Connection) -> None:
     now = "2026-01-01 00:00:00"
     conn.execute(
         "INSERT INTO djmdContent VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        (1, "content-uuid-1", "/Music", "Track One.aiff", "Track One", "Artist One", "Album", "House", "8A", 124.0, 300000, 1, now, now),
+        (
+            1,
+            "content-uuid-1",
+            "/Music",
+            "Track One.aiff",
+            "Track One",
+            "Artist One",
+            "Album",
+            "House",
+            "8A",
+            124.0,
+            300000,
+            1,
+            now,
+            now,
+        ),
     )
     conn.execute(
         "INSERT INTO djmdCue VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",

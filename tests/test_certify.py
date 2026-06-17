@@ -1,15 +1,16 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
 import contextlib
 import io
 import json
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
+from tests.helpers import insert_serato_asset, make_serato_root
 
 from djlib_doctor.certify import certify_port_manifest
 from djlib_doctor.cli import main
 from djlib_doctor.io_utils import write_json
 from djlib_doctor.serato_crate import write_serato_crate
-from tests.helpers import insert_serato_asset, make_serato_root
 
 
 def _rb_to_serato_manifest() -> dict:

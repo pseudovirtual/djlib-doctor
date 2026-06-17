@@ -54,4 +54,15 @@ def _missing_action(row: dict[str, str], inventory: dict[str, list[str]]) -> Pla
             ("no_playlist_refs",),
             "",
         )
-    return PlanAction(action, row.get("track_id", ""), row.get("artist", ""), row.get("title", ""), confidence, True, reason, evidence, source_path, candidate)
+    return PlanAction(
+        action,
+        row.get("track_id", ""),
+        row.get("artist", ""),
+        row.get("title", ""),
+        confidence,
+        True,
+        reason,
+        evidence,
+        source_path,
+        candidate,
+    )

@@ -1,12 +1,21 @@
 from __future__ import annotations
 
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Callable, TextIO
 
 from .plan import PlanAction, PlanReport
 from .reviewer_choices import ReviewChoice, choices_for_action
 from .reviewer_log import REVIEW_SCHEMA_VERSION, ReviewDecision, ReviewLog, load_review_log, write_review_log
+
+__all__ = [
+    "REVIEW_SCHEMA_VERSION",
+    "ReviewDecision",
+    "ReviewLog",
+    "load_review_log",
+    "run_interactive_review",
+    "write_review_log",
+]
 
 
 def run_interactive_review(

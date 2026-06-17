@@ -7,7 +7,6 @@ from typing import Any
 from .io_utils import read_json, write_json
 from .serato_crate import safe_crate_filename
 
-
 SCHEMA_VERSION = "1.0"
 
 
@@ -102,7 +101,9 @@ def _cue_rows(track: dict[str, Any]) -> list[dict[str, Any]]:
 def _playlist_count(manifest: dict[str, Any]) -> int:
     if "crates" in manifest:
         return len(manifest.get("crates", []))
-    return 1 if manifest.get("source_crate") or manifest.get("target_crate_name") or manifest.get("target_playlist") else 0
+    return (
+        1 if manifest.get("source_crate") or manifest.get("target_crate_name") or manifest.get("target_playlist") else 0
+    )
 
 
 def _manifest_issues(manifest: dict[str, Any]) -> list[CertificationIssue]:
@@ -112,7 +113,9 @@ def _manifest_issues(manifest: dict[str, Any]) -> list[CertificationIssue]:
     if _skipped(manifest):
         issues.append(CertificationIssue("warning", "manifest.skipped", "Manifest contains skipped tracks."))
     if any(track.get("unsupported") for track in _tracks(manifest)):
-        issues.append(CertificationIssue("warning", "manifest.unsupported", "Some tracks contain unsupported migration details."))
+        issues.append(
+            CertificationIssue("warning", "manifest.unsupported", "Some tracks contain unsupported migration details.")
+        )
     return issues
 
 

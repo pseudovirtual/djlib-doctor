@@ -113,7 +113,11 @@ def rekordbox_xml_to_library(library: RekordboxLibrary) -> Library:
 
 
 def local_file_tracks(library: Library) -> tuple[LibraryTrack, ...]:
-    return tuple(track for track in library.tracks if track.location_kind == LocationKind.LOCAL_FILE.value and track.path is not None)
+    return tuple(
+        track
+        for track in library.tracks
+        if track.location_kind == LocationKind.LOCAL_FILE.value and track.path is not None
+    )
 
 
 def _cue_kind(kind: CueKind) -> str:

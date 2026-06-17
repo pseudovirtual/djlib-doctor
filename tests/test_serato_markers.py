@@ -1,9 +1,8 @@
-from pathlib import Path
 import json
 import unittest
+from pathlib import Path
 
 from djlib_doctor.serato_markers import encode_markers2_payload, parse_markers2_payload
-
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures" / "serato_golden"
 
@@ -26,7 +25,10 @@ class SeratoMarkersGoldenVectorTests(unittest.TestCase):
         )
 
     def test_decode_encode_decode_preserves_supported_golden_entries(self):
-        payload = b"".join(bytes.fromhex(_fixture(path.name)["payload_hex"])[2:] for path in sorted(FIXTURE_DIR.glob("markers2-*.json")))
+        payload = b"".join(
+            bytes.fromhex(_fixture(path.name)["payload_hex"])[2:]
+            for path in sorted(FIXTURE_DIR.glob("markers2-*.json"))
+        )
         payload = b"\x01\x01" + payload
 
         decoded = parse_markers2_payload(payload)

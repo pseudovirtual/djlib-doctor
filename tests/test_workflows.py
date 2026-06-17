@@ -1,13 +1,13 @@
+import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
-import unittest
 
 from djlib_doctor.serato_crate import write_serato_crate
 from djlib_doctor.workflows import migrate_rekordbox_to_serato, migrate_serato_to_rekordbox
 from helpers import make_serato_root
 
-
 FIXTURE = Path(__file__).parent / "fixtures" / "rekordbox" / "simple.xml"
+
 
 class WorkflowTests(unittest.TestCase):
     def test_migrate_rekordbox_to_serato_can_plan_and_stage(self):

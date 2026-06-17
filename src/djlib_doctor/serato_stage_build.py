@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from pathlib import Path
 import shutil
 import sqlite3
 import time
+from pathlib import Path
 
 from .io_utils import read_json, write_json
 from .safety import all_checks_passed, check_serato_sqlite_sidecars
@@ -16,7 +16,9 @@ from .sqlite_utils import require_integrity
 from .stage_common import install_token, sha256_file
 
 
-def stage_serato_from_port_manifest(port_manifest_path: Path, live_serato_library_dir: Path, live_serato_music_dir: Path, stage_dir: Path) -> SeratoStageReport:
+def stage_serato_from_port_manifest(
+    port_manifest_path: Path, live_serato_library_dir: Path, live_serato_music_dir: Path, stage_dir: Path
+) -> SeratoStageReport:
     crates = manifest_crates(read_json(port_manifest_path))
     if not crates:
         raise ValueError("Port manifest has no crates or tracks to stage")
@@ -29,12 +31,23 @@ def stage_serato_from_port_manifest(port_manifest_path: Path, live_serato_librar
     crate_paths, per_crate_reports = _write_stage(staged_root, stage_subcrates, crates)
     source_hashes = {"root_sqlite": sha256_file(live_root)}
     hashes = stage_hashes(staged_root, tuple(crate_paths))
-    manifest = _stage_manifest(port_manifest_path, live_serato_library_dir, live_serato_music_dir, staged_root, crate_paths, per_crate_reports, hashes, source_hashes)
+    manifest = _stage_manifest(
+        port_manifest_path,
+        live_serato_library_dir,
+        live_serato_music_dir,
+        staged_root,
+        crate_paths,
+        per_crate_reports,
+        hashes,
+        source_hashes,
+    )
     manifest["install_token"] = install_token("INSTALL_SERATO_STAGE", install_token_payload(manifest))
     stage_manifest_path = stage_dir / "serato-stage-manifest.json"
     write_json(stage_manifest_path, manifest)
     write_json(stage_dir / "serato-stage-verification.json", verify_serato_stage(stage_dir).to_dict())
-    return SeratoStageReport(stage_dir, stage_manifest_path, staged_root, tuple(crate_paths), manifest["install_token"], manifest["summary"])
+    return SeratoStageReport(
+        stage_dir, stage_manifest_path, staged_root, tuple(crate_paths), manifest["install_token"], manifest["summary"]
+    )
 
 
 def _copy_stage_roots(live_root: Path, stage_dir: Path) -> tuple[Path, Path]:
@@ -68,17 +81,35 @@ def _write_stage(staged_root: Path, stage_subcrates: Path, crates: tuple[dict, .
     return crate_paths, reports
 
 
-def _write_crate(conn: sqlite3.Connection, crate: dict, stage_subcrates: Path, crate_paths: list[Path], revision: int, now: int) -> dict:
+def _write_crate(
+    conn: sqlite3.Connection, crate: dict, stage_subcrates: Path, crate_paths: list[Path], revision: int, now: int
+) -> dict:
     crate_name = str(crate["target_crate_name"])
     tracks = tuple(crate.get("tracks", ()))
     crate_path = _unique_crate_path(stage_subcrates, crate_name, crate_paths)
     write_serato_crate(crate_path, tuple(str(track["serato_portable_id"]) for track in tracks))
     created, reused = write_crate_to_sqlite(conn, crate_name, tracks, revision, now)
     crate_paths.append(crate_path)
-    return {"source_playlist": crate.get("source_playlist", ""), "target_crate_name": crate_name, "crate_path": str(crate_path), "tracks": len(tracks), "created_assets": created, "reused_assets": reused}
+    return {
+        "source_playlist": crate.get("source_playlist", ""),
+        "target_crate_name": crate_name,
+        "crate_path": str(crate_path),
+        "tracks": len(tracks),
+        "created_assets": created,
+        "reused_assets": reused,
+    }
 
 
-def _stage_manifest(port_manifest_path: Path, live_library: Path, live_music: Path, staged_root: Path, crate_paths: list[Path], reports: list[dict], hashes: dict, source_hashes: dict) -> dict:
+def _stage_manifest(
+    port_manifest_path: Path,
+    live_library: Path,
+    live_music: Path,
+    staged_root: Path,
+    crate_paths: list[Path],
+    reports: list[dict],
+    hashes: dict,
+    source_hashes: dict,
+) -> dict:
     return {
         "schema_version": SERATO_STAGE_SCHEMA_VERSION,
         "mode": "staged_serato_install",
@@ -86,7 +117,12 @@ def _stage_manifest(port_manifest_path: Path, live_library: Path, live_music: Pa
         "source_port_manifest": str(port_manifest_path),
         "live_targets": {"serato_library_dir": str(live_library), "serato_music_dir": str(live_music)},
         "staged_files": {"root_sqlite": str(staged_root), "crates": [str(path) for path in crate_paths]},
-        "summary": {"crates": len(crate_paths), "tracks": sum(int(report["tracks"]) for report in reports), "created_assets": sum(int(report["created_assets"]) for report in reports), "reused_assets": sum(int(report["reused_assets"]) for report in reports)},
+        "summary": {
+            "crates": len(crate_paths),
+            "tracks": sum(int(report["tracks"]) for report in reports),
+            "created_assets": sum(int(report["created_assets"]) for report in reports),
+            "reused_assets": sum(int(report["reused_assets"]) for report in reports),
+        },
         "crates": reports,
         "hashes": hashes,
         "source_hashes": source_hashes,

@@ -1,14 +1,13 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
 import contextlib
 import io
 import json
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest import mock
 
-from djlib_doctor.cli import main
 from djlib_doctor import cli_read
-
+from djlib_doctor.cli import main
 
 FIXTURE = Path(__file__).parent / "fixtures" / "rekordbox" / "simple.xml"
 
@@ -77,7 +76,9 @@ class CliTests(unittest.TestCase):
             out_path = Path(tmpdir) / "verification.json"
             stdout = io.StringIO()
             with contextlib.redirect_stdout(stdout):
-                exit_code = main(["verify", str(FIXTURE), "--no-file-check", "--json", "--pretty", "--out", str(out_path)])
+                exit_code = main(
+                    ["verify", str(FIXTURE), "--no-file-check", "--json", "--pretty", "--out", str(out_path)]
+                )
 
             data = json.loads(out_path.read_text(encoding="utf-8"))
 
