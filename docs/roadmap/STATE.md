@@ -6,11 +6,11 @@ Primary-library foundation through Phase E complete; cleanup and bug-fix pass in
 
 ## Last Done
 
-F1 made the root menu invoke real sync, fix, and config commands instead of placeholder suggestions.
+F2 expanded `doctor --config` to check configured Rekordbox DB and Serato database V2 paths.
 
 ## Next
 
-F2: expand `doctor` beyond Rekordbox XML by checking configured Rekordbox DB and Serato database V2 paths.
+F3: add a machine-readable `doctor --json` mode for agents and smoke tests.
 
 ## Blockers
 
