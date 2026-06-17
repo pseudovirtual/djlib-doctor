@@ -100,6 +100,6 @@ Backups and install reports are written inside the stage directory.
 
 ## Supported Serato Boundary
 
-- Fixture-backed: `.crate` TLV parsing, `root.sqlite` inspection, `database V2` TLV track extraction, and Markers2 `CUE`/`LOOP` parsing.
+- Fixture-backed: `.crate` TLV parsing/writing against a static vector, `root.sqlite` inspection, `database V2` TLV track extraction, and Markers2 `CUE`/`LOOP` parsing.
 - Certified real Serato versions: none yet. Real-version certification depends on anonymized fixtures under `tests/fixtures/real/`.
 - Cue and beatgrid source of truth remains audio-file tags, not `database V2` or `root.sqlite`.

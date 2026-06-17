@@ -9,6 +9,7 @@
 - [x] P1.4: Added Markers2 decode/encode/decode golden-vector coverage for supported cue and loop entries.
 - [x] P1.5: Added explicit WAV cue skip status for Serato-to-Rekordbox plans.
 - [x] P2.6: Added shared Serato TLV parsing and fixture-backed `_Serato_/database V2` track extraction.
+- [x] P2.8: Added a static Serato crate golden vector for read/write verification.
 - [x] Backlog 1: Rescoped fingerprinting as exact-duplicate/raw-byte similarity instead of audio identity.
 - [x] Backlog 2: Added adversarial Serato install refusal tests and hardened stage manifest/backup verification.
 - [x] Backlog 3: Documented Rekordbox DB import support boundaries and added a clear encrypted SQLCipher refusal.
