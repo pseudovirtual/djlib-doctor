@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import argparse
+import sys
 
 from .cli_certify import handle_certify
 from .cli_detect import handle_detect
 from .cli_doctor import handle_doctor
+from .cli_menu import handle_menu
 from .cli_parser import build_parser
 from .cli_fingerprint import handle_fingerprint
 from .cli_port import handle_migrate, handle_port
@@ -52,6 +54,9 @@ HANDLERS = {
 
 
 def main(argv: list[str] | None = None) -> int:
+    argv = sys.argv[1:] if argv is None else argv
+    if not argv:
+        return handle_menu(main)
     parser = build_parser()
     args = parser.parse_args(argv)
     handler = HANDLERS.get(args.command)

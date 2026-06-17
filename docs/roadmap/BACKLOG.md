@@ -27,7 +27,7 @@ Scope: Rekordbox and Serato only. Do not add other DJ apps or a neutral universa
 
 - [x] C0: Enrich `sync` preview output so it prints certification summary counts for matched/unmatched tracks, cues, loops, playlists, and unsupported rows before confirmation.
 - [x] C1: Add `djlib-doctor doctor`: detect libraries, verify each found library, and print a prioritized punch list with exact next commands.
-- [ ] C2: Make bare `djlib-doctor` open a small interactive menu: doctor, sync, fix, config, quit. Each option calls the corresponding verb with detected defaults.
+- [x] C2: Make bare `djlib-doctor` open a small interactive menu: doctor, sync, fix, config, quit. Each option calls the corresponding verb with detected defaults.
 
 ## Phase D - Review Polish
 

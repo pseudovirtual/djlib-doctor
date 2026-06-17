@@ -10,7 +10,7 @@ B3 made `sync` dry-run by default. Staged installs now require `--apply` plus ex
 
 ## Next
 
-C2: make bare `djlib-doctor` open a small interactive menu for doctor, sync, fix, config, and quit.
+D1: improve interactive review with default Enter, accept-remaining, undo, and progress header.
 
 ## Blockers
 
