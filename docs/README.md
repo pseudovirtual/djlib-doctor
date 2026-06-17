@@ -12,6 +12,7 @@ Start with the current docs below. Archived docs are retained for project histor
 - [Agent Friendliness And Discovery](agent-friendliness-and-discovery.md)
 - [Reports And Schemas](reports.md)
 - [Rekordbox XML Concepts](rekordbox-xml-concepts.md)
+- [Rekordbox DB Schema](rekordbox-db-schema.md)
 - [Real Fixture Capture](real-fixtures.md)
 - [Execution Plan](execution-plan.md)
 - [Legacy Script Audit](legacy-script-audit.md)

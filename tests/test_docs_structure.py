@@ -35,6 +35,13 @@ class DocsStructureTests(unittest.TestCase):
 
         self.assertEqual(leftovers, [])
 
+    def test_rekordbox_db_schema_reference_documents_target_tables(self):
+        doc = ROOT / "docs" / "rekordbox-db-schema.md"
+        self.assertTrue(doc.exists())
+        text = doc.read_text(encoding="utf-8")
+        for phrase in ("pyrekordbox", "djmdContent", "djmdCue", "StatsFull", "rb_local_usn", "UUID"):
+            self.assertIn(phrase, text)
+
 
 if __name__ == "__main__":
     unittest.main()
