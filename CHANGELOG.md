@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] R4: Centralized transfer-mode choices and validation.
 - [x] R3: Reused shared SQLite table-column helper in Serato inspection and porting.
 - [x] R2: Centralized sync required-path lookup.
 - [x] R1: Centralized CLI error handling behind one shared helper.

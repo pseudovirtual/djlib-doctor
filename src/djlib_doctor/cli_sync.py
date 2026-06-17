@@ -13,6 +13,7 @@ from .config import load_config
 from .port_rekordbox_serato import read_playlist_names
 from .sync_planner import plan_sync
 from .sync_runner import install_sync_plan
+from .transfer_modes import TRANSFER_MODES
 
 
 def add_sync_parser(sub: argparse._SubParsersAction) -> None:
@@ -27,7 +28,7 @@ def add_sync_parser(sub: argparse._SubParsersAction) -> None:
     sync.add_argument("--portable-id")
     sync.add_argument("--collection", action="store_true")
     sync.add_argument("--playlist-name")
-    sync.add_argument("--transfer-mode", default="full", choices=("full", "cues-only", "match-only"))
+    sync.add_argument("--transfer-mode", default="full", choices=TRANSFER_MODES)
     sync.add_argument("--apply", action="store_true")
     sync.add_argument("--yes", action="store_true")
     sync.add_argument("--confirm-token")

@@ -6,11 +6,11 @@ Primary-library foundation through Phase E complete; cleanup and bug-fix pass in
 
 ## Last Done
 
-R3 reused the shared SQLite table-column helper in Serato inspection and porting.
+R4 centralized transfer-mode choices and validation.
 
 ## Next
 
-R4: centralize transfer-mode choices and validation.
+R5: decide whether to remove the half-used library model or stop with options if the diff balloons.
 
 ## Blockers
 

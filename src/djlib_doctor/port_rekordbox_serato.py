@@ -11,6 +11,7 @@ from .library_model import LibraryCue, LibraryTrack, rekordbox_xml_to_library
 from .locations import LocationKind
 from .rekordbox_xml import parse_rekordbox_xml
 from .serato_crate import read_serato_crate, safe_crate_filename, write_serato_crate
+from .transfer_modes import validate_transfer_mode
 
 PORT_MANIFEST_SCHEMA_VERSION = "1.0"
 SERATO_MANAGED_CRATE_PREFIX = "RB - "
@@ -400,7 +401,7 @@ def _build_playlist_plan(
 def _build_scoped_plan(
     source: Any, track_ids: tuple[str, ...], source_name: str, target_name: str, scope: str, transfer_mode: str
 ) -> RekordboxToSeratoPlan:
-    _validate_transfer_mode(transfer_mode)
+    validate_transfer_mode(transfer_mode)
     tracks_by_id = source.track_by_id()
     tracks = []
     skipped = []
@@ -438,11 +439,6 @@ def _port_track(track: LibraryTrack, include_cues: bool = True) -> PortTrack:
         track.rating,
         beatgrid_status,
     )
-
-
-def _validate_transfer_mode(value: str) -> None:
-    if value not in {"full", "cues-only", "match-only"}:
-        raise ValueError(f"Unsupported transfer mode: {value}")
 
 
 def _cue_intents(cues: tuple[LibraryCue, ...]) -> tuple[tuple[SeratoCueIntent, ...], tuple[str, ...]]:

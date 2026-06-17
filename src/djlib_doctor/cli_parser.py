@@ -8,6 +8,7 @@ from .cli_detect import add_detect_parser
 from .cli_doctor import add_doctor_parser
 from .cli_fingerprint import add_fingerprint_parser
 from .cli_sync import add_sync_parser
+from .transfer_modes import TRANSFER_MODES
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -186,7 +187,7 @@ def _rb_to_serato_args(p: argparse.ArgumentParser) -> None:
     p.add_argument("--playlists-file", type=Path)
     p.add_argument("--track-id")
     p.add_argument("--collection", action="store_true")
-    p.add_argument("--transfer-mode", default="full", choices=("full", "cues-only", "match-only"))
+    p.add_argument("--transfer-mode", default="full", choices=TRANSFER_MODES)
     p.add_argument("--out", required=True, type=Path)
     p.add_argument("--crate-prefix", default="RB - ")
 
@@ -198,5 +199,5 @@ def _serato_to_rb_args(p: argparse.ArgumentParser) -> None:
     p.add_argument("--collection", action="store_true")
     p.add_argument("--collection-root", required=True, type=Path)
     p.add_argument("--playlist-name")
-    p.add_argument("--transfer-mode", default="full", choices=("full", "cues-only", "match-only"))
+    p.add_argument("--transfer-mode", default="full", choices=TRANSFER_MODES)
     p.add_argument("--out", required=True, type=Path)

@@ -11,6 +11,7 @@ from .io_utils import render_json, write_json
 from .serato_crate import read_serato_crate
 from .serato_file_tags import read_serato_markers2_file_tags
 from .sqlite_utils import quote_identifier, table_columns
+from .transfer_modes import validate_transfer_mode
 
 REKORDBOX_PORT_SCHEMA_VERSION = "1.0"
 TagReader = Callable[[Path], tuple[dict[str, Any], ...]]
@@ -104,7 +105,7 @@ def build_serato_track_to_rekordbox_plan(
     transfer_mode: str = "full",
     tag_reader: TagReader | None = None,
 ) -> SeratoToRekordboxPlan:
-    _validate_transfer_mode(transfer_mode)
+    validate_transfer_mode(transfer_mode)
     assets = _read_assets_by_portable_id(serato_library_dir / "root.sqlite")
     tracks, skipped = _build_tracks((portable_id,), assets, collection_root, tag_reader)
     return SeratoToRekordboxPlan(
@@ -119,7 +120,7 @@ def build_serato_collection_to_rekordbox_plan(
     transfer_mode: str = "full",
     tag_reader: TagReader | None = None,
 ) -> SeratoToRekordboxPlan:
-    _validate_transfer_mode(transfer_mode)
+    validate_transfer_mode(transfer_mode)
     assets = _read_assets_by_portable_id(serato_library_dir / "root.sqlite")
     tracks, skipped = _build_tracks(tuple(assets), assets, collection_root, tag_reader)
     return SeratoToRekordboxPlan(
@@ -235,11 +236,6 @@ def _assets_by_portable_id(columns: list[str], rows: list[tuple[Any, ...]]) -> d
 def _is_local_portable_id(value: str) -> bool:
     lowered = value.lower()
     return bool(value) and ":" not in lowered and not lowered.startswith(("soundcloud", "spotify", "tidal", "beatport"))
-
-
-def _validate_transfer_mode(value: str) -> None:
-    if value not in {"full", "cues-only", "match-only"}:
-        raise ValueError(f"Unsupported transfer mode: {value}")
 
 
 def _optional_float(value: Any) -> float | None:
