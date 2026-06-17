@@ -90,11 +90,16 @@ class ReviewerTests(unittest.TestCase):
             decisions = run_interactive_review(
                 report, out_path, input_func=lambda prompt: next(answers), output=io.StringIO()
             )
+            persisted = json.loads(out_path.read_text(encoding="utf-8"))
 
         self.assertEqual(len(decisions), 1)
         self.assertEqual(decisions[0].review_id, "MISSING-FILES-0001")
         self.assertEqual(decisions[0].decision, "manual_match")
         self.assertEqual(decisions[0].notes, "second")
+        self.assertEqual(len(persisted["decisions"]), 1)
+        self.assertEqual(persisted["decisions"][0]["review_id"], "MISSING-FILES-0001")
+        self.assertEqual(persisted["decisions"][0]["decision"], "manual_match")
+        self.assertEqual(persisted["decisions"][0]["notes"], "second")
 
 
 def _review_report(confidences: tuple[str, ...]) -> PlanReport:

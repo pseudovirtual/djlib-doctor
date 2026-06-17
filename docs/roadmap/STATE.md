@@ -2,15 +2,15 @@
 
 ## Phase
 
-Primary-library foundation through Phase E complete; cleanup and bug-fix pass in progress.
+Primary-library foundation through Phase E complete; cleanup and bug-fix pass complete.
 
 ## Last Done
 
-F3 added machine-readable `doctor --json` output.
+F4 added persisted review-log coverage proving undo removes the undone decision from disk.
 
 ## Next
 
-F4: make interactive review undo persist correctly without leaving undone decisions in the saved log.
+No active repo backlog item. TestPyPI trusted publisher setup remains a maintainer/account action.
 
 ## Blockers
 
