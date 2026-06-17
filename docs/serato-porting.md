@@ -45,7 +45,7 @@ Markers2 codec coverage:
 
 - Supported today: `CUE` hotcues and `LOOP` saved loops, including slot, position, loop end, label, and raw color bytes.
 - Dropped today: `COLOR`, `BPMLOCK`, `FLIP`, and unknown entry types. They are ignored rather than guessed.
-- BeatGrid parsing is a planned follow-up and should be reported separately until implemented.
+- BeatGrid GEOB parsing supports version `1.0` marker rows from the Holzhaus reference layout. Carrying BeatGrid through migration manifests is a later task and should be reported separately until implemented.
 - WAV cue import is out of scope today because WAV has no Serato audio-tag container; plans record `wav_has_no_serato_tag_container` instead of silently dropping cues.
 
 The lower-level staged DB safety path exists:
