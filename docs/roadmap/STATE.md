@@ -2,16 +2,16 @@
 
 ## Phase
 
-Primary-library foundation complete; ready for review before one-command porting.
+Primary-library foundation complete; one-command porting in progress.
 
 ## Last Done
 
-A3 added config and detection fallback for `verify`, with clear failure when no Rekordbox XML is supplied, configured, or detected.
+B1 added `sync plan`, which chooses Rekordbox-to-Serato or Serato-to-Rekordbox from config `primary` and writes a dry-run port manifest plus certification.
 
 ## Next
 
-Pause for maintainer review before Phase B.
+B2: add `djlib-doctor sync` for the safe interactive preview, typed confirmation, stage, and install pipeline.
 
 ## Blockers
 
-Phase B requires maintainer approval to continue from foundation into one-command sync planning.
+None.

@@ -22,6 +22,7 @@ from .cli_read import (
     handle_verify,
 )
 from .cli_stage import handle_install, handle_stage
+from .cli_sync import handle_sync
 
 
 HANDLERS = {
@@ -38,6 +39,7 @@ HANDLERS = {
     "inspect": handle_inspect,
     "certify": handle_certify,
     "fingerprint": handle_fingerprint,
+    "sync": handle_sync,
     "stage": handle_stage,
     "install": handle_install,
     "migrate": handle_migrate,

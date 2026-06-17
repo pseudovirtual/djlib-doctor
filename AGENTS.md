@@ -42,6 +42,7 @@ PYTHONPATH=src python3 -m djlib_doctor.cli schema --pretty
 PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline tests/fixtures/rekordbox/simple.xml --final tests/fixtures/rekordbox/simple.xml --check-files
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlist "ROOT / Fixture Playlist" --out work/serato-port-demo --verify-preview
 PYTHONPATH=src python3 -m djlib_doctor.cli certify rb-to-serato --port-manifest work/serato-port-demo/port-manifest.json --out work/serato-port-demo/certification.json
+PYTHONPATH=src python3 -m djlib_doctor.cli sync plan --config work/djlib-doctor.json --collection --out work/sync-plan
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlists-file playlists.txt --summary-only --out work/unused
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --track-id 1 --transfer-mode cues-only --out work/serato-track-demo
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --collection --transfer-mode match-only --out work/serato-collection-demo
@@ -75,6 +76,7 @@ The current milestone is safe verification, planning, staged writes, and migrati
 - inspect Serato root.sqlite read-only and build dry-run Rekordbox XML to Serato port manifests
 - support Serato batch playlist dry-runs, summary-only reports, cue-count metrics, format capability notes, and crate-preview verification
 - certify generated migration previews and staged artifacts before install
+- plan primary-library syncs in either direction with `sync plan`
 - support single-track, playlist/crate, multi-playlist, and whole-collection port scopes
 - support `full`, `cues-only`, and `match-only` transfer modes in port manifests
 - stage and install Serato SQLite/crate changes only through token-gated manifests with backups, sidecar checks, app-closed checks, and hash verification

@@ -21,6 +21,7 @@ PYTHONPATH=src python3 -m djlib_doctor.cli fingerprint scan /path/to/music --out
 PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline tests/fixtures/rekordbox/simple.xml --final tests/fixtures/rekordbox/simple.xml --check-files
 PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlist "ROOT / Fixture Playlist" --out work/serato-port-demo --verify-preview
 PYTHONPATH=src python3 -m djlib_doctor.cli certify rb-to-serato --port-manifest work/serato-port-demo/port-manifest.json --out work/serato-port-demo/certification.json
+PYTHONPATH=src python3 -m djlib_doctor.cli sync plan --config work/djlib-doctor.json --collection --out work/sync-plan
 PYTHONPATH=src python3 -m djlib_doctor.cli stage serato --port-manifest work/serato-port-demo/port-manifest.json --serato-library-dir /path/to/serato-library --serato-music-dir /path/to/_Serato_ --stage-dir work/serato-stage
 PYTHONPATH=src python3 -m djlib_doctor.cli install serato-stage --stage-dir work/serato-stage --serato-library-dir /path/to/serato-library --serato-music-dir /path/to/_Serato_ --confirm-token INSTALL_SERATO_STAGE:...
 PYTHONPATH=src python3 -m djlib_doctor.cli port serato-to-rb --serato-library-dir /path/to/serato-library --crate /path/to/_Serato_/Subcrates/My.crate --collection-root ~/Music --out work/serato-to-rb
