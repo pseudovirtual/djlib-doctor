@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] V1: Moved the encrypted Rekordbox fixture generator out of the shipped package.
 - [x] R6: Centralized Rekordbox file URL helpers.
 - [x] R5: Removed the half-used library model abstraction from Rekordbox-to-Serato porting.
 - [x] R4: Centralized transfer-mode choices and validation.

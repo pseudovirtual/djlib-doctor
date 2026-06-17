@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from djlib_doctor.rekordbox_encrypted_fixture import (
+from tests.support.rekordbox_encrypted_fixture import (
     SqlcipherUnavailable,
     build_plain_rekordbox_fixture_db,
     generate_encrypted_rekordbox_fixture,

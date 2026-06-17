@@ -6,11 +6,11 @@ Primary-library foundation through Phase E complete; cleanup and bug-fix pass in
 
 ## Last Done
 
-R6 centralized Rekordbox file URL helpers.
+V1 moved the encrypted Rekordbox fixture generator out of the shipped package.
 
 ## Next
 
-V1: move the encrypted Rekordbox fixture generator out of the shipped package.
+V2: remove the no-op `fingerprint` extra.
 
 ## Blockers
 
