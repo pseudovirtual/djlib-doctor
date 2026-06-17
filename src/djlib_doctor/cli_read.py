@@ -3,12 +3,12 @@ from __future__ import annotations
 import argparse
 import json
 import sqlite3
-import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from .apply_manifest import build_apply_manifest, write_apply_manifest
+from .cli_common import fail
 from .cli_defaults import resolve_rekordbox_xml
 from .collision_policy import get_duplicate_collision_policy
 from .compare import compare_exports, write_compare_report
@@ -39,11 +39,6 @@ from .verify import SCHEMA_VERSION as VERIFY_SCHEMA_VERSION
 from .verify import verify_library
 
 
-def _fail(label: str, exc: Exception) -> int:
-    print(f"djlib-doctor {label}: ERROR\n{exc}", file=sys.stderr)
-    return 3
-
-
 def handle_verify(args: argparse.Namespace) -> int:
     if args.schema_version:
         print(VERIFY_SCHEMA_VERSION)
@@ -52,7 +47,7 @@ def handle_verify(args: argparse.Namespace) -> int:
         xml = resolve_rekordbox_xml(args.xml, args.config, args.home, args.volume)
         library = parse_rekordbox_xml(xml)
     except (ET.ParseError, OSError, ValueError) as exc:
-        return _fail("verification", exc)
+        return fail("verification", exc)
     report = verify_library(library, check_files=not args.no_file_check, source_path=str(xml))
     rendered = report.render_json(pretty=args.pretty) if args.json else report.render_text()
     if args.out:
@@ -69,7 +64,7 @@ def handle_snapshot(args: argparse.Namespace) -> int:
             args.rekordbox_xml, args.out, args.music_root, not args.no_file_check, args.redact_paths
         )
     except (ET.ParseError, OSError, ValueError) as exc:
-        return _fail("snapshot", exc)
+        return fail("snapshot", exc)
     print(f"Snapshot written: {result.snapshot_path}")
     print(result.report.render_text())
     return 0 if result.report.passed else 1
@@ -84,7 +79,7 @@ def handle_plan(args: argparse.Namespace) -> int:
         report = _build_plan(args)
         write_plan(report, args.out)
     except (ET.ParseError, OSError, KeyError, ValueError, json.JSONDecodeError) as exc:
-        return _fail("plan", exc)
+        return fail("plan", exc)
     print(f"Plan written: {args.out}")
     print(report.render_text())
     return 0
@@ -122,14 +117,14 @@ def handle_explain(args: argparse.Namespace) -> int:
         print(load_plan(args.plan).render_text())
         return 0
     except (OSError, ValueError, json.JSONDecodeError) as exc:
-        return _fail("explain", exc)
+        return fail("explain", exc)
 
 
 def handle_decision_sheet(args: argparse.Namespace) -> int:
     try:
         write_decision_sheet(load_plan(args.plan), args.out)
     except (OSError, ValueError, json.JSONDecodeError) as exc:
-        return _fail("decision-sheet", exc)
+        return fail("decision-sheet", exc)
     print(f"Decision sheet written: {args.out}")
     return 0
 
@@ -139,7 +134,7 @@ def handle_review(args: argparse.Namespace) -> int:
         run_interactive_review(load_plan(args.plan), args.out)
         return 0
     except (OSError, ValueError, json.JSONDecodeError) as exc:
-        return _fail("review", exc)
+        return fail("review", exc)
 
 
 def handle_apply_manifest(args: argparse.Namespace) -> int:
@@ -147,7 +142,7 @@ def handle_apply_manifest(args: argparse.Namespace) -> int:
         review_log = load_review_log(args.review_log) if args.review_log else None
         write_apply_manifest(build_apply_manifest(load_plan(args.plan), review_log, args.only_reviewed), args.out)
     except (OSError, ValueError, json.JSONDecodeError) as exc:
-        return _fail("apply-manifest", exc)
+        return fail("apply-manifest", exc)
     print(f"Dry-run apply manifest written: {args.out}")
     return 0
 
@@ -157,7 +152,7 @@ def handle_schema(args: argparse.Namespace) -> int:
         print(render_schema(args.name, pretty=args.pretty))
         return 0
     except ValueError as exc:
-        return _fail("schema", exc)
+        return fail("schema", exc)
 
 
 def handle_config(args: argparse.Namespace) -> int:
@@ -178,14 +173,14 @@ def handle_config(args: argparse.Namespace) -> int:
             print(render_json(load_config(args.config), pretty=True))
         return 0
     except (OSError, ValueError, json.JSONDecodeError) as exc:
-        return _fail("config", exc)
+        return fail("config", exc)
 
 
 def handle_inspect(args: argparse.Namespace) -> int:
     try:
         out_path = write_serato_inspection(inspect_serato_root_sqlite(args.library_dir / "root.sqlite"), args.out)
     except (OSError, sqlite3.Error, ValueError) as exc:
-        return _fail("inspect", exc)
+        return fail("inspect", exc)
     print(f"Serato inspection written: {out_path}")
     return 0
 
@@ -197,7 +192,7 @@ def handle_self_test(args: argparse.Namespace) -> int:
             report = verify_library(parse_rekordbox_xml(fixture), check_files=False, source_path=str(fixture))
             build_rekordbox_to_serato_plan(fixture, "ROOT / Fixture Playlist")
     except Exception as exc:
-        return _fail("self-test", exc)
+        return fail("self-test", exc)
     print("djlib-doctor self-test: PASS")
     print("Fixture: generated synthetic Rekordbox XML")
     print(f"Tracks: {report.collection_tracks}")
@@ -234,6 +229,6 @@ def handle_compare(args: argparse.Namespace) -> int:
         if args.out:
             write_compare_report(report, args.out)
     except (ET.ParseError, OSError, ValueError) as exc:
-        return _fail("compare", exc)
+        return fail("compare", exc)
     print(report.render_json(pretty=args.pretty) if args.json else report.render_text())
     return 0 if report.passed else 1

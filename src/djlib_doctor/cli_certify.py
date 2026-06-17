@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import argparse
-import sys
 from pathlib import Path
 
 from .certify import certify_port_manifest, write_certification_report
+from .cli_common import fail
 from .io_utils import render_json
 
 
@@ -30,6 +30,5 @@ def handle_certify(args: argparse.Namespace) -> int:
             print(render_json(report.to_dict(), pretty=args.pretty or args.json))
             return 0 if report.passed else 1
     except (OSError, ValueError) as exc:
-        print(f"djlib-doctor certify: ERROR\n{exc}", file=sys.stderr)
-        return 3
+        return fail("certify", exc)
     raise ValueError(f"Unknown certify command: {args.certify_command}")

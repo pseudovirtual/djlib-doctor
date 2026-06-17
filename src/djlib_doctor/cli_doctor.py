@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import argparse
-import sys
 from pathlib import Path
 
+from .cli_common import fail
 from .doctor import build_doctor_report, render_doctor_report
 
 
@@ -18,5 +18,4 @@ def handle_doctor(args: argparse.Namespace) -> int:
         print(render_doctor_report(build_doctor_report(args.home, tuple(args.volume or ()))))
         return 0
     except OSError as exc:
-        print(f"djlib-doctor doctor: ERROR\n{exc}", file=sys.stderr)
-        return 3
+        return fail("doctor", exc)

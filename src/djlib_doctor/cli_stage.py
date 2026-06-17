@@ -4,17 +4,12 @@ import argparse
 import json
 import sqlite3
 import subprocess
-import sys
 
+from .cli_common import fail
 from .file_operations import apply_file_operations_stage, stage_file_operations
 from .rekordbox_db_stage import install_rekordbox_db_stage, stage_rekordbox_db_import, stage_rekordbox_db_operations
 from .serato_audio_tags import build_serato_audio_tag_stage, install_serato_audio_tag_stage
 from .serato_stage import install_serato_stage, stage_serato_from_port_manifest
-
-
-def _fail(label: str, exc: Exception) -> int:
-    print(f"djlib-doctor {label}: ERROR\n{exc}", file=sys.stderr)
-    return 3
 
 
 def handle_stage(args: argparse.Namespace) -> int:
@@ -45,7 +40,7 @@ def handle_stage(args: argparse.Namespace) -> int:
         else:
             raise ValueError(f"Unknown stage command: {args.stage_command}")
     except (OSError, sqlite3.Error, ValueError, RuntimeError, json.JSONDecodeError) as exc:
-        return _fail("stage", exc)
+        return fail("stage", exc)
     print(f"Install token: {report.install_token}")
     return 0
 
@@ -77,7 +72,7 @@ def handle_install(args: argparse.Namespace) -> int:
         else:
             raise ValueError(f"Unknown install command: {args.install_command}")
     except (OSError, sqlite3.Error, ValueError, RuntimeError, json.JSONDecodeError) as exc:
-        return _fail("install", exc)
+        return fail("install", exc)
     return 0
 
 

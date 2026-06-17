@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 from pathlib import Path
 
+from .cli_common import fail
 from .fingerprint import compare_files, fingerprint_file, scan_fingerprints
 from .io_utils import write_json
 
@@ -26,11 +26,6 @@ def add_fingerprint_parser(sub: argparse._SubParsersAction) -> None:
     scan.add_argument("--redact-paths", action="store_true")
 
 
-def _fail(exc: Exception) -> int:
-    print(f"djlib-doctor fingerprint: ERROR\n{exc}", file=sys.stderr)
-    return 3
-
-
 def handle_fingerprint(args: argparse.Namespace) -> int:
     try:
         if args.fingerprint_command == "file":
@@ -46,7 +41,7 @@ def handle_fingerprint(args: argparse.Namespace) -> int:
             _write_or_print(data, args.out)
             return 0
     except (OSError, ValueError, json.JSONDecodeError) as exc:
-        return _fail(exc)
+        return fail("fingerprint", exc)
     raise ValueError(f"Unknown fingerprint command: {args.fingerprint_command}")
 
 

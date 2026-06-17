@@ -2,15 +2,15 @@
 
 ## Phase
 
-Primary-library foundation through review polish complete; Phase E polish/distribution pass in progress.
+Primary-library foundation through Phase E complete; cleanup and bug-fix pass in progress.
 
 ## Last Done
 
-E4 added the repo-side TestPyPI trusted-publishing workflow path and cross-OS clean-venv smoke install job.
+R1 centralized CLI error handling behind one shared helper.
 
 ## Next
 
-Maintainer: configure TestPyPI trusted publishing, then run the Release workflow manually or push a `v0.1.0rc1`-style tag.
+R2: move duplicated sync config path lookup into one shared helper.
 
 ## Blockers
 

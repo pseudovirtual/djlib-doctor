@@ -3,10 +3,10 @@ from __future__ import annotations
 import argparse
 import json
 import sqlite3
-import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+from .cli_common import fail
 from .port_rekordbox_serato import (
     build_rekordbox_collection_to_serato_plan,
     build_rekordbox_to_serato_plan,
@@ -24,11 +24,6 @@ from .port_serato_rekordbox import (
     write_serato_to_rekordbox_plan,
 )
 from .workflows import migrate_rekordbox_to_serato, migrate_serato_to_rekordbox
-
-
-def _fail(label: str, exc: Exception) -> int:
-    print(f"djlib-doctor {label}: ERROR\n{exc}", file=sys.stderr)
-    return 3
 
 
 def handle_migrate(args: argparse.Namespace) -> int:
@@ -51,7 +46,7 @@ def handle_migrate(args: argparse.Namespace) -> int:
                 stage_tags=args.stage_tags,
             )
         except (ET.ParseError, OSError, sqlite3.Error, ValueError, RuntimeError, json.JSONDecodeError) as exc:
-            return _fail("migrate", exc)
+            return fail("migrate", exc)
         print(f"Port manifest: {result.port_manifest}")
         for crate_path in result.crate_previews:
             print(f"Crate preview: {crate_path}")
@@ -81,7 +76,7 @@ def _migrate_serato_to_rb(args: argparse.Namespace) -> int:
             args.stage_db,
         )
     except (OSError, sqlite3.Error, ValueError, RuntimeError, json.JSONDecodeError) as exc:
-        return _fail("migrate", exc)
+        return fail("migrate", exc)
     print(f"Port manifest: {result.port_manifest}")
     print(f"Rekordbox XML preview: {result.rekordbox_xml_preview}")
     if result.rekordbox_stage:
@@ -97,7 +92,7 @@ def handle_port(args: argparse.Namespace) -> int:
         plan = _build_serato_to_rb_from_args(args)
         outputs = write_serato_to_rekordbox_plan(plan, args.out)
     except (OSError, sqlite3.Error, ValueError, json.JSONDecodeError) as exc:
-        return _fail("port", exc)
+        return fail("port", exc)
     print(f"Port manifest written: {outputs['manifest']}")
     print(f"Rekordbox XML preview written: {outputs['rekordbox_xml_preview']}")
     return 0
@@ -129,7 +124,7 @@ def _port_rb_to_serato(args: argparse.Namespace) -> int:
         outputs = write_rekordbox_to_serato_plan(plan, args.out)
         verification = _verify_preview(args, outputs)
     except (ET.ParseError, OSError, ValueError) as exc:
-        return _fail("port", exc)
+        return fail("port", exc)
     print(f"Port manifest written: {outputs['manifest']}")
     for crate_path in [outputs["crate_preview"]] if "crate_preview" in outputs else outputs["crate_previews"]:
         print(f"Serato crate preview written: {crate_path}")

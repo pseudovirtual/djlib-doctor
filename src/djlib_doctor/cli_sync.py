@@ -7,6 +7,7 @@ import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+from .cli_common import fail
 from .cli_stage import _app_process_lines, _serato_process_lines
 from .config import load_config
 from .port_rekordbox_serato import read_playlist_names
@@ -53,8 +54,7 @@ def handle_sync(args: argparse.Namespace) -> int:
         print(f"Install report: {result.install_report}")
         return 0
     except (ET.ParseError, OSError, sqlite3.Error, ValueError, RuntimeError, json.JSONDecodeError) as exc:
-        print(f"djlib-doctor sync: ERROR\n{exc}", file=sys.stderr)
-        return 3
+        return fail("sync", exc)
     raise ValueError(f"Unknown sync command: {args.sync_command}")
 
 
