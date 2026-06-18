@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] I6: Documented local Rekordbox ANLZ cue scope and covered empty local cue containers during conversion.
 - [x] I5: Fixed Serato `database V2` nested `otrk` track extraction and basic metadata parsing.
 - [x] I3c: Fixed Rekordbox `djmdCue` reader classification for modern hotcue, memory cue, and loop rows.
 - [x] I3b: Switched Rekordbox conversion auto cue/grid shifts to net target-minus-source decoder delay.

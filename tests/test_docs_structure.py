@@ -142,6 +142,20 @@ class DocsStructureTests(unittest.TestCase):
         ):
             self.assertIn(phrase, state)
 
+    def test_local_anlz_cue_scope_is_documented(self):
+        docs = "\n".join(
+            (ROOT / path).read_text(encoding="utf-8")
+            for path in ("docs/phase-i-results.md", "docs/how-to-convert-without-losing-cues.md")
+        )
+
+        for phrase in (
+            "local Rekordbox ANLZ files contain empty cue lists",
+            "local user cues live in `master.db`",
+            "ANLZ cue-tag shifting applies only to exported device media",
+            "ANLZ beatgrids",
+        ):
+            self.assertIn(phrase, docs)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -6,7 +6,16 @@ from pathlib import Path
 
 def write_anlz_fixture(path: Path, cue_tag: bytes, time_ms: int, loop_ms: int) -> None:
     cue_payload = _pcob_payload(time_ms, loop_ms) if cue_tag == b"PCOB" else _pco2_payload(time_ms, loop_ms)
-    tags = [_tag_bytes(cue_tag, 24 if cue_tag == b"PCOB" else 20, cue_payload)]
+    _write_anlz(path, [_tag_bytes(cue_tag, 24 if cue_tag == b"PCOB" else 20, cue_payload)])
+
+
+def write_empty_cue_anlz_fixture(path: Path, cue_tag: bytes) -> None:
+    cue_payload = _empty_pcob_payload() if cue_tag == b"PCOB" else _empty_pco2_payload()
+    _write_anlz(path, [_tag_bytes(cue_tag, 24 if cue_tag == b"PCOB" else 20, cue_payload)])
+
+
+def _write_anlz(path: Path, cue_tags: list[bytes]) -> None:
+    tags = cue_tags
     tags.append(_tag_bytes(b"PQTZ", 24, _pqtz_payload((500, 1000, 1500))))
     tags.append(_tag_bytes(b"PQT2", 56, _pqt2_payload((250, 750))))
     body = b"".join(tags)
@@ -40,6 +49,14 @@ def _pco2_payload(time_ms: int, loop_ms: int) -> bytes:
         + b"\0" * 2
     )
     return struct.pack(">IHH", 1, 1, 0) + entry
+
+
+def _empty_pcob_payload() -> bytes:
+    return struct.pack(">IHHI", 0, 0, 0, 0)
+
+
+def _empty_pco2_payload() -> bytes:
+    return struct.pack(">IHH", 1, 0, 0)
 
 
 def _pqtz_payload(times_ms: tuple[int, ...]) -> bytes:

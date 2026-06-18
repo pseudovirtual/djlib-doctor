@@ -93,6 +93,9 @@ def _stage_conversion(
 
 def _stage_anlz(index: int, source: Path, staged_dir: Path, shift_ms: int) -> dict[str, Any]:
     staged = staged_dir / f"OP-{index:04d}-{source.name}"
+    # Local Rekordbox libraries usually keep user cues in master.db and leave
+    # ANLZ PCOB/PCO2 cue containers empty; device exports may contain cue tags.
+    # Shift ANLZ cues opportunistically, but never require them for local converts.
     shifted = shift_anlz_cues(source, staged, shift_ms)
     shifted_beatgrids = shift_anlz_beatgrids(source, staged, shift_ms)
     return {

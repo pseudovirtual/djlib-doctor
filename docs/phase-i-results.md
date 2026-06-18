@@ -18,3 +18,9 @@ shift_ms = target_decoder_delay_ms - source_decoder_delay_ms
 
 Clamp negative results to 0. For lossless WAV/AIFF sources, source delay is 0.
 The staged conversion manifest records `source_decoder_delay_ms`, `target_decoder_delay_ms`, and the resulting `cue_shift_ms`.
+
+## Local ANLZ Cue Scope
+
+Real local Rekordbox ANLZ files contain empty cue lists in normal library storage: PCOB/PCO2 container tags are present but have zero PCPT/PCP2 entries. Local user cues live in `master.db` (`djmdCue`), so local convert/in-place flows shift `master.db` cues and ANLZ beatgrids (PQTZ/PQT2) for the library. ANLZ cue-tag shifting applies only to exported device media where Rekordbox writes cue entries into the analysis files.
+
+Confirmed-good real-data checks: local ANLZ beatgrid parsing, PCOB/PCO2 cue-count offsets for empty local cue containers, Serato crate reading, and the Markers2 parser path.

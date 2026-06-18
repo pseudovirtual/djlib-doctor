@@ -26,7 +26,9 @@ Create `run/convert.json` with one operation per track:
 djlib-doctor stage rekordbox-convert --db /path/to/rekordbox/master.db --operations run/convert.json --stage-dir run/rekordbox-convert --cue-shift auto
 ```
 
-`--cue-shift auto` measures decoder delay with `ffprobe`, then shifts `master.db` cues, ANLZ PCOB/PCO2 cues, and ANLZ PQTZ/PQT2 beatgrid millisecond fields by the net target-minus-source offset. Rekordbox 7.2.8 validation confirmed Rekordbox >=7 ignores AAC gapless metadata in this path: MP3-to-M4A needed a positive +21 ms shift, while WAV-to-M4A is expected to use the full target delay of about ~23 ms. Use `--cue-shift none` only after validating that your Rekordbox/player path honors gapless metadata without stored-position shifts.
+`--cue-shift auto` measures decoder delay with `ffprobe`, then shifts `master.db` cues and ANLZ beatgrids by the net target-minus-source offset. Rekordbox 7.2.8 validation confirmed Rekordbox >=7 ignores AAC gapless metadata in this path: MP3-to-M4A needed a positive +21 ms shift, while WAV-to-M4A is expected to use the full target delay of about ~23 ms. Use `--cue-shift none` only after validating that your Rekordbox/player path honors gapless metadata without stored-position shifts.
+
+Real local Rekordbox ANLZ files contain empty cue lists: PCOB/PCO2 containers may exist, but local user cues live in `master.db`. For the local library flow, djlib-doctor shifts `master.db` cues and ANLZ beatgrids. ANLZ cue-tag shifting applies only to exported device media where those cue tags are populated.
 
 ## 3. Inspect And Install
 

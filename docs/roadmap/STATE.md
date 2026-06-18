@@ -6,11 +6,11 @@ Primary-library foundation through Phase H is complete. Phase K docs polish is c
 
 ## Last Done
 
-I5 fixed Serato `database V2` nested `otrk` extraction for real-style records. The reader now recursively finds nested `ptrk` path fields and captures basic `pnam`/`part`/`palb`/`pgen`/`pkey`/`pbpm` metadata in a fixture-backed track model.
+I6 completed local ANLZ cue-scope documentation and added a conversion-code note. Real local ANLZ files usually have empty PCOB/PCO2 cue lists; local user cues live in `master.db`, local ANLZ beatgrids shift, and ANLZ cue-tag shifting is only meaningful for exported device media. Recent completed follow-ups include Serato `database V2` nested `otrk` extraction.
 
 ## Next
 
-I6: finish local ANLZ cue-scope documentation and add a conversion-code note that local library cues live in `master.db` while local ANLZ cue containers are usually empty. Then work I7, the opt-in local Markers2 validation harness.
+I7: add an opt-in local Markers2 validation harness that reads private, gitignored real Serato audio files when configured and skips cleanly otherwise. Then pause at the Phase I boundary for review.
 
 Phase I still cannot complete I1, the device-export cue side of I2, or broad I4 golden-vector expansion from synthetic fixtures. Real validation on Rekordbox 7.2.8 and Serato DJ Pro has already confirmed local ANLZ beatgrid parsing, PCOB/PCO2 cue-count offsets for empty local cue containers, Serato crate reading, and the Markers2 parser path. The repo currently has only `tests/fixtures/real/.gitignore` and `tests/fixtures/real/README.md`; there is no `manifest.json` or captured library payload. Provide an approved local-only fixture under `tests/fixtures/real/manifest.json`, following `docs/real-fixtures.md`, with:
 
