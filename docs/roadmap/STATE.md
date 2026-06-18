@@ -2,15 +2,15 @@
 
 ## Phase
 
-Primary-library foundation through Phase G is complete. Paused for maintainer review before Phase H.
+Primary-library foundation through Phase G is complete. Phase H is in progress: in-place Rekordbox doctoring.
 
 ## Last Done
 
-G2 added a migration scope matrix proving Rekordbox-to-Serato playlist, track, and collection scopes stage Serato artifacts, and Serato-to-Rekordbox crate, track, and collection scopes stage Rekordbox DB imports.
+H1 added `stage rekordbox-db-apply`, which converts reviewed cleanup apply manifests into staged Rekordbox `master.db` path updates and delegates install to the existing token-gated `install rekordbox-db` flow.
 
 ## Next
 
-Maintainer review before Phase H: in-place Rekordbox doctoring.
+H2: convert files without losing cues, including real encode/delay compensation and ANLZ `.DAT`/`.EXT` cue updates.
 
 ## Phase-F Verification Results
 

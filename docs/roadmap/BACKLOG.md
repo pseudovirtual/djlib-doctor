@@ -58,7 +58,7 @@ Scope: Rekordbox and Serato only. Do not add other DJ apps or a neutral universa
 
 ## Phase H - In-Place Rekordbox Doctoring
 
-- [ ] H1: Apply reviewed cleanup plans back into Rekordbox via staged `master.db` writes.
+- [x] H1: Apply reviewed cleanup plans back into Rekordbox via staged `master.db` writes.
 - [ ] H2: Convert files without losing cues: re-encode with presets, update `master.db` and ANLZ references, carry cues across, and compensate for AAC/M4A encoder delay.
 - [ ] H3: Move/rename files and update Rekordbox references in the same staged write.
 

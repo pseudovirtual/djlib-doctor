@@ -7,6 +7,7 @@ from .cli_certify import add_certify_parser
 from .cli_detect import add_detect_parser
 from .cli_doctor import add_doctor_parser
 from .cli_fingerprint import add_fingerprint_parser
+from .cli_parser_stage import add_stage_install_parser
 from .cli_sync import add_sync_parser
 from .transfer_modes import TRANSFER_MODES
 
@@ -24,7 +25,7 @@ def build_parser() -> argparse.ArgumentParser:
     add_certify_parser(sub)
     add_fingerprint_parser(sub)
     add_sync_parser(sub)
-    _add_stage_install(sub)
+    add_stage_install_parser(sub)
     _add_migrate_port_compare(sub)
     sub.add_parser("self-test", help="Run a fast built-in smoke test using synthetic fixtures.")
     return parser
@@ -110,48 +111,6 @@ def _add_schema_config_inspect(sub: argparse._SubParsersAction) -> None:
     serato = inspect.add_parser("serato")
     serato.add_argument("--library-dir", required=True, type=Path)
     serato.add_argument("--out", required=True, type=Path)
-
-
-def _add_stage_install(sub: argparse._SubParsersAction) -> None:
-    stage = sub.add_parser("stage").add_subparsers(dest="stage_command", required=True)
-    serato = stage.add_parser("serato")
-    serato.add_argument("--port-manifest", required=True, type=Path)
-    serato.add_argument("--serato-library-dir", required=True, type=Path)
-    serato.add_argument("--serato-music-dir", required=True, type=Path)
-    serato.add_argument("--stage-dir", required=True, type=Path)
-    tags = stage.add_parser("serato-tags")
-    tags.add_argument("--port-manifest", required=True, type=Path)
-    tags.add_argument("--stage-dir", required=True, type=Path)
-    ops = stage.add_parser("file-ops")
-    ops.add_argument("--operations", required=True, type=Path)
-    ops.add_argument("--stage-dir", required=True, type=Path)
-    db = stage.add_parser("rekordbox-db")
-    db.add_argument("--db", required=True, type=Path)
-    db.add_argument("--operations", required=True, type=Path)
-    db.add_argument("--stage-dir", required=True, type=Path)
-    db_import = stage.add_parser("rekordbox-db-import")
-    db_import.add_argument("--db", required=True, type=Path)
-    db_import.add_argument("--port-manifest", required=True, type=Path)
-    db_import.add_argument("--stage-dir", required=True, type=Path)
-    install = sub.add_parser("install").add_subparsers(dest="install_command", required=True)
-    _install_common(install.add_parser("serato-stage"), library=True)
-    _install_common(install.add_parser("serato-tags"))
-    file_ops = install.add_parser("file-ops")
-    _install_common(file_ops)
-    file_ops.add_argument("--continue-on-error", action="store_true")
-    _install_common(install.add_parser("rekordbox-db"), db=True)
-
-
-def _install_common(p: argparse.ArgumentParser, library: bool = False, db: bool = False) -> None:
-    p.add_argument("--stage-dir", required=True, type=Path)
-    p.add_argument("--confirm-token", required=True)
-    if library:
-        p.add_argument("--serato-library-dir", required=True, type=Path)
-        p.add_argument("--serato-music-dir", required=True, type=Path)
-        p.add_argument("--skip-process-check", action="store_true")
-    if db:
-        p.add_argument("--db", required=True, type=Path)
-        p.add_argument("--skip-process-check", action="store_true")
 
 
 def _add_migrate_port_compare(sub: argparse._SubParsersAction) -> None:

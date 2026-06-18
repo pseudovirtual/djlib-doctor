@@ -95,9 +95,16 @@ Use the redacted snapshot when asking for help publicly.
 djlib-doctor snapshot --rekordbox-xml ~/Desktop/rekordbox-export.xml --music-root ~/Music --out run/missing
 djlib-doctor plan missing-files --snapshot run/missing/snapshot.json --out run/missing/plan.json
 djlib-doctor review --plan run/missing/plan.json --out run/missing/review.json
+djlib-doctor apply-manifest --plan run/missing/plan.json --review-log run/missing/review.json --only-reviewed --out run/missing/apply.json
 ```
 
 The interactive review walks you through the plan one decision at a time, lets Enter accept the recommended choice, `A` accept remaining high-confidence rows, and `u` undo the last decision, then saves your choices as JSON for later steps.
+Reviewed path updates can be staged into a copied Rekordbox DB and installed only with the printed token:
+
+```bash
+djlib-doctor stage rekordbox-db-apply --db /path/to/rekordbox/master.db --apply-manifest run/missing/apply.json --stage-dir run/rekordbox-apply
+djlib-doctor install rekordbox-db --stage-dir run/rekordbox-apply --db /path/to/rekordbox/master.db --confirm-token INSTALL_SQLITE_STAGE:...
+```
 
 ### 3. Review Duplicates With A Collision Policy
 
