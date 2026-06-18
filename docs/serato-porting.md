@@ -38,7 +38,7 @@ This writes a dry-run manifest and Rekordbox XML representation. If the user wan
 Cue source rule:
 
 - Serato cue and loop metadata comes from audio-file tags such as `Serato Markers2`, not from `root.sqlite` or `_Serato_/database V2`.
-- Serato catalog files and crates provide track identity, metadata, and ordering.
+- Serato catalog files and crates provide track identity, basic metadata, and ordering.
 - The file-tag reader is optional-dependency backed; install audio-tag support before expecting real file cue reads.
 
 Markers2 codec coverage:
@@ -103,6 +103,6 @@ Backups and install reports are written inside the stage directory.
 
 ## Supported Serato Boundary
 
-- Fixture-backed: `.crate` TLV parsing/writing against a static vector, `root.sqlite` inspection, `database V2` TLV track extraction, and Markers2 `CUE`/`LOOP` parsing.
+- Fixture-backed: `.crate` TLV parsing/writing against a static vector, `root.sqlite` inspection, `database V2` nested `otrk` track/metadata extraction, and Markers2 `CUE`/`LOOP` parsing.
 - Certified real Serato versions: none yet. Real-version certification depends on anonymized fixtures under `tests/fixtures/real/`.
 - Cue and beatgrid source of truth remains audio-file tags, not `database V2` or `root.sqlite`.

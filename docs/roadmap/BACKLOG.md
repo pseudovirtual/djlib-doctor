@@ -74,7 +74,7 @@ Scope: Rekordbox and Serato only. Do not add other DJ apps or a neutral universa
 - [x] I3b: Switch convert auto-shift from raw target skip-samples to net target-minus-source decoder delay.
 - [x] I3c: Fix Rekordbox `djmdCue` reader classification for hotcues, memory cues, and saved loops using realistic cue fixtures.
 - [ ] I4: Validate Serato Markers2/BeatGrid against real Serato output and extend the vendored golden vectors. Blocked until captured data is available.
-- [ ] I5: Fix Serato `database V2` track extraction for real nested `otrk` records so Serato-as-primary reads real libraries.
+- [x] I5: Fix Serato `database V2` track extraction for real nested `otrk` records so Serato-as-primary reads real libraries.
 - [ ] I6: Document local Rekordbox ANLZ scope: local cues live in `master.db`; local ANLZ beatgrids shift, while ANLZ cue shifting applies to device exports.
 - [ ] I7: Add an opt-in, local-only real Serato Markers2 validation harness that skips cleanly when no private fixtures are configured.
 

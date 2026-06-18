@@ -23,7 +23,39 @@ class SeratoDatabaseV2Tests(unittest.TestCase):
             database = read_serato_database_v2(path)
 
         self.assertEqual(database.version, "1.0/Serato ScratchLive Database")
-        self.assertEqual(database.tracks, ("Music/Track One.aiff", "Music/Track Two.mp3"))
+        self.assertEqual(database.track_paths, ("Music/Track One.aiff", "Music/Track Two.mp3"))
+
+    def test_database_v2_reads_real_nested_otrk_records_with_metadata(self):
+        with TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "database V2"
+            path.write_bytes(
+                b"".join(
+                    (
+                        record("vrsn", text("1.0/Serato ScratchLive Database")),
+                        record(
+                            "otrk",
+                            record(
+                                "info",
+                                b"".join(
+                                    (
+                                        record("ptrk", text("Music/Nested Track.aiff")),
+                                        record("pnam", text("Nested Track")),
+                                        record("part", text("Fixture Artist")),
+                                        record("pbpm", text("124.50")),
+                                    )
+                                ),
+                            ),
+                        ),
+                    )
+                )
+            )
+
+            database = read_serato_database_v2(path)
+
+        self.assertEqual(database.track_paths, ("Music/Nested Track.aiff",))
+        self.assertEqual(database.tracks[0].title, "Nested Track")
+        self.assertEqual(database.tracks[0].artist, "Fixture Artist")
+        self.assertEqual(database.tracks[0].bpm, 124.5)
 
 
 if __name__ == "__main__":

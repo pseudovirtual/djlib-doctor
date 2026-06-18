@@ -17,7 +17,7 @@
 - Baseline/final export comparison.
 - Port certification reports for migration previews and staged artifacts.
 - Read-only Serato `root.sqlite` inspection.
-- Fixture-backed Serato `_Serato_/database V2` track extraction.
+- Fixture-backed Serato `_Serato_/database V2` nested `otrk` track and metadata extraction.
 - Dry-run Rekordbox-to-Serato crate manifests and preview crates.
 - Dry-run Serato-to-Rekordbox port manifests with Rekordbox XML representation.
 - Serato-to-Rekordbox cue import reads `Serato Markers2` audio-file tags when optional audio-tag dependencies are installed.
