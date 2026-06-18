@@ -76,7 +76,7 @@ Scope: Rekordbox and Serato only. Do not add other DJ apps or a neutral universa
 - [ ] I4: Validate Serato Markers2/BeatGrid against real Serato output and extend the vendored golden vectors. Blocked until captured data is available.
 - [x] I5: Fix Serato `database V2` track extraction for real nested `otrk` records so Serato-as-primary reads real libraries.
 - [x] I6: Document local Rekordbox ANLZ scope: local cues live in `master.db`; local ANLZ beatgrids shift, while ANLZ cue shifting applies to device exports.
-- [ ] I7: Add an opt-in, local-only real Serato Markers2 validation harness that skips cleanly when no private fixtures are configured.
+- [x] I7: Add an opt-in, local-only real Serato Markers2 validation harness that skips cleanly when no private fixtures are configured.
 
 ## Phase J - Release
 

@@ -10,3 +10,7 @@ dist/
 *.egg-info/
 work/
 .DS_Store
+tests/fixtures/real/**
+!tests/fixtures/real/
+!tests/fixtures/real/.gitignore
+!tests/fixtures/real/README.md
