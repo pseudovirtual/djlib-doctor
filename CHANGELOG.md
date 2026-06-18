@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] G1: Let directional `port` commands resolve source paths from flags, config, or detection while ignoring config primary.
 - [x] V-F2: Verified `sqlcipher3-wheels` binary wheels resolve for the current Ubuntu/macOS/Windows CI matrix.
 - [x] V-F1: Made encrypted Rekordbox DB tests fail when installed default backends are missing and documented the install-first local gate.
 - [x] F3: Added pyrekordbox-backed encrypted Rekordbox DB staging/import through the existing stage/install safety flow.

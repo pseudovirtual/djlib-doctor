@@ -157,21 +157,21 @@ def _install_common(p: argparse.ArgumentParser, library: bool = False, db: bool 
 def _add_migrate_port_compare(sub: argparse._SubParsersAction) -> None:
     mig = sub.add_parser("migrate").add_subparsers(dest="migrate_command", required=True)
     rb = mig.add_parser("rb-to-serato")
-    _rb_to_serato_args(rb)
+    _rb_to_serato_args(rb, source_required=True)
     rb.add_argument("--stage-library", action="store_true")
     rb.add_argument("--stage-tags", action="store_true")
     rb.add_argument("--serato-library-dir", type=Path)
     rb.add_argument("--serato-music-dir", type=Path)
     srb = mig.add_parser("serato-to-rb")
-    _serato_to_rb_args(srb)
+    _serato_to_rb_args(srb, source_required=True)
     srb.add_argument("--stage-db", action="store_true")
     srb.add_argument("--rekordbox-db", type=Path)
     port = sub.add_parser("port").add_subparsers(dest="port_command", required=True)
     rbp = port.add_parser("rb-to-serato")
-    _rb_to_serato_args(rbp)
+    _rb_to_serato_args(rbp, source_required=False)
     rbp.add_argument("--summary-only", action="store_true")
     rbp.add_argument("--verify-preview", action="store_true")
-    _serato_to_rb_args(port.add_parser("serato-to-rb"))
+    _serato_to_rb_args(port.add_parser("serato-to-rb"), source_required=False)
     cmp = sub.add_parser("compare").add_subparsers(dest="compare_command", required=True).add_parser("exports")
     cmp.add_argument("--baseline", required=True, type=Path)
     cmp.add_argument("--final", required=True, type=Path)
@@ -181,8 +181,10 @@ def _add_migrate_port_compare(sub: argparse._SubParsersAction) -> None:
     cmp.add_argument("--check-files", action="store_true")
 
 
-def _rb_to_serato_args(p: argparse.ArgumentParser) -> None:
-    p.add_argument("--rekordbox-xml", required=True, type=Path)
+def _rb_to_serato_args(p: argparse.ArgumentParser, source_required: bool) -> None:
+    p.add_argument("--rekordbox-xml", required=source_required, type=Path)
+    if not source_required:
+        _source_default_args(p)
     p.add_argument("--playlist")
     p.add_argument("--playlists-file", type=Path)
     p.add_argument("--track-id")
@@ -192,12 +194,20 @@ def _rb_to_serato_args(p: argparse.ArgumentParser) -> None:
     p.add_argument("--crate-prefix", default="RB - ")
 
 
-def _serato_to_rb_args(p: argparse.ArgumentParser) -> None:
-    p.add_argument("--serato-library-dir", required=True, type=Path)
+def _serato_to_rb_args(p: argparse.ArgumentParser, source_required: bool) -> None:
+    p.add_argument("--serato-library-dir", required=source_required, type=Path)
+    if not source_required:
+        _source_default_args(p)
     p.add_argument("--crate", type=Path)
     p.add_argument("--portable-id")
     p.add_argument("--collection", action="store_true")
-    p.add_argument("--collection-root", required=True, type=Path)
+    p.add_argument("--collection-root", required=source_required, type=Path)
     p.add_argument("--playlist-name")
     p.add_argument("--transfer-mode", default="full", choices=TRANSFER_MODES)
     p.add_argument("--out", required=True, type=Path)
+
+
+def _source_default_args(p: argparse.ArgumentParser) -> None:
+    p.add_argument("--config", type=Path)
+    p.add_argument("--home", type=Path)
+    p.add_argument("--volume", action="append", type=Path)

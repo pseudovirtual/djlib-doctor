@@ -53,7 +53,7 @@ Scope: Rekordbox and Serato only. Do not add other DJ apps or a neutral universa
 
 ## Phase G - Easy One-Off Ports
 
-- [ ] G1: Extend detect -> config -> explicit-flag fallback to `port` verbs so ad-hoc directional ports need minimal flags while ignoring configured primary.
+- [x] G1: Extend detect -> config -> explicit-flag fallback to `port` verbs so ad-hoc directional ports need minimal flags while ignoring configured primary.
 - [ ] G2: Confirm both directions and all scopes work end-to-end after F3: track, playlist/crate, and collection.
 
 ## Phase H - In-Place Rekordbox Doctoring

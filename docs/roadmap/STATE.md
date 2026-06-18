@@ -2,23 +2,20 @@
 
 ## Phase
 
-Primary-library foundation and Phase-F verification are complete. Paused for maintainer review before Phase G.
+Primary-library foundation through Phase F is complete. Phase G is in progress: easy one-off ports.
 
 ## Last Done
 
-V-F2 verified `sqlcipher3-wheels` binary wheel resolution for the current CI matrix:
-
-- Ubuntu x64: Python 3.9 and 3.13 wheels resolved.
-- macOS `macos-latest` arm64: Python 3.9 and 3.13 wheels resolved.
-- Windows x64: Python 3.9 and 3.13 wheels resolved.
-
-V-F1 also confirmed encrypted Rekordbox DB tests run after package install with default dependencies. Minimal `PYTHONPATH` runs still skip cleanly, but installed environments fail if `pyrekordbox` or `sqlcipher3` is missing. The installed encrypted suite ran 16 tests with 0 skips.
-
-Note: macOS Intel Python 3.13 binary resolution was checked defensively and did not resolve a wheel, but GitHub's current `macos-latest` runner is arm64.
+G1 made `port rb-to-serato` and `port serato-to-rb` resolve omitted source paths from explicit flags, then config, then detection, while ignoring config `primary` for directional choice.
 
 ## Next
 
-Maintainer review before Phase G: easy one-off ports with detect/config/flag fallback.
+G2: confirm both directions and all scopes work end-to-end after F3: track, playlist/crate, and collection.
+
+## Phase-F Verification Results
+
+- V-F1: installed encrypted suite ran 16 tests with 0 skips; minimal `PYTHONPATH` runs still skip cleanly, but installed environments fail if `pyrekordbox` or `sqlcipher3` is missing.
+- V-F2: `sqlcipher3-wheels` binary wheels resolved for Ubuntu x64, current `macos-latest` arm64, and Windows x64 on Python 3.9 and 3.13. macOS Intel Python 3.13 was checked defensively and did not resolve a wheel, but GitHub's current `macos-latest` runner is arm64.
 
 ## Blockers
 
