@@ -6,7 +6,7 @@ Primary-library foundation through Phase H is complete. Phase K docs polish is c
 
 ## Last Done
 
-I7 added an opt-in local Markers2 validation harness. It reads private, gitignored real Serato audio files from `DJLIB_DOCTOR_REAL_SERATO` or `tests/fixtures/real/serato/audio-tags/`, uses the mutagen-backed tag path, validates in-range Markers2 positions when configured, and skips cleanly otherwise. Completed Phase I follow-ups now include Serato `database V2` nested `otrk` extraction, local ANLZ cue-scope documentation, and an opt-in local Markers2 validation harness.
+I5 was corrected after real-data validation: Serato `database V2` nested `otrk` extraction now uses `pfil` for path and `tsng`/`tart`/`talb`/`tgen`/`tkey`/`tbpm` for metadata, not crate-style `ptrk`/`pnam`/`part`. Completed Phase I follow-ups also include local ANLZ cue-scope documentation and an opt-in local Markers2 validation harness.
 
 ## Next
 

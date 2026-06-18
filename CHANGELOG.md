@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Corrected I5 Serato `database V2` parsing to use real `pfil`/`t*` field tags instead of crate-style `ptrk` metadata.
 - [x] I7: Added an opt-in local-only real Serato Markers2 validation harness with gitignored fixture paths.
 - [x] I6: Documented local Rekordbox ANLZ cue scope and covered empty local cue containers during conversion.
 - [x] I5: Fixed Serato `database V2` nested `otrk` track extraction and basic metadata parsing.

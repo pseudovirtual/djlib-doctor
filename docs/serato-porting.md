@@ -104,5 +104,6 @@ Backups and install reports are written inside the stage directory.
 ## Supported Serato Boundary
 
 - Fixture-backed: `.crate` TLV parsing/writing against a static vector, `root.sqlite` inspection, `database V2` nested `otrk` track/metadata extraction, and Markers2 `CUE`/`LOOP` parsing.
+- `database V2` `otrk` records use `pfil` for file path plus `tsng`, `tart`, `talb`, `tgen`, `tkey`, and `tbpm` for title, artist, album, genre, key, and BPM. They do not use crate-style `ptrk`/`pnam`/`part` tags.
 - Certified real Serato versions: none yet. Real-version certification depends on anonymized fixtures under `tests/fixtures/real/`.
 - Cue and beatgrid source of truth remains audio-file tags, not `database V2` or `root.sqlite`.

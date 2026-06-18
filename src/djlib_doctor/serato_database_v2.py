@@ -5,6 +5,8 @@ from pathlib import Path
 
 from .serato_tlv import decode_text, parse_records
 
+TEXT_FIELD_TAGS = {"pfil", "tsng", "tart", "talb", "tgen", "tkey", "tbpm"}
+
 
 @dataclass(frozen=True)
 class SeratoDatabaseV2Track:
@@ -42,38 +44,37 @@ def read_serato_database_v2(path: Path) -> SeratoDatabaseV2:
 
 
 def _track(payload: bytes) -> SeratoDatabaseV2Track | None:
-    fields = {tag: decode_text(value) for tag, value in _text_records(payload)}
-    path = fields.get("ptrk", "")
+    fields = _fields(payload)
+    path = fields.get("pfil", "")
     if not path:
         return None
     return SeratoDatabaseV2Track(
         path=path,
-        title=fields.get("pnam", ""),
-        artist=fields.get("part", ""),
-        album=fields.get("palb", ""),
-        genre=fields.get("pgen", ""),
-        key=fields.get("pkey", ""),
-        bpm=_optional_float(fields.get("pbpm")),
+        title=fields.get("tsng", ""),
+        artist=fields.get("tart", ""),
+        album=fields.get("talb", ""),
+        genre=fields.get("tgen", ""),
+        key=fields.get("tkey", ""),
+        bpm=_optional_float(fields.get("tbpm")),
     )
 
 
-def _text_records(payload: bytes) -> tuple[tuple[str, bytes], ...]:
-    records = []
-    for tag, value in _nested_records(payload):
-        if tag.startswith("p"):
-            records.append((tag, value))
-    return tuple(records)
+def _fields(payload: bytes) -> dict[str, str]:
+    return {tag: decode_text(value) for tag, value in _field_records(payload) if tag in TEXT_FIELD_TAGS}
 
 
-def _nested_records(payload: bytes) -> tuple[tuple[str, bytes], ...]:
+def _field_records(payload: bytes) -> tuple[tuple[str, bytes], ...]:
     try:
         children = parse_records(payload)
     except (UnicodeDecodeError, ValueError):
         return ()
     records = []
     for tag, value in children:
-        records.append((tag, value))
-        records.extend(_nested_records(value))
+        nested = _field_records(value)
+        if nested:
+            records.extend(nested)
+        else:
+            records.append((tag, value))
     return tuple(records)
 
 

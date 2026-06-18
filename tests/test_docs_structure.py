@@ -156,6 +156,12 @@ class DocsStructureTests(unittest.TestCase):
         ):
             self.assertIn(phrase, docs)
 
+    def test_serato_database_v2_real_field_tags_are_documented(self):
+        docs = (ROOT / "docs" / "serato-porting.md").read_text(encoding="utf-8")
+
+        for phrase in ("pfil", "tsng", "tart", "tbpm", "ptrk", "pnam", "part"):
+            self.assertIn(phrase, docs)
+
 
 if __name__ == "__main__":
     unittest.main()
