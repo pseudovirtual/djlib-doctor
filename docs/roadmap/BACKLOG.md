@@ -49,7 +49,7 @@ Scope: Rekordbox and Serato only. Do not add other DJ apps or a neutral universa
 ## Phase F Verification
 
 - [x] V-F1: Confirm encrypted DB tests run after package install, fail when installed backends are missing, and skip only in deliberately minimal `PYTHONPATH` environments.
-- [ ] V-F2: Verify `sqlcipher3-wheels` installs across the CI matrix now that it is a core dependency.
+- [x] V-F2: Verify `sqlcipher3-wheels` installs across the CI matrix now that it is a core dependency.
 
 ## Phase G - Easy One-Off Ports
 

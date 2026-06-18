@@ -2,24 +2,23 @@
 
 ## Phase
 
-Primary-library foundation through Phase F complete; Phase-F verification is in progress before Phase G.
+Primary-library foundation and Phase-F verification are complete. Paused for maintainer review before Phase G.
 
 ## Last Done
 
-V-F1 confirmed encrypted Rekordbox DB tests run after package install with default dependencies. Minimal `PYTHONPATH` runs still skip cleanly, but installed environments fail if `pyrekordbox` or `sqlcipher3` is missing.
+V-F2 verified `sqlcipher3-wheels` binary wheel resolution for the current CI matrix:
 
-Verification run:
+- Ubuntu x64: Python 3.9 and 3.13 wheels resolved.
+- macOS `macos-latest` arm64: Python 3.9 and 3.13 wheels resolved.
+- Windows x64: Python 3.9 and 3.13 wheels resolved.
 
-```bash
-work/ruff-venv/bin/python -m pip install ".[dev]"
-work/ruff-venv/bin/python -m unittest tests.test_encrypted_backend_policy tests.test_rekordbox_encrypted_fixture tests.test_rekordbox_db_read tests.test_rekordbox_db_stage tests.test_rekordbox_db_import
-```
+V-F1 also confirmed encrypted Rekordbox DB tests run after package install with default dependencies. Minimal `PYTHONPATH` runs still skip cleanly, but installed environments fail if `pyrekordbox` or `sqlcipher3` is missing. The installed encrypted suite ran 16 tests with 0 skips.
 
-Result: 16 tests passed, 0 skipped.
+Note: macOS Intel Python 3.13 binary resolution was checked defensively and did not resolve a wheel, but GitHub's current `macos-latest` runner is arm64.
 
 ## Next
 
-V-F2: verify `sqlcipher3-wheels` can install across Ubuntu, macOS, and Windows on Python 3.9 and 3.13 before starting Phase G.
+Maintainer review before Phase G: easy one-off ports with detect/config/flag fallback.
 
 ## Blockers
 
