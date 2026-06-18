@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Recorded expanded Phase I real-capture blockers and Phase J release-dependency tasks.
 - [x] K2: Added `djlib-doctor examples` and public Python API examples.
 - [x] K1: Added cue-safe conversion and one-crate port how-to docs plus a concise README cue-safety note.
 - [x] H3: Added staged Rekordbox move/rename installs that update `master.db` and file locations together.

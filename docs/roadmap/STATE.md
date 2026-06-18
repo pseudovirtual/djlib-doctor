@@ -2,18 +2,22 @@
 
 ## Phase
 
-Primary-library foundation through Phase H is complete. Phase K docs polish is complete. Phase I waits for approved real fixtures.
+Primary-library foundation through Phase H is complete. Phase K docs polish is complete. Phase I is blocked at I1 until approved real captures are provided.
 
 ## Last Done
 
-K2 added `djlib-doctor examples` and public Python API examples for verification, missing-file planning, and export comparison.
+Bootstrap confirmed H2/H2a/H2b/H2c are already committed, including staged Rekordbox conversion, real ffmpeg M4A encoding, measured skip-samples cue/grid compensation, ANLZ PCOB/PCO2 cue shifts, PQTZ/PQT2 beat shifts, CI ffmpeg installation, and `--cue-shift {auto,none}`.
 
 ## Next
 
-Phase I remains blocked until someone provides an approved local-only fixture under `tests/fixtures/real/manifest.json`, following `docs/real-fixtures.md`, with a tiny Rekordbox library containing a decrypted `master.db`, matching `.DAT` and `.EXT` ANLZ files, app/version metadata, and redacted track names/paths. Then run Phase I validation to confirm:
+Phase I cannot proceed from synthetic fixtures. The repo currently has only `tests/fixtures/real/.gitignore` and `tests/fixtures/real/README.md`; there is no `manifest.json` or captured library payload. Provide an approved local-only fixture under `tests/fixtures/real/manifest.json`, following `docs/real-fixtures.md`, with:
 
-- the correct cue-shift sign and necessity for the target Rekordbox version, including the documented 26ms/gapless behavior
-- the PCOB/PCO2 cue-count offsets and cue/beat offsets against real `.DAT`/`.EXT` files, including PQTZ and PQT2 beat time fields
+- a real encrypted Rekordbox master.db plus safe decrypted copy, app version, and matching redacted XML export for I1
+- real `.DAT` and `.EXT` ANLZ files for the same tracks, including PCOB/PCO2 cues, len_cues counts, PQTZ beat times, and PQT2 beat times for I2
+- a real Rekordbox import/export check for the target RB version proving whether conversion cue/grid auto shift should be +delay, -delay, or none, including the documented 26ms/gapless behavior for I3
+- a real Serato Markers2 and BeatGrid capture from Serato-authored output for I4
+
+After those files are available locally, resume at I1 and add real-fixture tests that skip only when the manifest is absent.
 
 Phase H implementation is complete; Phase I remains the real-world validation checkpoint.
 

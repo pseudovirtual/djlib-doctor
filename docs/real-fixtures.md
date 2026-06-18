@@ -17,6 +17,9 @@ tests/fixtures/real/
     crates/
   rekordbox/
     decrypted-master-db/
+    encrypted-master-db/
+    anlz/
+    conversion-check/
     xml-exports/
 ```
 
@@ -28,7 +31,9 @@ Capture a small library with one or two local tracks and simple, named metadata:
 
 - Serato GEOB tags: extract `Serato Markers2` and `Serato BeatGrid` frames from MP3/AIFF/M4A files.
 - Serato catalog files: capture `_Serato_/database V2`, `root.sqlite`, and the matching `.crate` files.
-- Rekordbox DB: include only a decrypted master.db copy that is safe to share; modern encrypted SQLCipher databases must not be committed.
+- Rekordbox DB: include a local-only encrypted `master.db` plus a safe decrypted master.db copy; modern encrypted SQLCipher databases must not be committed publicly.
+- Rekordbox ANLZ: include matching `.DAT` and `.EXT` files with PCOB/PCO2 cues, PQTZ beats, and PQT2 beats.
+- Rekordbox conversion check: record the target Rekordbox version and whether AAC/M4A conversion cues/grids require +delay, -delay, or no stored-position shift.
 - Rekordbox XML: export a matching XML export for the same tracks and playlists.
 - Audio files: do not commit audio; use hashes and redacted filenames unless the file is freely licensed and approved.
 
@@ -54,7 +59,10 @@ Capture a small library with one or two local tracks and simple, named metadata:
     "serato_geob_tags": [],
     "serato_database_v2": null,
     "serato_crates": [],
+    "rekordbox_encrypted_master_db": null,
     "rekordbox_decrypted_master_db": null,
+    "rekordbox_anlz_files": [],
+    "rekordbox_conversion_check": null,
     "rekordbox_xml_exports": []
   }
 }

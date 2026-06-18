@@ -87,6 +87,25 @@ class DocsStructureTests(unittest.TestCase):
         self.assertIn("Primary-library foundation", state_text)
         self.assertIn("Next", state_text)
 
+    def test_roadmap_records_real_validation_and_release_blockers(self):
+        backlog = (ROOT / "docs" / "roadmap" / "BACKLOG.md").read_text(encoding="utf-8")
+        state = (ROOT / "docs" / "roadmap" / "STATE.md").read_text(encoding="utf-8")
+
+        for phrase in (
+            "PCOB/PCO2 len_cues count offset",
+            "cue-shift SIGN/necessity",
+            "Serato Markers2/BeatGrid",
+            "sqlcipher3-wheels coverage gap",
+        ):
+            self.assertIn(phrase, backlog)
+        for phrase in (
+            "real encrypted Rekordbox master.db",
+            "real `.DAT` and `.EXT` ANLZ files",
+            "real Rekordbox import/export check",
+            "real Serato Markers2 and BeatGrid capture",
+        ):
+            self.assertIn(phrase, state)
+
 
 if __name__ == "__main__":
     unittest.main()

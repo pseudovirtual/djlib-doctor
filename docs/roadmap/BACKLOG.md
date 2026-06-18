@@ -67,14 +67,16 @@ Scope: Rekordbox and Serato only. Do not add other DJ apps or a neutral universa
 
 ## Phase I - Real-World Validation
 
-- [ ] I1: Validate `master.db` read/write against one real captured library, including H2's cue-shift sign/necessity for the target Rekordbox version. Blocked until captured data is available.
-- [ ] I2: Validate Serato cue/tag fidelity against real Serato output and extend golden vectors. Blocked until captured data is available.
-- [ ] I3: Prove a manually corrected beatgrid survives a port/convert end-to-end, and validate PCOB/PCO2 cue counts plus cue/beat offsets against real `.DAT`/`.EXT` files.
+- [ ] I1: Validate encrypted `master.db` read/write against one real captured Rekordbox library. Blocked until captured data is available.
+- [ ] I2: Validate ANLZ cue/beat offsets and the PCOB/PCO2 len_cues count offset against real `.DAT`/`.EXT` files. Blocked until captured data is available.
+- [ ] I3: Validate convert cue-shift SIGN/necessity against a real Rekordbox import for the target RB version, including the documented 26ms/gapless behavior, then set the `auto` default accordingly. Blocked until captured data is available.
+- [ ] I4: Validate Serato Markers2/BeatGrid against real Serato output and extend the vendored golden vectors. Blocked until captured data is available.
 
 ## Phase J - Release
 
-- [ ] J1: Execute the TestPyPI smoke after maintainer trusted-publisher setup, then flip README install instructions only after smoke passes.
-- [ ] J2: Cut a real pre-release tag and confirm the release workflow.
+- [ ] J1: Decide and document the sqlcipher3-wheels coverage gap for Intel macOS plus Python 3.13: either document the supported matrix clearly or make Rekordbox DB dependencies optional again with a clear install message.
+- [ ] J2: Execute the TestPyPI smoke after maintainer trusted-publisher setup, then flip README install instructions only after smoke passes.
+- [ ] J3: Cut a real pre-release tag and confirm the release workflow end to end.
 
 ## Phase K - Docs Polish
 
