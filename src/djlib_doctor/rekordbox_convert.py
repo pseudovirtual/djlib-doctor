@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import shutil
-import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -9,8 +8,8 @@ from typing import Any
 from .audio_encoding import encode_audio, encoder_delay_ms, require_audio_tools
 from .io_utils import read_json, write_json
 from .rekordbox_anlz import shift_anlz_beatgrids, shift_anlz_cues
+from .rekordbox_db_write import update_track_location_and_cues
 from .safety import all_checks_passed, check_sqlite_sidecars
-from .sqlite_utils import quote_identifier, require_integrity
 from .stage_common import install_token, sha256_file
 
 CONVERT_STAGE_SCHEMA_VERSION = "1.0"
@@ -109,39 +108,7 @@ def _stage_anlz(index: int, source: Path, staged_dir: Path, shift_ms: int) -> di
 
 
 def _update_staged_db(db: Path, track_id: str, target: Path, shift_ms: int) -> None:
-    conn = sqlite3.connect(db)
-    try:
-        require_integrity(conn, "before staged Rekordbox conversion")
-        folder = "" if str(target.parent) == "." else str(target.parent)
-        conn.execute(
-            f"UPDATE {quote_identifier('djmdContent')} SET FolderPath = ?, FileNameL = ? WHERE ID = ?",
-            (folder, target.name, track_id),
-        )
-        if shift_ms:
-            _shift_cue_rows(conn, track_id, shift_ms)
-        require_integrity(conn, "after staged Rekordbox conversion")
-        conn.commit()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        conn.close()
-
-
-def _shift_cue_rows(conn: sqlite3.Connection, track_id: str, shift_ms: int) -> None:
-    rows = conn.execute(
-        f"SELECT ID, InMsec, OutMsec FROM {quote_identifier('djmdCue')} WHERE ContentID = ?",
-        (track_id,),
-    ).fetchall()
-    for cue_id, in_msec, out_msec in rows:
-        conn.execute(
-            f"UPDATE {quote_identifier('djmdCue')} SET InMsec = ?, OutMsec = ? WHERE ID = ?",
-            (
-                max(0, int(in_msec or 0) + shift_ms),
-                None if out_msec is None else max(0, int(out_msec) + shift_ms),
-                cue_id,
-            ),
-        )
+    update_track_location_and_cues(db, track_id, target, shift_ms, "staged Rekordbox conversion")
 
 
 def _check_db_sidecars(live_db: Path) -> None:

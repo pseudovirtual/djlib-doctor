@@ -78,6 +78,14 @@ Scope: Rekordbox and Serato only. Do not add other DJ apps or a neutral universa
 - [x] I6: Document local Rekordbox ANLZ scope: local cues live in `master.db`; local ANLZ beatgrids shift, while ANLZ cue shifting applies to device exports.
 - [x] I7: Add an opt-in, local-only real Serato Markers2 validation harness that skips cleanly when no private fixtures are configured.
 
+## Phase J-prep - Real-Format Test Hardening
+
+- [x] J0: Route in-place Rekordbox write staging for DB operations, conversion, and move/rename through the encrypted-capable `open_master_database` path when plain SQLite rejects `master.db`.
+- [ ] J1: Make encrypted Rekordbox DB fixtures the default in convert, move, sqlite-stage, import, and read tests, with explicit plain-SQLite rejection assertions.
+- [ ] J2: Audit Serato/Rekordbox parser fixtures so real database V2 tags, real `djmdCue` columns, and local ANLZ empty-cue behavior are the defaults.
+- [ ] J3: Add `docs/testing-fixtures.md` with the real-format fixture rule, confirmed field mappings, and `DJLIB_DOCTOR_REAL_*` backstops.
+- [ ] J4: Re-run and document full-suite fixture hardening results, including encrypted writer tests and plain-DB rejection coverage.
+
 ## Phase J - Release
 
 - [ ] J1: Decide and document the sqlcipher3-wheels coverage gap for Intel macOS plus Python 3.13: either document the supported matrix clearly or make Rekordbox DB dependencies optional again with a clear install message.

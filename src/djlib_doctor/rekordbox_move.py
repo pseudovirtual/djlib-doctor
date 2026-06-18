@@ -2,14 +2,13 @@ from __future__ import annotations
 
 import os
 import shutil
-import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from .io_utils import read_json, write_json
+from .rekordbox_db_write import update_track_location_and_cues
 from .safety import all_checks_passed, check_app_processes_closed, check_sqlite_sidecars
-from .sqlite_utils import quote_identifier, require_integrity
 from .stage_common import backup_name, install_token, require_install_token, require_sha256, sha256_file
 
 MOVE_STAGE_SCHEMA_VERSION = "1.0"
@@ -111,21 +110,7 @@ def _stage_operation(index: int, operation: dict[str, Any], staged_db: Path, sta
 
 
 def _update_staged_db(db: Path, track_id: str, target: Path) -> None:
-    conn = sqlite3.connect(db)
-    try:
-        require_integrity(conn, "before staged Rekordbox move")
-        folder = "" if str(target.parent) == "." else str(target.parent)
-        conn.execute(
-            f"UPDATE {quote_identifier('djmdContent')} SET FolderPath = ?, FileNameL = ? WHERE ID = ?",
-            (folder, target.name, track_id),
-        )
-        require_integrity(conn, "after staged Rekordbox move")
-        conn.commit()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        conn.close()
+    update_track_location_and_cues(db, track_id, target, 0, "staged Rekordbox move")
 
 
 def _install_operation(operation: dict[str, Any], backup_dir: Path) -> list[dict[str, Any]]:

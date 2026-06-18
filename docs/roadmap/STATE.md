@@ -2,17 +2,17 @@
 
 ## Phase
 
-Primary-library foundation through Phase H is complete. Phase K docs polish is complete. Phase I is in progress on the Rekordbox 7.2.8 conversion validation thread.
+Primary-library foundation through Phase H is complete. Phase K docs polish is complete. Phase J-prep real-format test hardening is in progress after Phase I validation surfaced false-green fixtures.
 
 ## Last Done
 
-Phase I live validation results were recorded from Rekordbox 7.2.8 and Serato DJ Pro. The confirmed data includes MP3-to-M4A +21 ms net cue/grid shift, WAV/AIFF-to-M4A full target-delay shift, 150 real .DAT and 2160 .EXT ANLZ files with 0 cue-count/beatgrid mismatches, 30/30 real Serato crates with 1550 track refs, 704/704 real otrk rows using `pfil/tsng/tart/talb/tgen/tkey`, and Rekordbox `djmdCue` counts of 1086 hotcues, 29 loops, and ~40 memory cues.
+J0 routed staged Rekordbox DB operations, conversion, and move/rename DB updates through one encrypted-capable writer. The shared writer uses plain SQLite only for actual plain fixtures and falls back to `open_master_database` when `master.db` is rejected as not plain SQLite, keeping staged hashes, sidecar checks, install tokens, backups, and install verification intact.
 
-Recent Phase I fixes include Serato `database V2` nested `otrk` extraction, local ANLZ cue-scope documentation, opt-in local Markers2 validation harness coverage, and documented PCOB/PCO2 cue-count offsets.
+Recent Phase I fixes and validation remain recorded: Serato `database V2` nested `otrk` extraction, local ANLZ cue-scope documentation, opt-in local Markers2 validation harness coverage, documented PCOB/PCO2 cue-count offsets, and Rekordbox `djmdCue` real columns/counts.
 
 ## Next
 
-Phase I is ready for review. I1, the device-export cue side of I2, and broad I4 golden-vector expansion remain blocked until approved captured fixtures are available.
+Next is J1: make encrypted Rekordbox DB fixtures the default in convert, move, sqlite-stage, import, and read tests, with explicit plain-SQLite rejection assertions.
 
 Phase I still cannot complete I1, the device-export cue side of I2, or broad I4 golden-vector expansion from synthetic fixtures. Real validation on Rekordbox 7.2.8 and Serato DJ Pro has already confirmed local ANLZ beatgrid parsing, PCOB/PCO2 cue-count offsets for empty local cue containers, Serato crate reading, the Markers2 parser path, and hotcue slot = Kind - 1 for Rekordbox cues. The repo currently has only `tests/fixtures/real/.gitignore` and `tests/fixtures/real/README.md`; there is no `manifest.json` or captured library payload. Provide an approved local-only fixture under `tests/fixtures/real/manifest.json`, following `docs/real-fixtures.md`, with:
 
