@@ -50,6 +50,16 @@ class DocsStructureTests(unittest.TestCase):
             for phrase in phrases:
                 self.assertIn(phrase, text)
 
+    def test_api_examples_are_documented(self):
+        index = (ROOT / "docs" / "README.md").read_text(encoding="utf-8")
+        doc = ROOT / "docs" / "api-examples.md"
+        text = doc.read_text(encoding="utf-8")
+
+        self.assertIn("api-examples.md", index)
+        self.assertIn("parse_rekordbox_xml", text)
+        self.assertIn("verify_library", text)
+        self.assertIn("build_missing_files_plan", text)
+
     def test_port_workflow_modules_are_consolidated(self):
         src = ROOT / "src" / "djlib_doctor"
         leftovers = sorted(src.glob("port_rekordbox_serato_*.py")) + sorted(src.glob("port_serato_rekordbox_*.py"))

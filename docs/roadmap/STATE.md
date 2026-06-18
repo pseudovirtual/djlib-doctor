@@ -2,15 +2,13 @@
 
 ## Phase
 
-Primary-library foundation through Phase H is complete. Phase K docs polish is in progress while Phase I waits for approved real fixtures.
+Primary-library foundation through Phase H is complete. Phase K docs polish is complete. Phase I waits for approved real fixtures.
 
 ## Last Done
 
-K1 added short how-to docs for cue-safe Rekordbox conversion and one-crate Serato-to-Rekordbox porting, plus a concise README note on why cue-safe migration is hard.
+K2 added `djlib-doctor examples` and public Python API examples for verification, missing-file planning, and export comparison.
 
 ## Next
-
-K2: add public API examples and a `djlib-doctor examples` command.
 
 Phase I remains blocked until someone provides an approved local-only fixture under `tests/fixtures/real/manifest.json`, following `docs/real-fixtures.md`, with a tiny Rekordbox library containing a decrypted `master.db`, matching `.DAT` and `.EXT` ANLZ files, app/version metadata, and redacted track names/paths. Then run Phase I validation to confirm:
 

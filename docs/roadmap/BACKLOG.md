@@ -79,4 +79,4 @@ Scope: Rekordbox and Serato only. Do not add other DJ apps or a neutral universa
 ## Phase K - Docs Polish
 
 - [x] K1: Add short how-to docs for "convert without losing cues" and "port one crate", plus a concise README section on why cue-safe migration is hard.
-- [ ] K2: Add public API examples and a `djlib-doctor examples` command.
+- [x] K2: Add public API examples and a `djlib-doctor examples` command.

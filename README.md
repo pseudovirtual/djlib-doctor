@@ -50,6 +50,7 @@ cd djlib-doctor
 python3 -m pip install -e .
 djlib-doctor verify tests/fixtures/rekordbox/simple.xml --no-file-check
 djlib-doctor detect
+djlib-doctor examples
 djlib-doctor self-test
 ```
 

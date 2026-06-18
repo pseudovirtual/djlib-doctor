@@ -21,6 +21,17 @@ class CliTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertIn("djlib-doctor self-test: PASS", stdout.getvalue())
 
+    def test_examples_command_prints_cli_and_api_examples(self):
+        stdout = io.StringIO()
+        with contextlib.redirect_stdout(stdout):
+            exit_code = main(["examples"])
+
+        output = stdout.getvalue()
+        self.assertEqual(exit_code, 0)
+        self.assertIn("djlib-doctor verify", output)
+        self.assertIn("from djlib_doctor.rekordbox_xml import parse_rekordbox_xml", output)
+        self.assertIn("docs/api-examples.md", output)
+
     def test_self_test_does_not_require_repo_tests_fixture(self):
         real_parse = cli_read.parse_rekordbox_xml
 

@@ -6,6 +6,7 @@ from pathlib import Path
 from .cli_certify import add_certify_parser
 from .cli_detect import add_detect_parser
 from .cli_doctor import add_doctor_parser
+from .cli_examples import add_examples_parser
 from .cli_fingerprint import add_fingerprint_parser
 from .cli_parser_stage import add_stage_install_parser
 from .cli_sync import add_sync_parser
@@ -27,6 +28,7 @@ def build_parser() -> argparse.ArgumentParser:
     add_sync_parser(sub)
     add_stage_install_parser(sub)
     _add_migrate_port_compare(sub)
+    add_examples_parser(sub)
     sub.add_parser("self-test", help="Run a fast built-in smoke test using synthetic fixtures.")
     return parser
 

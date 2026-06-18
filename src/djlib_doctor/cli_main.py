@@ -6,6 +6,7 @@ import sys
 from .cli_certify import handle_certify
 from .cli_detect import handle_detect
 from .cli_doctor import handle_doctor
+from .cli_examples import handle_examples
 from .cli_fingerprint import handle_fingerprint
 from .cli_menu import handle_menu
 from .cli_parser import build_parser
@@ -49,6 +50,7 @@ HANDLERS = {
     "self-test": handle_self_test,
     "port": handle_port,
     "compare": handle_compare,
+    "examples": handle_examples,
 }
 
 
