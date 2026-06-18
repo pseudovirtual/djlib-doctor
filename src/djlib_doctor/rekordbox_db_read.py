@@ -65,9 +65,9 @@ def _cues_by_track(rows: tuple[Any, ...]) -> dict[str, tuple[Cue, ...]]:
 
 
 def _cue(row: Any) -> Cue:
-    hotcue = _optional_int(_value(row, "HotCue"))
-    kind = CueKind.HOTCUE if hotcue is not None and hotcue >= 0 else CueKind.MEMORY
-    cue_type = CueType.LOOP if _optional_int(_value(row, "Kind")) == 4 else CueType.CUE
+    hotcue = _hotcue_slot(row)
+    kind = CueKind.HOTCUE if hotcue is not None else CueKind.MEMORY
+    cue_type = _cue_type(row)
     raw_end = _value(row, "OutMsec")
     return Cue(
         kind=kind,
@@ -78,6 +78,24 @@ def _cue(row: Any) -> Cue:
         name=_optional_str(_value(row, "Name", "Comment")),
         color=_optional_str(_value(row, "Color")),
     )
+
+
+def _hotcue_slot(row: Any) -> int | None:
+    raw_type = _optional_int(_value(row, "Type"))
+    raw_hotcue = _optional_int(_value(row, "HotCue"))
+    raw_kind = _optional_int(_value(row, "Kind"))
+    if raw_type is not None:
+        if raw_hotcue and raw_kind is not None and raw_kind >= 0:
+            return raw_kind
+        return None
+    return raw_hotcue if raw_hotcue is not None and raw_hotcue >= 0 else None
+
+
+def _cue_type(row: Any) -> CueType:
+    raw_type = _optional_int(_value(row, "Type"))
+    if raw_type is not None:
+        return CueType.LOOP if raw_type == 4 else CueType.CUE
+    return CueType.LOOP if _optional_int(_value(row, "Kind")) == 4 else CueType.CUE
 
 
 def _playlists(db: Any) -> tuple[tuple[Playlist, ...], tuple[PlaylistRef, ...]]:

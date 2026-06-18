@@ -68,14 +68,16 @@ Broader pyrekordbox `DjmdContent` relationships such as artist, album, genre, ke
 | `ContentID` | foreign key/id | Parent `djmdContent.ID`. |
 | `InMsec` | integer | Cue or loop start in milliseconds. |
 | `OutMsec` | integer/null | Loop end in milliseconds, null for normal cues. |
-| `Kind` | integer | `0` for cue, `4` for loop in current importer. |
-| `HotCue` | integer | Hotcue slot or `-1` for memory cue. |
+| `Type` | integer | Modern read path cue type: `0` for cue, `4` for loop. |
+| `Kind` | integer | Current importer uses `0` for cue and `4` for loop; modern read path uses it as the hotcue slot when `HotCue` is set. |
+| `HotCue` | integer | Current importer uses hotcue slot or `-1`; modern read path treats truthy values as hotcue rows. |
 | `Name` | text | Cue label. |
 | `rb_local_usn` | integer | Local update sequence marker. |
 | `created_at` | text datetime | Fixture timestamp. |
 | `updated_at` | text datetime | Fixture timestamp. |
 
 Cue semantics must remain explicit: cue vs loop type, loop end, hotcue slot, and label must not be silently dropped.
+The reader supports both the generated fixture/import shape and real Rekordbox 7 rows where `Type` carries cue-vs-loop and `HotCue`/`Kind` distinguish memory cues from hotcue slots.
 
 ## Encryption Boundary
 

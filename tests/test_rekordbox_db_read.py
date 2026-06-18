@@ -60,6 +60,36 @@ class RekordboxDbReadTests(unittest.TestCase):
         self.assertEqual(library.playlists[0].entries, ("1",))
         self.assertEqual(library.playlist_refs[0].playlist, "Fixture Playlist")
 
+    def test_classifies_real_schema_cue_rows(self):
+        db = _FakeRekordboxDb(
+            contents=[
+                SimpleNamespace(
+                    ID="1",
+                    FolderPath="/Music",
+                    FileNameL="Track One.aiff",
+                    Title="Track One",
+                )
+            ],
+            cues=[
+                SimpleNamespace(ContentID="1", InMsec=1000, OutMsec=0, Type=0, Kind=0, HotCue=0, Name="Memory"),
+                SimpleNamespace(ContentID="1", InMsec=2000, OutMsec=0, Type=0, Kind=2, HotCue=1, Name="Hotcue C"),
+                SimpleNamespace(ContentID="1", InMsec=3000, OutMsec=4000, Type=4, Kind=0, HotCue=0, Name="Loop"),
+            ],
+        )
+
+        library = read_rekordbox_master_db(Path("master.db"), opener=lambda *args, **kwargs: db)
+        memory, hotcue, loop = library.tracks[0].cues
+
+        self.assertEqual(memory.kind, CueKind.MEMORY)
+        self.assertEqual(memory.cue_type, CueType.CUE)
+        self.assertIsNone(memory.slot)
+        self.assertEqual(hotcue.kind, CueKind.HOTCUE)
+        self.assertEqual(hotcue.cue_type, CueType.CUE)
+        self.assertEqual(hotcue.slot, 2)
+        self.assertEqual(loop.kind, CueKind.MEMORY)
+        self.assertEqual(loop.cue_type, CueType.LOOP)
+        self.assertEqual(loop.end, 4.0)
+
     def test_reads_generated_encrypted_fixture_when_backends_are_available(self):
         with TemporaryDirectory() as tmpdir:
             try:

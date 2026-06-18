@@ -6,11 +6,11 @@ Primary-library foundation through Phase H is complete. Phase K docs polish is c
 
 ## Last Done
 
-I3b switched Rekordbox conversion auto-shift to the empirically validated net-delay formula: `max(target_decoder_delay_ms - source_decoder_delay_ms, 0)`. WAV/AIFF sources still shift by the full target AAC delay; lossy sources subtract their own decoder delay before shifting cues and beatgrids.
+I3c fixed Rekordbox `djmdCue` reader classification for real-schema cue rows: rows with `Type` use `Type` for cue-vs-loop and `HotCue`/`Kind` for memory-vs-hotcue slot, while older generated fixtures without `Type` keep their legacy `Kind`/`HotCue` interpretation.
 
 ## Next
 
-I3c: fix real-schema `djmdCue` classification for hotcues, memory cues, and saved loops. After that, work the newly recorded real-data tasks: I5 Serato `database V2` nested `otrk` extraction, I6 local ANLZ cue-scope documentation, and I7 an opt-in local Markers2 validation harness.
+I5: fix Serato `database V2` nested `otrk` extraction so Serato-as-primary can read real libraries. Then work I6 local ANLZ cue-scope documentation and I7 an opt-in local Markers2 validation harness.
 
 Phase I still cannot complete I1, the device-export cue side of I2, or broad I4 golden-vector expansion from synthetic fixtures. Real validation on Rekordbox 7.2.8 and Serato DJ Pro has already confirmed local ANLZ beatgrid parsing, PCOB/PCO2 cue-count offsets for empty local cue containers, Serato crate reading, and the Markers2 parser path. The repo currently has only `tests/fixtures/real/.gitignore` and `tests/fixtures/real/README.md`; there is no `manifest.json` or captured library payload. Provide an approved local-only fixture under `tests/fixtures/real/manifest.json`, following `docs/real-fixtures.md`, with:
 
