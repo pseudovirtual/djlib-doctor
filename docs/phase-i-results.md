@@ -23,4 +23,21 @@ The staged conversion manifest records `source_decoder_delay_ms`, `target_decode
 
 Real local Rekordbox ANLZ files contain empty cue lists in normal library storage: PCOB/PCO2 container tags are present but have zero PCPT/PCP2 entries. Local user cues live in `master.db` (`djmdCue`), so local convert/in-place flows shift `master.db` cues and ANLZ beatgrids (PQTZ/PQT2) for the library. ANLZ cue-tag shifting applies only to exported device media where Rekordbox writes cue entries into the analysis files.
 
-Confirmed-good real-data checks: local ANLZ beatgrid parsing, PCOB/PCO2 cue-count offsets for empty local cue containers, Serato crate reading, and the Markers2 parser path.
+Validated on 150 real .DAT files and 2160 .EXT files: ANLZ beatgrid parsing and PCOB/PCO2 cue-count offsets had 0 mismatches. Local ANLZ cue lists were empty by design, while beatgrids were present and usable.
+
+## Serato Validation
+
+Real Serato DJ Pro captures confirmed:
+
+- Serato crates: 30/30 real crates parsed, covering 1550 track refs.
+- Serato Markers2: real GEOB cue tags parsed through the file-tag path.
+- Serato `database V2`: 704/704 real otrk records parsed using database field tags `pfil/tsng/tart/talb/tgen/tkey`.
+
+## Rekordbox djmdCue Validation
+
+Real Rekordbox 7.2.8 `djmdCue` rows confirmed:
+
+- `InMsec` is the cue position in milliseconds.
+- `OutMsec=-1` means no loop end; only `OutMsec > 0` is a saved loop.
+- `Kind` and `is_hot_cue` classify hotcues; hotcue slot = Kind - 1.
+- The validation library read 1086 hotcues, 29 loops, and ~40 memory cues.

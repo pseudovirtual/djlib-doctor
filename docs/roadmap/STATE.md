@@ -6,13 +6,15 @@ Primary-library foundation through Phase H is complete. Phase K docs polish is c
 
 ## Last Done
 
-Rekordbox `djmdCue` reading was corrected after live `master.db` validation: hotcue-vs-memory now uses `is_hot_cue`/`is_memory_cue` plus `Kind`, hotcue slots are `Kind - 1`, and loops are only rows with `OutMsec > 0`. Recent Phase I fixes also include Serato `database V2` nested `otrk` extraction, local ANLZ cue-scope documentation, and an opt-in local Markers2 validation harness.
+Phase I live validation results were recorded from Rekordbox 7.2.8 and Serato DJ Pro. The confirmed data includes MP3-to-M4A +21 ms net cue/grid shift, WAV/AIFF-to-M4A full target-delay shift, 150 real .DAT and 2160 .EXT ANLZ files with 0 cue-count/beatgrid mismatches, 30/30 real Serato crates with 1550 track refs, 704/704 real otrk rows using `pfil/tsng/tart/talb/tgen/tkey`, and Rekordbox `djmdCue` counts of 1086 hotcues, 29 loops, and ~40 memory cues.
+
+Recent Phase I fixes include Serato `database V2` nested `otrk` extraction, local ANLZ cue-scope documentation, opt-in local Markers2 validation harness coverage, and documented PCOB/PCO2 cue-count offsets.
 
 ## Next
 
 Phase I is ready for review. I1, the device-export cue side of I2, and broad I4 golden-vector expansion remain blocked until approved captured fixtures are available.
 
-Phase I still cannot complete I1, the device-export cue side of I2, or broad I4 golden-vector expansion from synthetic fixtures. Real validation on Rekordbox 7.2.8 and Serato DJ Pro has already confirmed local ANLZ beatgrid parsing, PCOB/PCO2 cue-count offsets for empty local cue containers, Serato crate reading, and the Markers2 parser path. The repo currently has only `tests/fixtures/real/.gitignore` and `tests/fixtures/real/README.md`; there is no `manifest.json` or captured library payload. Provide an approved local-only fixture under `tests/fixtures/real/manifest.json`, following `docs/real-fixtures.md`, with:
+Phase I still cannot complete I1, the device-export cue side of I2, or broad I4 golden-vector expansion from synthetic fixtures. Real validation on Rekordbox 7.2.8 and Serato DJ Pro has already confirmed local ANLZ beatgrid parsing, PCOB/PCO2 cue-count offsets for empty local cue containers, Serato crate reading, the Markers2 parser path, and hotcue slot = Kind - 1 for Rekordbox cues. The repo currently has only `tests/fixtures/real/.gitignore` and `tests/fixtures/real/README.md`; there is no `manifest.json` or captured library payload. Provide an approved local-only fixture under `tests/fixtures/real/manifest.json`, following `docs/real-fixtures.md`, with:
 
 - a real encrypted Rekordbox master.db plus safe decrypted copy, app version, and matching redacted XML export for I1
 - real `.DAT` and `.EXT` ANLZ files for the same tracks, including PCOB/PCO2 cues, len_cues counts, PQTZ beat times, and PQT2 beat times for I2

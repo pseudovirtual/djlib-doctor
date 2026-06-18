@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Recorded Phase I live validation counts for Rekordbox 7.2.8 and Serato DJ Pro, including cue-shift, ANLZ, crate, Markers2, database V2, and `djmdCue` findings.
 - Corrected Rekordbox `djmdCue` reading to use live `Kind`/`is_hot_cue`/`is_memory_cue` columns and `OutMsec > 0` loop detection.
 - Corrected I5 Serato `database V2` parsing to use real `pfil`/`t*` field tags instead of crate-style `ptrk` metadata.
 - [x] I7: Added an opt-in local-only real Serato Markers2 validation harness with gitignored fixture paths.
