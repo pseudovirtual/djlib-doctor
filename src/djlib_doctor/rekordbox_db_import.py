@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import Any
 
 from .io_utils import read_json, write_json
+from .rekordbox_db_import_pyrekordbox import build_pyrekordbox_import_operations
+from .rekordbox_pyrekordbox import PyrekordboxUnavailable
 from .sqlite_utils import quote_identifier, table_columns
 
 IMPORT_SCHEMA_VERSION = "1.0"
@@ -24,8 +26,13 @@ def build_rekordbox_db_import_operations(live_db: Path, port_manifest: Path, out
             _require_supported_content_schema(columns)
             cue_columns = table_columns(conn, CUE_TABLE)
             operations = _build_operations(conn, columns, cue_columns, manifest.get("tracks", ()))
-        except sqlite3.DatabaseError as exc:
-            raise ValueError(_unsupported_database_message(live_db)) from exc
+        except sqlite3.DatabaseError:
+            try:
+                operations = build_pyrekordbox_import_operations(
+                    live_db, manifest.get("tracks", ()), CONTENT_TABLE, CUE_TABLE
+                )
+            except PyrekordboxUnavailable as rb_exc:
+                raise ValueError(_unsupported_database_message(live_db)) from rb_exc
     finally:
         conn.close()
     write_json(out_path, _operations_manifest(port_manifest, operations))
@@ -44,7 +51,7 @@ def _unsupported_database_message(path: Path) -> str:
         f"Unsupported Rekordbox DB format for import: {path}. "
         "This command supports plain SQLite master.db fixtures/schemas with djmdContent "
         "and optional djmdCue tables. encrypted SQLCipher Rekordbox databases require "
-        "the pyrekordbox-backed importer planned for Phase F."
+        "a pyrekordbox/SQLCipher backend that can unlock and map the DB."
     )
 
 

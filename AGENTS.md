@@ -84,6 +84,6 @@ The current milestone is safe verification, planning, staged writes, and migrati
 - support single-track, playlist/crate, multi-playlist, and whole-collection port scopes
 - support `full`, `cues-only`, and `match-only` transfer modes in port manifests
 - stage and install Serato SQLite/crate changes only through token-gated manifests with backups, sidecar checks, app-closed checks, and hash verification
-- for Serato-to-Rekordbox, do not present XML preview as the final write workflow; the intended target flow is port manifest/XML representation, `stage rekordbox-db-import` into a copied plain-SQLite `master.db`, then `install rekordbox-db`; encrypted SQLCipher databases can be read/checked through pyrekordbox, but encrypted staged writes are not landed yet
+- for Serato-to-Rekordbox, do not present XML preview as the final write workflow; the intended target flow is port manifest/XML representation, `stage rekordbox-db-import` into a copied plain-SQLite or pyrekordbox-readable encrypted `master.db`, then `install rekordbox-db`
 
 Do not write live DBs directly. The verifier and port manifest are the foundation; staged DB installs are the only approved DB write path.

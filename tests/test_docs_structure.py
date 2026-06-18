@@ -27,7 +27,7 @@ class DocsStructureTests(unittest.TestCase):
         self.assertIn("## Experimental / Limited Coverage", readme)
         self.assertNotIn("fixture-backed", available)
         self.assertNotIn("Serato audio tags", available)
-        self.assertIn("encrypted `master.db` reads are generated-fixture tested", readme)
+        self.assertIn("encrypted `master.db` reads and staged writes are generated-fixture tested", readme)
         self.assertIn("real captured DB certification is still pending", readme)
 
     def test_port_workflow_modules_are_consolidated(self):

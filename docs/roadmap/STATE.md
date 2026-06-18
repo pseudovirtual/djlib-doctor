@@ -2,15 +2,15 @@
 
 ## Phase
 
-Primary-library foundation through Phase E complete; cleanup and bug-fix pass complete. Feature completion Phase F is in progress.
+Primary-library foundation through Phase F complete; cleanup and bug-fix pass complete. Paused for maintainer review before Phase G.
 
 ## Last Done
 
-F2 added a pyrekordbox-backed encrypted Rekordbox `master.db` reader that maps tracks, cues, playlists, and playlist refs into the existing Rekordbox library model.
+F3 added pyrekordbox-backed encrypted Rekordbox `master.db` staging/import support through the existing token-gated stage/install flow.
 
 ## Next
 
-F3: write to encrypted Rekordbox `master.db` through the existing stage/install engine, preserving token/hash/backup/app-closed safety checks.
+Maintainer review before Phase G: easy one-off ports with detect/config/flag fallback.
 
 ## Blockers
 

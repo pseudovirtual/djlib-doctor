@@ -52,7 +52,7 @@ djlib-doctor migrate rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / 
 djlib-doctor migrate serato-to-rb --serato-library-dir ~/serato-library --crate ~/Music/_Serato_/Subcrates/Test.crate --collection-root ~/Music --out run/serato-to-rb --stage-db --rekordbox-db ~/Library/Pioneer/rekordbox/master.db
 ```
 
-Serato-to-Rekordbox produces a port manifest and Rekordbox XML representation, then can stage supported plain-SQLite DB imports into a copied Rekordbox `master.db` for token-gated install. Encrypted Rekordbox DB reads/checks use pyrekordbox; encrypted staged writes and real captured DB certification are still pending.
+Serato-to-Rekordbox produces a port manifest and Rekordbox XML representation, then can stage supported plain-SQLite or pyrekordbox-readable encrypted DB imports into a copied Rekordbox `master.db` for token-gated install. Real captured DB certification is still pending.
 
 Fast smoke test:
 

@@ -6,8 +6,15 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from tests.support.rekordbox_encrypted_fixture import (
+    SqlcipherUnavailable,
+    generate_encrypted_rekordbox_fixture,
+    rekordbox_public_sqlcipher_key,
+)
+
 from djlib_doctor.cli import main
 from djlib_doctor.io_utils import write_json
+from djlib_doctor.rekordbox_db_read import read_rekordbox_master_db
 from djlib_doctor.rekordbox_db_stage import stage_rekordbox_db_import
 from djlib_doctor.serato_crate import write_serato_crate
 
@@ -203,8 +210,31 @@ class RekordboxDbImportTests(unittest.TestCase):
             db.write_bytes(b"SQLCipher encrypted Rekordbox database placeholder")
             make_port_manifest(manifest)
 
-            with self.assertRaisesRegex(ValueError, r"encrypted SQLCipher.*pyrekordbox-backed importer"):
+            with self.assertRaisesRegex(ValueError, r"encrypted SQLCipher.*pyrekordbox/SQLCipher backend"):
                 stage_rekordbox_db_import(db, manifest, tmp / "stage")
+
+    def test_stage_rekordbox_db_import_updates_encrypted_db_fixture(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            try:
+                from pyrekordbox.db6 import database
+
+                fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
+            except (ImportError, SqlcipherUnavailable) as exc:
+                self.skipTest(str(exc))
+            manifest = tmp / "port-manifest.json"
+            make_port_manifest(manifest)
+
+            original_get_pid = database.get_rekordbox_pid
+            database.get_rekordbox_pid = lambda: 0
+            try:
+                stage = stage_rekordbox_db_import(fixture.encrypted_db, manifest, tmp / "stage")
+                library = read_rekordbox_master_db(stage.staged_db, key=rekordbox_public_sqlcipher_key())
+            finally:
+                database.get_rekordbox_pid = original_get_pid
+
+        self.assertEqual(library.tracks[0].name, "Track One")
+        self.assertEqual(library.tracks[0].cues[0].start, 12.345)
 
 
 def _make_serato_root(path: Path) -> None:

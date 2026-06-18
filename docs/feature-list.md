@@ -33,7 +33,7 @@
 ## Experimental / Limited Coverage
 
 - Serato audio tag writes and Markers2 cue imports are fixture-tested and need broader real-world validation.
-- Rekordbox encrypted `master.db` reads are generated-fixture tested through pyrekordbox; real captured DB certification is still pending.
+- Rekordbox encrypted `master.db` reads and staged writes are generated-fixture tested through pyrekordbox; real captured DB certification is still pending.
 - Acoustic fingerprinting is planned; current fingerprinting is byte-level only.
 
 ## Main Commands

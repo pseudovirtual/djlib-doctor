@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] F3: Added pyrekordbox-backed encrypted Rekordbox DB staging/import through the existing stage/install safety flow.
 - [x] F2: Added a pyrekordbox-backed encrypted Rekordbox DB reader for tracks, cues, playlists, and doctor checks.
 - [x] F1: Made pyrekordbox and SQLCipher default dependencies with distinct fail-closed runtime messages.
 - [x] F4: Added persisted review-log coverage proving undo removes the undone decision from disk.

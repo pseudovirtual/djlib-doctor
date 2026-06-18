@@ -44,7 +44,7 @@ Scope: Rekordbox and Serato only. Do not add other DJ apps or a neutral universa
 
 - [x] F1: Make pyrekordbox a default dependency. Keep graceful runtime fallback when the SQLCipher backend or key/database support is unavailable, with distinct messages for backend missing versus key/unsupported DB. Update README/docs.
 - [x] F2: Read a real encrypted `master.db` via pyrekordbox into the native Rekordbox/Serato-specific model: tracks, playlists, and cues. Test against the generated encrypted DB fixture. Fail closed with clear messages on unsupported or locked DBs.
-- [ ] F3: Write to a real encrypted `master.db` through the existing stage/install engine. Generalize Serato-to-Rekordbox import so one track, one playlist, or whole collection land through the same staged path.
+- [x] F3: Write to a real encrypted `master.db` through the existing stage/install engine. Generalize Serato-to-Rekordbox import so one track, one playlist, or whole collection land through the same staged path.
 
 ## Phase G - Easy One-Off Ports
 
