@@ -2,7 +2,7 @@
 
 `djlib-doctor` is a read-only-first DJ library verification, cleanup planning, staging, and migration toolkit for Rekordbox and Serato.
 
-Start with read-only commands. Writes are allowed only through explicit staged install commands with exact confirmation tokens: `install serato-stage`, `install serato-tags`, `install rekordbox-db`, and `install file-ops`.
+Start with read-only commands. Writes are allowed only through explicit staged install commands with exact confirmation tokens: `install serato-stage`, `install serato-tags`, `install rekordbox-db`, `install rekordbox-convert`, `install rekordbox-move`, and `install file-ops`.
 
 ## Useful Commands
 
@@ -49,3 +49,5 @@ PYTHONPATH=src python3 -m djlib_doctor.cli migrate serato-to-rb --serato-library
 - Fingerprinting commands are read-only byte-level helpers; they do not claim acoustic identity.
 - Certification commands are read-only scorecards for migration artifacts.
 - Serato-to-Rekordbox DB import writes only through staged `master.db` installs. It supports tested plain-SQLite schemas and pyrekordbox-readable encrypted DB fixtures; unsupported or locked DBs fail closed.
+- Rekordbox convert/move workflows are staged installs too; they can update copied `master.db` references and verify audio, ANLZ, backup, source-hash, and app-closed checks before touching live files.
+- Rekordbox 7.2.8 validation confirmed `--cue-shift auto` should use a positive net target-minus-source decoder-delay shift for AAC/M4A conversion.

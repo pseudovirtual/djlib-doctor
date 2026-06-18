@@ -10,7 +10,7 @@ Use this skill when the user wants to inspect, verify, snapshot, compare, port, 
 ## Safety Rules
 
 - Start read-only.
-- Do not write to a Rekordbox database except through `install rekordbox-db` after a staged SQLite manifest verifies token, contents, staged hash, source hash, and backups.
+- Do not write to a Rekordbox database except through `install rekordbox-db`, `install rekordbox-convert`, or `install rekordbox-move` after a staged manifest verifies token, contents, staged hash, source hash, and backups.
 - Do not write to a live Serato database except through `install serato-stage` after the stage verifies token, contents, staged hashes, source hash, sidecars, app-closed checks, and backups.
 - Do not modify, move, rename, convert, quarantine, or delete music files except through `install file-ops`, `install rekordbox-convert`, or `install rekordbox-move` after a staged manifest verifies token, contents, hashes, and backups.
 - Do not modify a real Rekordbox XML export.
@@ -101,5 +101,6 @@ PYTHONPATH=src python3 -m djlib_doctor.cli compare exports --baseline baseline.x
 14. Use `sync` as a dry-run by default; add `--apply` only when the user wants the approved stage/install pipeline, then require typed `yes`, `--yes`, or an exact install token.
 15. For Rekordbox-to-Serato, prefer `--summary-only` first for batch playlist files, then generate crate previews with `--verify-preview` for single-playlist checks.
 16. For Serato-to-Rekordbox, do not stop at “import the XML preview” when the user wants a write workflow. Use `stage rekordbox-db-import` or `migrate serato-to-rb --stage-db`, then `install rekordbox-db`; the DB importer writes only through staged installs and supports tested plain-SQLite schemas plus pyrekordbox-readable encrypted DB fixtures. Unsupported or locked DBs fail closed.
-17. For Serato install, require the exact stage token, keep Serato closed, and verify the install report.
-18. Suggest only read-only next steps unless a write-capable command already exists with the required safety workflow.
+17. For Rekordbox convert/move workflows, use the matching staged install command; `--cue-shift auto` is the default for AAC/M4A conversion because Rekordbox 7.2.8 validation showed a positive net target-minus-source decoder-delay shift is needed.
+18. For Serato install, require the exact stage token, keep Serato closed, and verify the install report.
+19. Suggest only read-only next steps unless a write-capable command already exists with the required safety workflow.

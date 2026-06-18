@@ -29,6 +29,10 @@ Primary commands:
 - `djlib-doctor stage rekordbox-db-import --db master.db --port-manifest run/serato-to-rb/port-manifest.json --stage-dir run/rb-db-stage`
 - `djlib-doctor stage rekordbox-db --db master.db --operations rekordbox-ops.json --stage-dir run/rb-db-stage`
 - `djlib-doctor install rekordbox-db --stage-dir run/rb-db-stage --db master.db --confirm-token INSTALL_SQLITE_STAGE:...`
+- `djlib-doctor stage rekordbox-convert --db master.db --operations convert.json --stage-dir run/rb-convert --cue-shift auto`
+- `djlib-doctor install rekordbox-convert --stage-dir run/rb-convert --db master.db --confirm-token INSTALL_REKORDBOX_CONVERT:...`
+- `djlib-doctor stage rekordbox-move --db master.db --operations move.json --stage-dir run/rb-move`
+- `djlib-doctor install rekordbox-move --stage-dir run/rb-move --db master.db --confirm-token INSTALL_REKORDBOX_MOVE:...`
 - `djlib-doctor stage file-ops --operations file-ops.json --stage-dir run/file-ops-stage`
 - `djlib-doctor install file-ops --stage-dir run/file-ops-stage --confirm-token INSTALL_FILE_OPS:...`
 - `djlib-doctor migrate rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / My Playlist" --out run/migrate --stage-library --stage-tags --serato-library-dir "/path/to/serato-library" --serato-music-dir "/path/to/_Serato_"`
@@ -39,7 +43,8 @@ Safety boundary:
 
 - planning and porting commands do not write live databases or music files
 - install commands require exact tokens and verify staged hashes, source hashes, sidecars, and backups where relevant
-- Rekordbox DB import stages into a copied plain-SQLite `master.db`; no real Rekordbox DB version is certified yet, and encrypted SQLCipher databases are unsupported
+- Rekordbox DB import stages into copied plain-SQLite or pyrekordbox-readable encrypted `master.db` files; unsupported or locked DBs fail closed
+- Rekordbox AAC/M4A conversion uses `--cue-shift auto` by default because Rekordbox 7.2.8 validation showed a positive net target-minus-source decoder-delay shift is needed
 - fingerprinting is byte-level only and certification is read-only
 - streaming placeholders are not missing local files
 - cue timing work must be preserved

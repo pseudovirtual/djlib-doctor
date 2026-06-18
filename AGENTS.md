@@ -4,7 +4,7 @@
 
 ## Current Safety Rules
 
-- Do not write to any Rekordbox database except through `install rekordbox-db` after a staged manifest verifies token, contents, staged hash, source hash, and backups.
+- Do not write to any Rekordbox database except through `install rekordbox-db`, `install rekordbox-convert`, or `install rekordbox-move` after a staged manifest verifies token, contents, staged hash, source hash, and backups.
 - Do not write to any live Serato database except through `install serato-stage` after a staged manifest verifies token, contents, staged hashes, source hash, sidecars, app-closed checks, and backups.
 - Do not modify, move, rename, convert, quarantine, or delete real music files except through `install file-ops`, `install rekordbox-convert`, or `install rekordbox-move` after a staged manifest verifies token, contents, hashes, and backups.
 - Do not write Serato audio tags except through `install serato-tags` after a staged manifest verifies token, contents, staged hash, source hash, and backups.
@@ -54,6 +54,7 @@ PYTHONPATH=src python3 -m djlib_doctor.cli stage rekordbox-db-import --db /path/
 PYTHONPATH=src python3 -m djlib_doctor.cli stage rekordbox-db-apply --db /path/to/rekordbox/master.db --apply-manifest work/snapshot-demo/apply-manifest.json --stage-dir work/rekordbox-apply
 PYTHONPATH=src python3 -m djlib_doctor.cli stage rekordbox-convert --db /path/to/rekordbox/master.db --operations work/rekordbox-convert.json --stage-dir work/rekordbox-convert --cue-shift auto
 PYTHONPATH=src python3 -m djlib_doctor.cli stage rekordbox-move --db /path/to/rekordbox/master.db --operations work/rekordbox-move.json --stage-dir work/rekordbox-move
+PYTHONPATH=src python3 -m djlib_doctor.cli install rekordbox-convert --stage-dir work/rekordbox-convert --db /path/to/rekordbox/master.db --confirm-token INSTALL_REKORDBOX_CONVERT:...
 PYTHONPATH=src python3 -m djlib_doctor.cli install rekordbox-move --stage-dir work/rekordbox-move --db /path/to/rekordbox/master.db --confirm-token INSTALL_REKORDBOX_MOVE:...
 PYTHONPATH=src python3 -m djlib_doctor.cli stage serato --port-manifest work/serato-port-demo/port-manifest.json --serato-library-dir /path/to/serato-library --serato-music-dir /path/to/_Serato_ --stage-dir work/serato-stage
 PYTHONPATH=src python3 -m djlib_doctor.cli install serato-stage --stage-dir work/serato-stage --serato-library-dir /path/to/serato-library --serato-music-dir /path/to/_Serato_ --confirm-token INSTALL_SERATO_STAGE:...
@@ -90,5 +91,6 @@ The current milestone is safe verification, planning, staged writes, and migrati
 - support `full`, `cues-only`, and `match-only` transfer modes in port manifests
 - stage and install Serato SQLite/crate changes only through token-gated manifests with backups, sidecar checks, app-closed checks, and hash verification
 - for Serato-to-Rekordbox, do not present XML preview as the final write workflow; the intended target flow is port manifest/XML representation, `stage rekordbox-db-import` into a copied plain-SQLite or pyrekordbox-readable encrypted `master.db`, then `install rekordbox-db`
+- for Rekordbox conversion or move workflows, use `stage rekordbox-convert`/`stage rekordbox-move`, then the matching install command; those paths update copied `master.db` references and verify audio/ANLZ/file hashes before touching the live library
 
 Do not write live DBs directly. The verifier and port manifest are the foundation; staged DB installs are the only approved DB write path.

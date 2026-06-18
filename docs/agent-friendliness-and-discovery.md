@@ -42,7 +42,7 @@ The README should include phrases users will actually ask:
 - "check streaming placeholders"
 - "preserve hotcues and memory cues"
 - "dry-run DJ library cleanup"
-- "agent-friendly Rekordbox library verifier"
+- "agent-friendly Rekordbox and Serato migration toolkit"
 
 ## Codex Discovery
 
@@ -61,7 +61,7 @@ Skill description should front-load trigger terms:
 ```md
 ---
 name: djlib-doctor
-description: Verify and plan safe cleanup for Rekordbox DJ libraries using djlib-doctor; use for Rekordbox XML exports, missing files, streaming placeholders, hotcues, memory cues, playlist references, and read-only DJ library reports.
+description: Verify, plan, stage, and safely migrate Rekordbox and Serato DJ libraries using djlib-doctor; use for Rekordbox XML/DBs, Serato crates/database V2, missing files, streaming placeholders, hotcues, memory cues, loops, playlists, cue-safe conversion, and two-way migration.
 ---
 ```
 
@@ -73,6 +73,8 @@ Skill behavior:
 - suggest read-only analysis first
 - use write-capable commands only when an implemented stage/install workflow exists and the user approves it
 - never present XML preview as the final Serato-to-Rekordbox write workflow; use staged `master.db` import/install language
+- use `install rekordbox-convert` and `install rekordbox-move` for conversion or move workflows; do not route those through generic file operations
+- remember that pyrekordbox-readable encrypted `master.db` paths are supported behind staged workflows, while unsupported or locked DBs fail closed
 
 ## Claude Desktop Discovery
 
@@ -125,13 +127,13 @@ Use ordinary open-source distribution first:
 - GitHub topics: `rekordbox`, `dj`, `music-library`, `hotcues`, `agent-tools`, `codex`, `claude-desktop`
 - PyPI package eventually: `djlib-doctor`
 - short demo report
-- `llms.txt` and `llms-full.txt` later
+- `llms.txt` and `llms-full.txt`
 - example prompts for Codex and Claude
 - issues labeled `good first issue`, `fixture needed`, and `safety`
 
 Suggested tagline:
 
-> Read-only first, cue-safe DJ library verification and cleanup planning for Rekordbox exports.
+> Read-only first, cue-safe DJ library verification, cleanup planning, and migration for Rekordbox and Serato.
 
 ## Source Notes
 

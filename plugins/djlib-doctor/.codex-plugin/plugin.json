@@ -1,6 +1,6 @@
 {
   "name": "djlib-doctor",
   "version": "0.1.0",
-  "description": "Safe Rekordbox DJ library verification and cleanup planning workflow for Codex.",
+  "description": "Safe Rekordbox and Serato DJ library verification, cleanup planning, staging, and migration workflow for Codex.",
   "skills": "./skills/"
 }
