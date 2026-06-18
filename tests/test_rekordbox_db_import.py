@@ -10,6 +10,7 @@ from tests.support.rekordbox_encrypted_fixture import (
     SqlcipherUnavailable,
     generate_encrypted_rekordbox_fixture,
     rekordbox_public_sqlcipher_key,
+    skip_or_fail_for_missing_encrypted_backend,
 )
 
 from djlib_doctor.cli import main
@@ -221,7 +222,7 @@ class RekordboxDbImportTests(unittest.TestCase):
 
                 fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
             except (ImportError, SqlcipherUnavailable) as exc:
-                self.skipTest(str(exc))
+                skip_or_fail_for_missing_encrypted_backend(self, exc)
             manifest = tmp / "port-manifest.json"
             make_port_manifest(manifest)
 

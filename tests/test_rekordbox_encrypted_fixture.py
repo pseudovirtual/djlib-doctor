@@ -7,6 +7,7 @@ from tests.support.rekordbox_encrypted_fixture import (
     SqlcipherUnavailable,
     build_plain_rekordbox_fixture_db,
     generate_encrypted_rekordbox_fixture,
+    skip_or_fail_for_missing_encrypted_backend,
 )
 
 
@@ -36,7 +37,7 @@ class RekordboxEncryptedFixtureTests(unittest.TestCase):
             try:
                 result = generate_encrypted_rekordbox_fixture(out)
             except SqlcipherUnavailable as exc:
-                self.skipTest(str(exc))
+                skip_or_fail_for_missing_encrypted_backend(self, exc)
 
             self.assertTrue(result.encrypted_db.exists())
             self.assertTrue(result.plain_db.exists())

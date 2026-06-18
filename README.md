@@ -61,6 +61,7 @@ Rekordbox `master.db` work uses default dependencies: `pyrekordbox` and `sqlciph
 Run the full suite:
 
 ```bash
+python3 -m pip install -e ".[dev]"
 PYTHONPATH=src python3 -m unittest discover -s tests
 PYTHONPATH=src PYTHONPYCACHEPREFIX=work/pycache python3 -m compileall -q src tests
 ```

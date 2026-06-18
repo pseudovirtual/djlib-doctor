@@ -7,6 +7,7 @@ Start with read-only commands. Writes are allowed only through explicit staged i
 ## Useful Commands
 
 ```bash
+python3 -m pip install -e ".[dev]"
 PYTHONPATH=src python3 -m unittest discover -s tests
 PYTHONPATH=src python3 -m djlib_doctor.cli
 PYTHONPATH=src python3 -m djlib_doctor.cli self-test

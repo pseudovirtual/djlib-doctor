@@ -46,6 +46,11 @@ Scope: Rekordbox and Serato only. Do not add other DJ apps or a neutral universa
 - [x] F2: Read a real encrypted `master.db` via pyrekordbox into the native Rekordbox/Serato-specific model: tracks, playlists, and cues. Test against the generated encrypted DB fixture. Fail closed with clear messages on unsupported or locked DBs.
 - [x] F3: Write to a real encrypted `master.db` through the existing stage/install engine. Generalize Serato-to-Rekordbox import so one track, one playlist, or whole collection land through the same staged path.
 
+## Phase F Verification
+
+- [x] V-F1: Confirm encrypted DB tests run after package install, fail when installed backends are missing, and skip only in deliberately minimal `PYTHONPATH` environments.
+- [ ] V-F2: Verify `sqlcipher3-wheels` installs across the CI matrix now that it is a core dependency.
+
 ## Phase G - Easy One-Off Ports
 
 - [ ] G1: Extend detect -> config -> explicit-flag fallback to `port` verbs so ad-hoc directional ports need minimal flags while ignoring configured primary.

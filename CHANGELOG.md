@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] V-F1: Made encrypted Rekordbox DB tests fail when installed default backends are missing and documented the install-first local gate.
 - [x] F3: Added pyrekordbox-backed encrypted Rekordbox DB staging/import through the existing stage/install safety flow.
 - [x] F2: Added a pyrekordbox-backed encrypted Rekordbox DB reader for tracks, cues, playlists, and doctor checks.
 - [x] F1: Made pyrekordbox and SQLCipher default dependencies with distinct fail-closed runtime messages.

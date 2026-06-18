@@ -3,8 +3,10 @@ from __future__ import annotations
 import base64
 import shutil
 import sqlite3
+import unittest
 import zlib
 from dataclasses import dataclass
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -33,6 +35,21 @@ def rekordbox_public_sqlcipher_key() -> str:
     data = base64.b85decode(PUBLIC_KEY_BLOB)
     xored = bytes(byte ^ BLOB_KEY[index % len(BLOB_KEY)] for index, byte in enumerate(data))
     return zlib.decompress(xored).decode("utf-8")
+
+
+def skip_or_fail_for_missing_encrypted_backend(testcase: unittest.TestCase, exc: Exception) -> None:
+    message = f"{exc}; install djlib-doctor with default dependencies before running the full local gate"
+    if _djlib_doctor_is_installed():
+        testcase.fail(message)
+    testcase.skipTest(message)
+
+
+def _djlib_doctor_is_installed() -> bool:
+    try:
+        version("djlib-doctor")
+    except PackageNotFoundError:
+        return False
+    return True
 
 
 def build_plain_rekordbox_fixture_db(path: Path) -> Path:

@@ -2,15 +2,24 @@
 
 ## Phase
 
-Primary-library foundation through Phase F complete; cleanup and bug-fix pass complete. Paused for maintainer review before Phase G.
+Primary-library foundation through Phase F complete; Phase-F verification is in progress before Phase G.
 
 ## Last Done
 
-F3 added pyrekordbox-backed encrypted Rekordbox `master.db` staging/import support through the existing token-gated stage/install flow.
+V-F1 confirmed encrypted Rekordbox DB tests run after package install with default dependencies. Minimal `PYTHONPATH` runs still skip cleanly, but installed environments fail if `pyrekordbox` or `sqlcipher3` is missing.
+
+Verification run:
+
+```bash
+work/ruff-venv/bin/python -m pip install ".[dev]"
+work/ruff-venv/bin/python -m unittest tests.test_encrypted_backend_policy tests.test_rekordbox_encrypted_fixture tests.test_rekordbox_db_read tests.test_rekordbox_db_stage tests.test_rekordbox_db_import
+```
+
+Result: 16 tests passed, 0 skipped.
 
 ## Next
 
-Maintainer review before Phase G: easy one-off ports with detect/config/flag fallback.
+V-F2: verify `sqlcipher3-wheels` can install across Ubuntu, macOS, and Windows on Python 3.9 and 3.13 before starting Phase G.
 
 ## Blockers
 
