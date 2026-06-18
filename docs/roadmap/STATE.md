@@ -2,15 +2,17 @@
 
 ## Phase
 
-Primary-library foundation through Phase H is complete. Phase I is blocked until an approved captured Rekordbox fixture bundle is available.
+Primary-library foundation through Phase H is complete. Phase K docs polish is in progress while Phase I waits for approved real fixtures.
 
 ## Last Done
 
-H3 added `stage rekordbox-move` and `install rekordbox-move` for token-gated file moves/renames that update a copied `master.db` and staged file bytes together. H2 conversion validation used synthetic ANLZ fixtures plus real ffmpeg encoding; it did not validate against a real Rekordbox library.
+K1 added short how-to docs for cue-safe Rekordbox conversion and one-crate Serato-to-Rekordbox porting, plus a concise README note on why cue-safe migration is hard.
 
 ## Next
 
-Provide an approved local-only fixture under `tests/fixtures/real/manifest.json`, following `docs/real-fixtures.md`, with a tiny Rekordbox library containing a decrypted `master.db`, matching `.DAT` and `.EXT` ANLZ files, app/version metadata, and redacted track names/paths. Then run Phase I validation to confirm:
+K2: add public API examples and a `djlib-doctor examples` command.
+
+Phase I remains blocked until someone provides an approved local-only fixture under `tests/fixtures/real/manifest.json`, following `docs/real-fixtures.md`, with a tiny Rekordbox library containing a decrypted `master.db`, matching `.DAT` and `.EXT` ANLZ files, app/version metadata, and redacted track names/paths. Then run Phase I validation to confirm:
 
 - the correct cue-shift sign and necessity for the target Rekordbox version, including the documented 26ms/gapless behavior
 - the PCOB/PCO2 cue-count offsets and cue/beat offsets against real `.DAT`/`.EXT` files, including PQTZ and PQT2 beat time fields

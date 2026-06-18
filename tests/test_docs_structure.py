@@ -30,6 +30,26 @@ class DocsStructureTests(unittest.TestCase):
         self.assertIn("encrypted `master.db` reads and staged writes are generated-fixture tested", readme)
         self.assertIn("real captured DB certification is still pending", readme)
 
+    def test_how_to_docs_are_linked_from_readme_and_docs_index(self):
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        index = (ROOT / "docs" / "README.md").read_text(encoding="utf-8")
+        required = {
+            "how-to-convert-without-losing-cues.md": (
+                "rekordbox-convert",
+                "--cue-shift auto",
+                "INSTALL_REKORDBOX_CONVERT",
+            ),
+            "how-to-port-one-crate.md": ("port serato-to-rb", "certify serato-to-rb", "stage rekordbox-db-import"),
+        }
+
+        self.assertIn("Why Cue-Safe Migration Is Hard", readme)
+        for filename, phrases in required.items():
+            self.assertIn(filename, readme)
+            self.assertIn(filename, index)
+            text = (ROOT / "docs" / filename).read_text(encoding="utf-8")
+            for phrase in phrases:
+                self.assertIn(phrase, text)
+
     def test_port_workflow_modules_are_consolidated(self):
         src = ROOT / "src" / "djlib_doctor"
         leftovers = sorted(src.glob("port_rekordbox_serato_*.py")) + sorted(src.glob("port_serato_rekordbox_*.py"))

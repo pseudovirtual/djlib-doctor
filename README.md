@@ -38,6 +38,10 @@ Planning commands do not write to live libraries. Write-capable flows are split 
 
 exact confirmation tokens, recomputed manifest tokens, staged hashes, live source hashes from staging time, backups, and app/SQLite sidecar checks where relevant.
 
+## Why Cue-Safe Migration Is Hard
+
+DJ apps store creative timing in several places: library databases, audio tags, ANLZ files, crates, XML exports, and sometimes player-specific analysis caches. A cue-safe workflow has to preserve cue kind, hotcue slot, loop end, playlist order, file path, and encoder-delay behavior together, so `djlib-doctor` previews and stages changes before installing them.
+
 ## Quick Start
 
 ```bash
@@ -109,13 +113,9 @@ Other duplicate policies: `quality` and `keep-both`.
 
 ### 4. Compare Before And After Exports
 
-After a manual cleanup or migration attempt, export XML again and compare:
-
 ```bash
 djlib-doctor compare exports --baseline ~/Desktop/rekordbox-before.xml --final ~/Desktop/rekordbox-after.xml --out run/compare.json
 ```
-
-This checks for missing material, cue regressions, playlist differences, and bad final paths.
 
 ### 5. Compare Two Files By Bytes
 
@@ -123,18 +123,14 @@ This checks for missing material, cue regressions, playlist differences, and bad
 djlib-doctor fingerprint compare ~/Music/copy-a.wav ~/Music/copy-b.wav --out run/file-compare.json
 ```
 
-This is not acoustic matching. A future optional acoustic backend can be added without changing the read-only safety boundary.
-
 ### 6. Convert A Rekordbox Track Without Losing Cues
 
-Prepare a small operations file naming the track, source, converted target, preset, and Rekordbox ANLZ files. The stage encodes a copy, compensates cue and beatgrid positions for AAC/M4A encoder delay, updates a copied `master.db`, and writes shifted `.DAT`/`.EXT` copies.
+Prepare a small operations file naming the track, source, converted target, preset, and Rekordbox ANLZ files. See [Convert Without Losing Cues](docs/how-to-convert-without-losing-cues.md) for the full staged workflow.
 
 ```bash
 djlib-doctor stage rekordbox-convert --db /path/to/rekordbox/master.db --operations run/convert.json --stage-dir run/rekordbox-convert --cue-shift auto
 djlib-doctor install rekordbox-convert --stage-dir run/rekordbox-convert --db /path/to/rekordbox/master.db --confirm-token INSTALL_REKORDBOX_CONVERT:...
 ```
-
-`--cue-shift auto` is the safe default for AAC/M4A conversion: it measures encoder priming with `ffprobe` and shifts `master.db` cues, ANLZ PCOB/PCO2 cues, and ANLZ PQTZ/PQT2 beatgrid millisecond fields by the same offset. Use `--cue-shift none` only when you have validated that your target Rekordbox/player workflow honors gapless priming metadata and keeps cue/grid playback aligned without shifting stored positions.
 
 ### 7. Move Or Rename A Rekordbox Track Safely
 
@@ -172,6 +168,8 @@ Transfer modes: `full`, `cues-only`, and `match-only`.
 
 ### 10. Port A Serato Crate Toward Rekordbox
 
+Full walkthrough: [Port One Serato Crate To Rekordbox](docs/how-to-port-one-crate.md).
+
 ```bash
 djlib-doctor port serato-to-rb --serato-library-dir /path/to/serato-library --crate /path/to/_Serato_/Subcrates/MySet.crate --collection-root ~/Music --out run/serato-to-rb
 djlib-doctor certify serato-to-rb --port-manifest run/serato-to-rb/port-manifest.json --out run/serato-to-rb/certification.json
@@ -196,4 +194,4 @@ Use djlib-doctor to inspect my Rekordbox XML export. Stay read-only, explain the
 ## Project Status
 
 Implemented: verification, snapshots, cleanup plans, review logs, schema output, export comparison, byte fingerprinting, migration certification, Serato inspection, two-way dry-run porting, and staged/token-gated install workflows. Still pre-release: polished release automation, broader real-world Serato cue/tag validation, and certified Rekordbox DB version coverage.
-More docs: [index](docs/README.md), [features](docs/feature-list.md), [workflows](docs/human-workflows.md), [Serato porting](docs/serato-porting.md), [architecture](docs/product-architecture.md).
+More docs: [index](docs/README.md), [features](docs/feature-list.md), [workflows](docs/human-workflows.md), [convert](docs/how-to-convert-without-losing-cues.md), [crate port](docs/how-to-port-one-crate.md), [Serato porting](docs/serato-porting.md), [architecture](docs/product-architecture.md).

@@ -6,6 +6,8 @@ Start with the current docs below. Archived docs are retained for project histor
 
 - [Feature List](feature-list.md)
 - [Human Workflows](human-workflows.md)
+- [How To Convert Without Losing Cues](how-to-convert-without-losing-cues.md)
+- [How To Port One Crate](how-to-port-one-crate.md)
 - [Product Architecture](product-architecture.md)
 - [Safety](safety.md)
 - [Serato Porting](serato-porting.md)

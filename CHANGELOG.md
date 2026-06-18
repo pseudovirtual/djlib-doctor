@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] K1: Added cue-safe conversion and one-crate port how-to docs plus a concise README cue-safety note.
 - [x] H3: Added staged Rekordbox move/rename installs that update `master.db` and file locations together.
 - [x] H2: Added staged Rekordbox conversion with real encode-based AAC cue/grid compensation, ANLZ cue and beatgrid updates, CI ffmpeg coverage, and `--cue-shift {auto,none}`.
 - [x] H1: Added staged Rekordbox DB apply support for reviewed cleanup path updates.
