@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added Phase I real-data follow-up tasks for Serato `database V2` extraction, local ANLZ cue-scope documentation, and opt-in Markers2 validation.
 - [x] I3a: Recorded Rekordbox 7.2.8 validation that AAC/M4A cue and beat shifts are positive and required.
 - Recorded expanded Phase I real-capture blockers and Phase J release-dependency tasks.
 - [x] K2: Added `djlib-doctor examples` and public Python API examples.

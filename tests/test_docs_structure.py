@@ -124,6 +124,24 @@ class DocsStructureTests(unittest.TestCase):
         ):
             self.assertIn(phrase, result)
 
+    def test_phase_i_real_data_followups_are_recorded(self):
+        backlog = (ROOT / "docs" / "roadmap" / "BACKLOG.md").read_text(encoding="utf-8")
+        state = (ROOT / "docs" / "roadmap" / "STATE.md").read_text(encoding="utf-8")
+
+        for phrase in (
+            "I5: Fix Serato `database V2` track extraction",
+            "I6: Document local Rekordbox ANLZ scope",
+            "I7: Add an opt-in, local-only real Serato Markers2 validation harness",
+        ):
+            self.assertIn(phrase, backlog)
+        for phrase in (
+            "Serato `database V2` nested `otrk` extraction",
+            "local ANLZ cue-scope documentation",
+            "opt-in local Markers2 validation harness",
+            "PCOB/PCO2 cue-count offsets",
+        ):
+            self.assertIn(phrase, state)
+
 
 if __name__ == "__main__":
     unittest.main()

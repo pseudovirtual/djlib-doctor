@@ -10,9 +10,9 @@ I3a recorded real Rekordbox 7.2.8 results: Rekordbox >=7 ignores AAC gapless met
 
 ## Next
 
-I3b: switch conversion auto-shift from raw target skip-samples to net target-minus-source decoder delay. I3c: fix real-schema `djmdCue` classification for hotcues, memory cues, and saved loops.
+I3b: switch conversion auto-shift from raw target skip-samples to net target-minus-source decoder delay. I3c: fix real-schema `djmdCue` classification for hotcues, memory cues, and saved loops. After that, work the newly recorded real-data tasks: I5 Serato `database V2` nested `otrk` extraction, I6 local ANLZ cue-scope documentation, and I7 an opt-in local Markers2 validation harness.
 
-Phase I still cannot complete I1, I2, or I4 from synthetic fixtures. The repo currently has only `tests/fixtures/real/.gitignore` and `tests/fixtures/real/README.md`; there is no `manifest.json` or captured library payload. Provide an approved local-only fixture under `tests/fixtures/real/manifest.json`, following `docs/real-fixtures.md`, with:
+Phase I still cannot complete I1, the device-export cue side of I2, or broad I4 golden-vector expansion from synthetic fixtures. Real validation on Rekordbox 7.2.8 and Serato DJ Pro has already confirmed local ANLZ beatgrid parsing, PCOB/PCO2 cue-count offsets for empty local cue containers, Serato crate reading, and the Markers2 parser path. The repo currently has only `tests/fixtures/real/.gitignore` and `tests/fixtures/real/README.md`; there is no `manifest.json` or captured library payload. Provide an approved local-only fixture under `tests/fixtures/real/manifest.json`, following `docs/real-fixtures.md`, with:
 
 - a real encrypted Rekordbox master.db plus safe decrypted copy, app version, and matching redacted XML export for I1
 - real `.DAT` and `.EXT` ANLZ files for the same tracks, including PCOB/PCO2 cues, len_cues counts, PQTZ beat times, and PQT2 beat times for I2
