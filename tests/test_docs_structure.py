@@ -106,6 +106,24 @@ class DocsStructureTests(unittest.TestCase):
         ):
             self.assertIn(phrase, state)
 
+    def test_phase_i_rekordbox_728_shift_result_is_documented(self):
+        index = (ROOT / "docs" / "README.md").read_text(encoding="utf-8")
+        state = (ROOT / "docs" / "roadmap" / "STATE.md").read_text(encoding="utf-8")
+        result = (ROOT / "docs" / "phase-i-results.md").read_text(encoding="utf-8")
+
+        self.assertIn("phase-i-results.md", index)
+        self.assertIn("Rekordbox 7.2.8", state)
+        for phrase in (
+            "Rekordbox >=7 ignores AAC gapless",
+            "cue/beat shift is positive",
+            "MP3-to-M4A",
+            "+21 ms",
+            "WAV-to-M4A",
+            "~23 ms",
+            "--cue-shift auto",
+        ):
+            self.assertIn(phrase, result)
+
 
 if __name__ == "__main__":
     unittest.main()
