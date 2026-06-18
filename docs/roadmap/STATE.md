@@ -2,15 +2,15 @@
 
 ## Phase
 
-Primary-library foundation through Phase F is complete. Phase G is in progress: easy one-off ports.
+Primary-library foundation through Phase G is complete. Paused for maintainer review before Phase H.
 
 ## Last Done
 
-G1 made `port rb-to-serato` and `port serato-to-rb` resolve omitted source paths from explicit flags, then config, then detection, while ignoring config `primary` for directional choice.
+G2 added a migration scope matrix proving Rekordbox-to-Serato playlist, track, and collection scopes stage Serato artifacts, and Serato-to-Rekordbox crate, track, and collection scopes stage Rekordbox DB imports.
 
 ## Next
 
-G2: confirm both directions and all scopes work end-to-end after F3: track, playlist/crate, and collection.
+Maintainer review before Phase H: in-place Rekordbox doctoring.
 
 ## Phase-F Verification Results
 

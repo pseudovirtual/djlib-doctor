@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] G2: Added migration scope matrix coverage for staged track, playlist/crate, and collection ports in both directions.
 - [x] G1: Let directional `port` commands resolve source paths from flags, config, or detection while ignoring config primary.
 - [x] V-F2: Verified `sqlcipher3-wheels` binary wheels resolve for the current Ubuntu/macOS/Windows CI matrix.
 - [x] V-F1: Made encrypted Rekordbox DB tests fail when installed default backends are missing and documented the install-first local gate.
