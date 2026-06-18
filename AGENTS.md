@@ -6,7 +6,7 @@
 
 - Do not write to any Rekordbox database except through `install rekordbox-db` after a staged manifest verifies token, contents, staged hash, source hash, and backups.
 - Do not write to any live Serato database except through `install serato-stage` after a staged manifest verifies token, contents, staged hashes, source hash, sidecars, app-closed checks, and backups.
-- Do not modify, move, rename, convert, quarantine, or delete real music files except through `install file-ops` or `install rekordbox-convert` after a staged manifest verifies token, contents, hashes, and backups.
+- Do not modify, move, rename, convert, quarantine, or delete real music files except through `install file-ops`, `install rekordbox-convert`, or `install rekordbox-move` after a staged manifest verifies token, contents, hashes, and backups.
 - Do not write Serato audio tags except through `install serato-tags` after a staged manifest verifies token, contents, staged hash, source hash, and backups.
 - Use synthetic fixtures for tests.
 - Follow TDD for user-visible behavior: add or update a focused fixture-backed test before implementation.
@@ -53,6 +53,8 @@ PYTHONPATH=src python3 -m djlib_doctor.cli port rb-to-serato --rekordbox-xml tes
 PYTHONPATH=src python3 -m djlib_doctor.cli stage rekordbox-db-import --db /path/to/rekordbox/master.db --port-manifest work/serato-to-rb/port-manifest.json --stage-dir work/rekordbox-stage
 PYTHONPATH=src python3 -m djlib_doctor.cli stage rekordbox-db-apply --db /path/to/rekordbox/master.db --apply-manifest work/snapshot-demo/apply-manifest.json --stage-dir work/rekordbox-apply
 PYTHONPATH=src python3 -m djlib_doctor.cli stage rekordbox-convert --db /path/to/rekordbox/master.db --operations work/rekordbox-convert.json --stage-dir work/rekordbox-convert --cue-shift auto
+PYTHONPATH=src python3 -m djlib_doctor.cli stage rekordbox-move --db /path/to/rekordbox/master.db --operations work/rekordbox-move.json --stage-dir work/rekordbox-move
+PYTHONPATH=src python3 -m djlib_doctor.cli install rekordbox-move --stage-dir work/rekordbox-move --db /path/to/rekordbox/master.db --confirm-token INSTALL_REKORDBOX_MOVE:...
 PYTHONPATH=src python3 -m djlib_doctor.cli stage serato --port-manifest work/serato-port-demo/port-manifest.json --serato-library-dir /path/to/serato-library --serato-music-dir /path/to/_Serato_ --stage-dir work/serato-stage
 PYTHONPATH=src python3 -m djlib_doctor.cli install serato-stage --stage-dir work/serato-stage --serato-library-dir /path/to/serato-library --serato-music-dir /path/to/_Serato_ --confirm-token INSTALL_SERATO_STAGE:...
 PYTHONPATH=src python3 -m djlib_doctor.cli migrate rb-to-serato --rekordbox-xml tests/fixtures/rekordbox/simple.xml --playlist "ROOT / Fixture Playlist" --out work/migrate-demo

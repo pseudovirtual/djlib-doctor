@@ -33,8 +33,10 @@ PYTHONPATH=src python3 -m djlib_doctor.cli certify serato-to-rb --port-manifest 
 PYTHONPATH=src python3 -m djlib_doctor.cli stage rekordbox-db-import --db /path/to/rekordbox/master.db --port-manifest work/serato-to-rb/port-manifest.json --stage-dir work/rekordbox-stage
 PYTHONPATH=src python3 -m djlib_doctor.cli stage rekordbox-db-apply --db /path/to/rekordbox/master.db --apply-manifest work/snapshot-demo/apply-manifest.json --stage-dir work/rekordbox-apply
 PYTHONPATH=src python3 -m djlib_doctor.cli stage rekordbox-convert --db /path/to/rekordbox/master.db --operations work/rekordbox-convert.json --stage-dir work/rekordbox-convert --cue-shift auto
+PYTHONPATH=src python3 -m djlib_doctor.cli stage rekordbox-move --db /path/to/rekordbox/master.db --operations work/rekordbox-move.json --stage-dir work/rekordbox-move
 PYTHONPATH=src python3 -m djlib_doctor.cli install rekordbox-db --stage-dir work/rekordbox-stage --db /path/to/rekordbox/master.db --confirm-token INSTALL_SQLITE_STAGE:...
 PYTHONPATH=src python3 -m djlib_doctor.cli install rekordbox-convert --stage-dir work/rekordbox-convert --db /path/to/rekordbox/master.db --confirm-token INSTALL_REKORDBOX_CONVERT:...
+PYTHONPATH=src python3 -m djlib_doctor.cli install rekordbox-move --stage-dir work/rekordbox-move --db /path/to/rekordbox/master.db --confirm-token INSTALL_REKORDBOX_MOVE:...
 PYTHONPATH=src python3 -m djlib_doctor.cli migrate serato-to-rb --serato-library-dir /path/to/serato-library --crate /path/to/_Serato_/Subcrates/My.crate --collection-root ~/Music --out work/serato-to-rb --stage-db --rekordbox-db /path/to/rekordbox/master.db
 ```
 

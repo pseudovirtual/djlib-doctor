@@ -15,6 +15,7 @@ from .rekordbox_db_stage import (
     stage_rekordbox_db_import,
     stage_rekordbox_db_operations,
 )
+from .rekordbox_move import install_rekordbox_move, stage_rekordbox_move
 from .serato_audio_tags import build_serato_audio_tag_stage, install_serato_audio_tag_stage
 from .serato_stage import install_serato_stage, stage_serato_from_port_manifest
 
@@ -51,6 +52,10 @@ def handle_stage(args: argparse.Namespace) -> int:
         elif args.stage_command == "rekordbox-convert":
             report = stage_rekordbox_conversion(args.db, args.operations, args.stage_dir, cue_shift=args.cue_shift)
             print(f"Rekordbox conversion stage written: {report.stage_manifest_path}")
+            print(f"Staged DB: {report.staged_db}")
+        elif args.stage_command == "rekordbox-move":
+            report = stage_rekordbox_move(args.db, args.operations, args.stage_dir)
+            print(f"Rekordbox move stage written: {report.stage_manifest_path}")
             print(f"Staged DB: {report.staged_db}")
         else:
             raise ValueError(f"Unknown stage command: {args.stage_command}")
@@ -95,6 +100,11 @@ def handle_install(args: argparse.Namespace) -> int:
             lines = () if args.skip_process_check else _app_process_lines("rekordbox|Rekordbox")
             report = install_rekordbox_conversion(args.stage_dir, args.db, args.confirm_token, lines)
             print(f"Rekordbox conversion installed: {args.stage_dir / 'rekordbox-convert-install-report.json'}")
+            print(f"Backup directory: {report['backup_dir']}")
+        elif args.install_command == "rekordbox-move":
+            lines = () if args.skip_process_check else _app_process_lines("rekordbox|Rekordbox")
+            report = install_rekordbox_move(args.stage_dir, args.db, args.confirm_token, lines)
+            print(f"Rekordbox move installed: {args.stage_dir / 'rekordbox-move-install-report.json'}")
             print(f"Backup directory: {report['backup_dir']}")
         else:
             raise ValueError(f"Unknown install command: {args.install_command}")

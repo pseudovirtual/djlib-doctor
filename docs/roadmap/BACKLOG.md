@@ -63,7 +63,7 @@ Scope: Rekordbox and Serato only. Do not add other DJ apps or a neutral universa
 - [x] H2a: Shift ANLZ PQTZ `.DAT` and PQT2 `.EXT` beatgrid millisecond fields by the same encoder-delay offset as cues.
 - [x] H2b: Install ffmpeg/ffprobe in CI so real encode compensation tests run instead of skipping.
 - [x] H2c: Add `--cue-shift {auto,none}` and document the gapless priming assumption.
-- [ ] H3: Move/rename files and update Rekordbox references in the same staged write.
+- [x] H3: Move/rename files and update Rekordbox references in the same staged write.
 
 ## Phase I - Real-World Validation
 

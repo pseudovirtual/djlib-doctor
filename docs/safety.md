@@ -10,8 +10,7 @@ The current code must not:
 - write to a live Serato database except through `install serato-stage` after a verified stage, backup, sidecar check, app-closed check, and exact confirmation token
 - modify a Rekordbox XML export
 - modify Serato audio tags except through `install serato-tags` after a verified stage and exact confirmation token
-- move music files except through staged file operations with exact confirmation tokens
-- rename music files
+- move or rename music files except through staged file operations or `install rekordbox-move` with exact confirmation tokens
 - convert audio files except through staged file operations or `install rekordbox-convert` with exact confirmation tokens
 - quarantine files
 - delete files except through staged file operations with exact confirmation tokens
@@ -21,6 +20,8 @@ Staged file operations are all-or-nothing by default. If one operation fails, pr
 Convert operations require `ffmpeg` and `ffprobe` on `PATH` at staging time. If either is missing, staging fails before any staged convert output is produced.
 
 Rekordbox conversion stages also update a staged `master.db` copy and staged ANLZ `.DAT`/`.EXT` cue and beatgrid files before install. The default `--cue-shift auto` policy measures AAC/M4A encoder priming and shifts `master.db` cues, ANLZ PCOB/PCO2 cues, and ANLZ PQTZ/PQT2 beatgrid millisecond fields by the same offset. `--cue-shift none` keeps stored positions unchanged and should be used only after validating that the target Rekordbox/player workflow honors gapless priming metadata. `install rekordbox-convert` verifies the token, source DB hash, staged DB hash, audio hashes, ANLZ hashes, backups, sidecars, and app-closed checks before writing.
+
+Rekordbox move stages update a copied `master.db` and stage file bytes together. `install rekordbox-move` verifies the token, source DB hash, staged DB hash, live source-file hashes, staged file hashes, backups, sidecars, and app-closed checks before copying targets and removing old source files.
 
 Live file writes from staged file operations copy to a temporary file beside the target and then use an atomic rename into place.
 

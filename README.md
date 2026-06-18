@@ -36,12 +36,7 @@ This is an open-source project from [@pseudovirtual](https://github.com/pseudovi
 
 Planning commands do not write to live libraries. Write-capable flows are split into explicit `stage ...` and `install ...` commands that verify:
 
-- exact confirmation token
-- token recomputed from manifest contents
-- staged file hashes
-- live source hashes from staging time
-- backups
-- app/SQLite sidecar checks where relevant
+exact confirmation tokens, recomputed manifest tokens, staged hashes, live source hashes from staging time, backups, and app/SQLite sidecar checks where relevant.
 
 ## Quick Start
 
@@ -80,14 +75,11 @@ djlib-doctor verify ~/Desktop/rekordbox-export.xml
 djlib-doctor verify
 ```
 
-For a shareable diagnostic bundle:
+For a shareable diagnostic bundle, add a redacted snapshot:
 
 ```bash
-djlib-doctor snapshot --rekordbox-xml ~/Desktop/rekordbox-export.xml --music-root ~/Music --out run/check
 djlib-doctor snapshot --rekordbox-xml ~/Desktop/rekordbox-export.xml --music-root ~/Music --out run/check-redacted --redact-paths
 ```
-
-Use the redacted snapshot when asking for help publicly.
 
 ### 2. Find Missing Files Without Treating Streaming Tracks As Broken
 
@@ -98,8 +90,7 @@ djlib-doctor review --plan run/missing/plan.json --out run/missing/review.json
 djlib-doctor apply-manifest --plan run/missing/plan.json --review-log run/missing/review.json --only-reviewed --out run/missing/apply.json
 ```
 
-The interactive review walks you through the plan one decision at a time, lets Enter accept the recommended choice, `A` accept remaining high-confidence rows, and `u` undo the last decision, then saves your choices as JSON for later steps.
-Reviewed path updates can be staged into a copied Rekordbox DB and installed only with the printed token:
+The interactive review saves JSON decisions. Reviewed path updates can be staged into a copied Rekordbox DB and installed only with the printed token:
 
 ```bash
 djlib-doctor stage rekordbox-db-apply --db /path/to/rekordbox/master.db --apply-manifest run/missing/apply.json --stage-dir run/rekordbox-apply
@@ -108,15 +99,13 @@ djlib-doctor install rekordbox-db --stage-dir run/rekordbox-apply --db /path/to/
 
 ### 3. Review Duplicates With A Collision Policy
 
-Start with the conservative default:
-
 ```bash
 djlib-doctor snapshot --rekordbox-xml ~/Desktop/rekordbox-export.xml --music-root ~/Music --out run/dupes
 djlib-doctor plan duplicates --snapshot run/dupes/snapshot.json --out run/dupes/plan.json --collision-policy cue-safe
 djlib-doctor review --plan run/dupes/plan.json --out run/dupes/review.json
 ```
 
-Other policies are available when you know what you want: `quality` and `keep-both`.
+Other duplicate policies: `quality` and `keep-both`.
 
 ### 4. Compare Before And After Exports
 
@@ -130,18 +119,15 @@ This checks for missing material, cue regressions, playlist differences, and bad
 
 ### 5. Compare Two Files By Bytes
 
-Use byte fingerprints when you need to decide whether two local files are exact duplicates or close enough at the byte level to review manually:
-
 ```bash
 djlib-doctor fingerprint compare ~/Music/copy-a.wav ~/Music/copy-b.wav --out run/file-compare.json
-djlib-doctor fingerprint scan ~/Music --out run/fingerprints.json --redact-paths
 ```
 
 This is not acoustic matching. A future optional acoustic backend can be added without changing the read-only safety boundary.
 
 ### 6. Convert A Rekordbox Track Without Losing Cues
 
-Prepare a small operations file that names the track, source file, converted target, preset, and Rekordbox ANLZ files for that track. The stage encodes a copy, compensates cue and beatgrid positions for AAC/M4A encoder delay, updates a copied `master.db`, and writes shifted `.DAT`/`.EXT` copies.
+Prepare a small operations file naming the track, source, converted target, preset, and Rekordbox ANLZ files. The stage encodes a copy, compensates cue and beatgrid positions for AAC/M4A encoder delay, updates a copied `master.db`, and writes shifted `.DAT`/`.EXT` copies.
 
 ```bash
 djlib-doctor stage rekordbox-convert --db /path/to/rekordbox/master.db --operations run/convert.json --stage-dir run/rekordbox-convert --cue-shift auto
@@ -150,25 +136,30 @@ djlib-doctor install rekordbox-convert --stage-dir run/rekordbox-convert --db /p
 
 `--cue-shift auto` is the safe default for AAC/M4A conversion: it measures encoder priming with `ffprobe` and shifts `master.db` cues, ANLZ PCOB/PCO2 cues, and ANLZ PQTZ/PQT2 beatgrid millisecond fields by the same offset. Use `--cue-shift none` only when you have validated that your target Rekordbox/player workflow honors gapless priming metadata and keeps cue/grid playback aligned without shifting stored positions.
 
-### 7. Dry-Run A Rekordbox To Serato Playlist Port
+### 7. Move Or Rename A Rekordbox Track Safely
 
-Start with a preview before staging anything:
+Use `rekordbox-move` when the file location should change and Rekordbox should point at the new path in the same staged install.
+
+```bash
+djlib-doctor stage rekordbox-move --db /path/to/rekordbox/master.db --operations run/move.json --stage-dir run/rekordbox-move
+djlib-doctor install rekordbox-move --stage-dir run/rekordbox-move --db /path/to/rekordbox/master.db --confirm-token INSTALL_REKORDBOX_MOVE:...
+```
+
+### 8. Dry-Run A Rekordbox To Serato Playlist Port
 
 ```bash
 djlib-doctor port rb-to-serato --rekordbox-xml ~/Desktop/rekordbox-export.xml --playlist "ROOT / My Set" --out run/rb-to-serato --verify-preview
 djlib-doctor certify rb-to-serato --port-manifest run/rb-to-serato/port-manifest.json --out run/rb-to-serato/certification.json
 ```
 
-Inspect `run/rb-to-serato/port-manifest.json`, the crate preview, and `unsupported.csv`. If it looks right, stage and install only with the printed token:
+Inspect the manifest, crate preview, and `unsupported.csv`. If it looks right, stage and install only with the printed token:
 
 ```bash
 djlib-doctor stage serato --port-manifest run/rb-to-serato/port-manifest.json --serato-library-dir /path/to/serato-library --serato-music-dir /path/to/_Serato_ --stage-dir run/serato-stage
 djlib-doctor install serato-stage --stage-dir run/serato-stage --serato-library-dir /path/to/serato-library --serato-music-dir /path/to/_Serato_ --confirm-token INSTALL_SERATO_STAGE:...
 ```
 
-### 8. Choose Scope And Transfer Mode
-
-Use the same port command shape for smaller or larger jobs:
+### 9. Choose Scope And Transfer Mode
 
 ```bash
 djlib-doctor port rb-to-serato --rekordbox-xml export.xml --track-id 123 --transfer-mode cues-only --out run/one-track-cues
@@ -177,18 +168,16 @@ djlib-doctor port serato-to-rb --serato-library-dir /path/to/serato-library --po
 djlib-doctor port serato-to-rb --serato-library-dir /path/to/serato-library --collection --collection-root ~/Music --out run/serato-collection
 ```
 
-`full` plans tracks plus cue intent where the source adapter can read it. `cues-only` marks the manifest for cue migration onto existing matched tracks. `match-only` creates track matching/playlist structure with no cue writes.
+Transfer modes: `full`, `cues-only`, and `match-only`.
 
-### 9. Port A Serato Crate Toward Rekordbox
+### 10. Port A Serato Crate Toward Rekordbox
 
 ```bash
 djlib-doctor port serato-to-rb --serato-library-dir /path/to/serato-library --crate /path/to/_Serato_/Subcrates/MySet.crate --collection-root ~/Music --out run/serato-to-rb
 djlib-doctor certify serato-to-rb --port-manifest run/serato-to-rb/port-manifest.json --out run/serato-to-rb/certification.json
 ```
 
-This writes a dry-run manifest and `rekordbox-preview.xml` representation for inspection. The intended write path is not manual XML import as the final step. Rekordbox writes should be staged against a copied `master.db`, then installed only through `install rekordbox-db` after token, hash, sidecar, and backup checks pass.
-
-Use the explicit stage/install flow, or one-command staging:
+This writes a dry-run manifest and `rekordbox-preview.xml` for inspection. The intended write path is staged `master.db` install, not manual XML import as the final step:
 
 ```bash
 djlib-doctor stage rekordbox-db-import --db /path/to/rekordbox/master.db --port-manifest run/serato-to-rb/port-manifest.json --stage-dir run/rekordbox-stage
@@ -196,9 +185,7 @@ djlib-doctor install rekordbox-db --stage-dir run/rekordbox-stage --db /path/to/
 djlib-doctor migrate serato-to-rb --serato-library-dir /path/to/serato-library --crate /path/to/_Serato_/Subcrates/MySet.crate --collection-root ~/Music --out run/serato-to-rb --stage-db --rekordbox-db /path/to/rekordbox/master.db
 ```
 
-The DB importer writes only through `stage rekordbox-db-import` plus `install rekordbox-db`. It supports the tested plain SQLite schema and pyrekordbox-readable encrypted `master.db` fixtures; real captured Rekordbox DB certification is still pending.
-
-### 10. Let An Agent Help, Safely
+### 11. Let An Agent Help, Safely
 
 In Codex, Claude Desktop, or another local coding agent, ask for read-only help first:
 
@@ -208,10 +195,5 @@ Use djlib-doctor to inspect my Rekordbox XML export. Stay read-only, explain the
 
 ## Project Status
 
-Implemented: verification, snapshots, cleanup plans, review logs, schema output, export comparison, byte fingerprinting, migration certification, Serato inspection, two-way dry-run porting, and staged/token-gated install workflows.
-
-Still pre-release: polished package distribution, CI/release automation, broader real-world Serato cue/tag fixture validation, certified Rekordbox DB version coverage, and broader playlist/cue table coverage.
-
-Serato support boundary: fixture-backed parsing covers crates, `root.sqlite` inspection, and `_Serato_/database V2` track extraction. No specific real Serato version is certified until anonymized real fixtures are added.
-
+Implemented: verification, snapshots, cleanup plans, review logs, schema output, export comparison, byte fingerprinting, migration certification, Serato inspection, two-way dry-run porting, and staged/token-gated install workflows. Still pre-release: polished release automation, broader real-world Serato cue/tag validation, and certified Rekordbox DB version coverage.
 More docs: [index](docs/README.md), [features](docs/feature-list.md), [workflows](docs/human-workflows.md), [Serato porting](docs/serato-porting.md), [architecture](docs/product-architecture.md).

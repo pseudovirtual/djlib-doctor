@@ -12,7 +12,7 @@ Use this skill when the user wants to inspect, verify, snapshot, compare, port, 
 - Start read-only.
 - Do not write to a Rekordbox database except through `install rekordbox-db` after a staged SQLite manifest verifies token, contents, staged hash, source hash, and backups.
 - Do not write to a live Serato database except through `install serato-stage` after the stage verifies token, contents, staged hashes, source hash, sidecars, app-closed checks, and backups.
-- Do not modify, move, rename, convert, quarantine, or delete music files except through `install file-ops` or `install rekordbox-convert` after a staged manifest verifies token, contents, hashes, and backups.
+- Do not modify, move, rename, convert, quarantine, or delete music files except through `install file-ops`, `install rekordbox-convert`, or `install rekordbox-move` after a staged manifest verifies token, contents, hashes, and backups.
 - Do not modify a real Rekordbox XML export.
 - Do not write Serato audio tags except through `install serato-tags` after a staged audio-tag manifest verifies token, contents, staged hash, source hash, and backups.
 - Use `snapshot`, `plan`, `compare`, `verify`, and `port` before discussing any staged write workflow.
@@ -66,9 +66,11 @@ PYTHONPATH=src python3 -m djlib_doctor.cli certify serato-to-rb --port-manifest 
 PYTHONPATH=src python3 -m djlib_doctor.cli stage rekordbox-db-import --db /path/to/rekordbox/master.db --port-manifest run/serato-to-rb/port-manifest.json --stage-dir run/rekordbox-stage
 PYTHONPATH=src python3 -m djlib_doctor.cli stage rekordbox-db-apply --db /path/to/rekordbox/master.db --apply-manifest run/check/apply.json --stage-dir run/rekordbox-apply
 PYTHONPATH=src python3 -m djlib_doctor.cli stage rekordbox-convert --db /path/to/rekordbox/master.db --operations run/convert.json --stage-dir run/rekordbox-convert --cue-shift auto
+PYTHONPATH=src python3 -m djlib_doctor.cli stage rekordbox-move --db /path/to/rekordbox/master.db --operations run/move.json --stage-dir run/rekordbox-move
 PYTHONPATH=src python3 -m djlib_doctor.cli stage rekordbox-db --db /path/to/rekordbox/master.db --operations run/rekordbox-db-operations.json --stage-dir run/rekordbox-stage
 PYTHONPATH=src python3 -m djlib_doctor.cli install rekordbox-db --stage-dir run/rekordbox-stage --db /path/to/rekordbox/master.db --confirm-token INSTALL_SQLITE_STAGE:...
 PYTHONPATH=src python3 -m djlib_doctor.cli install rekordbox-convert --stage-dir run/rekordbox-convert --db /path/to/rekordbox/master.db --confirm-token INSTALL_REKORDBOX_CONVERT:...
+PYTHONPATH=src python3 -m djlib_doctor.cli install rekordbox-move --stage-dir run/rekordbox-move --db /path/to/rekordbox/master.db --confirm-token INSTALL_REKORDBOX_MOVE:...
 PYTHONPATH=src python3 -m djlib_doctor.cli stage serato --port-manifest run/rb-to-serato/port-manifest.json --serato-library-dir "/path/to/serato-library" --serato-music-dir "/path/to/_Serato_" --stage-dir run/serato-stage
 PYTHONPATH=src python3 -m djlib_doctor.cli install serato-stage --stage-dir run/serato-stage --serato-library-dir "/path/to/serato-library" --serato-music-dir "/path/to/_Serato_" --confirm-token INSTALL_SERATO_STAGE:...
 PYTHONPATH=src python3 -m djlib_doctor.cli migrate serato-to-rb --serato-library-dir "/path/to/serato-library" --crate "/path/to/_Serato_/Subcrates/My.crate" --collection-root ~/Music --out run/serato-to-rb --stage-db --rekordbox-db /path/to/rekordbox/master.db

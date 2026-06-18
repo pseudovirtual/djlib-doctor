@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] H3: Added staged Rekordbox move/rename installs that update `master.db` and file locations together.
 - [x] H2: Added staged Rekordbox conversion with real encode-based AAC cue/grid compensation, ANLZ cue and beatgrid updates, CI ffmpeg coverage, and `--cue-shift {auto,none}`.
 - [x] H1: Added staged Rekordbox DB apply support for reviewed cleanup path updates.
 - [x] G2: Added migration scope matrix coverage for staged track, playlist/crate, and collection ports in both directions.
