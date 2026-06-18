@@ -2,15 +2,20 @@
 
 ## Phase
 
-Primary-library foundation through Phase G is complete. Phase H H2 is implemented and awaiting the H2 commit; Phase I real-library validation is next for cue/grid conversion behavior.
+Primary-library foundation through Phase G is complete. Phase H H2 is committed. Phase I is blocked until an approved captured Rekordbox fixture bundle is available.
 
 ## Last Done
 
-H2 added staged Rekordbox conversion with real ffmpeg encoding, AAC skip-samples compensation, `master.db` cue/path updates, ANLZ PCOB/PCO2 cue shifts, ANLZ PQTZ/PQT2 beatgrid shifts, CI ffmpeg coverage, and `--cue-shift {auto,none}` before token-gated install.
+H2 added staged Rekordbox conversion with real ffmpeg encoding, AAC skip-samples compensation, `master.db` cue/path updates, ANLZ PCOB/PCO2 cue shifts, ANLZ PQTZ/PQT2 beatgrid shifts, CI ffmpeg coverage, and `--cue-shift {auto,none}` before token-gated install. Local validation used synthetic ANLZ fixtures plus real ffmpeg encoding; it did not validate against a real Rekordbox library.
 
 ## Next
 
-Phase I validation: use an approved captured Rekordbox library to confirm the correct cue-shift sign/necessity for the target Rekordbox version, including the documented 26ms/gapless behavior, and verify PCOB/PCO2 cue-count offsets plus cue/beat offsets against real `.DAT`/`.EXT` files. H3 remains in the backlog after the conversion validation checkpoint.
+Provide an approved local-only fixture under `tests/fixtures/real/manifest.json`, following `docs/real-fixtures.md`, with a tiny Rekordbox library containing a decrypted `master.db`, matching `.DAT` and `.EXT` ANLZ files, app/version metadata, and redacted track names/paths. Then run Phase I validation to confirm:
+
+- the correct cue-shift sign and necessity for the target Rekordbox version, including the documented 26ms/gapless behavior
+- the PCOB/PCO2 cue-count offsets and cue/beat offsets against real `.DAT`/`.EXT` files, including PQTZ and PQT2 beat time fields
+
+H3 remains in the backlog after the conversion validation checkpoint.
 
 ## Phase-F Verification Results
 
