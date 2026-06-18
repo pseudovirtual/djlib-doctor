@@ -12,6 +12,7 @@ def add_stage_install_parser(sub: argparse._SubParsersAction) -> None:
     _stage_rekordbox_db(stage.add_parser("rekordbox-db"))
     _stage_rekordbox_db_import(stage.add_parser("rekordbox-db-import"))
     _stage_rekordbox_db_apply(stage.add_parser("rekordbox-db-apply"))
+    _stage_rekordbox_convert(stage.add_parser("rekordbox-convert"))
 
     install = sub.add_parser("install").add_subparsers(dest="install_command", required=True)
     _install_common(install.add_parser("serato-stage"), library=True)
@@ -20,6 +21,7 @@ def add_stage_install_parser(sub: argparse._SubParsersAction) -> None:
     _install_common(file_ops)
     file_ops.add_argument("--continue-on-error", action="store_true")
     _install_common(install.add_parser("rekordbox-db"), db=True)
+    _install_common(install.add_parser("rekordbox-convert"), db=True)
 
 
 def _stage_serato(p: argparse.ArgumentParser) -> None:
@@ -55,6 +57,13 @@ def _stage_rekordbox_db_apply(p: argparse.ArgumentParser) -> None:
     p.add_argument("--db", required=True, type=Path)
     p.add_argument("--apply-manifest", required=True, type=Path)
     p.add_argument("--stage-dir", required=True, type=Path)
+
+
+def _stage_rekordbox_convert(p: argparse.ArgumentParser) -> None:
+    p.add_argument("--db", required=True, type=Path)
+    p.add_argument("--operations", required=True, type=Path)
+    p.add_argument("--stage-dir", required=True, type=Path)
+    p.add_argument("--cue-shift", choices=("auto", "none"), default="auto")
 
 
 def _install_common(p: argparse.ArgumentParser, library: bool = False, db: bool = False) -> None:

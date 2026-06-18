@@ -12,13 +12,15 @@ The current code must not:
 - modify Serato audio tags except through `install serato-tags` after a verified stage and exact confirmation token
 - move music files except through staged file operations with exact confirmation tokens
 - rename music files
-- convert audio files except through staged file operations with exact confirmation tokens
+- convert audio files except through staged file operations or `install rekordbox-convert` with exact confirmation tokens
 - quarantine files
 - delete files except through staged file operations with exact confirmation tokens
 
 Staged file operations are all-or-nothing by default. If one operation fails, previously applied file copies, moves, converts, or deletes are rolled back from stage-local backups. `install file-ops --continue-on-error` is available for explicit partial-apply workflows and records errors in the install report.
 
-Convert operations require `ffmpeg` on `PATH` at staging time. If it is missing, staging fails before any staged convert output is produced.
+Convert operations require `ffmpeg` and `ffprobe` on `PATH` at staging time. If either is missing, staging fails before any staged convert output is produced.
+
+Rekordbox conversion stages also update a staged `master.db` copy and staged ANLZ `.DAT`/`.EXT` cue and beatgrid files before install. The default `--cue-shift auto` policy measures AAC/M4A encoder priming and shifts `master.db` cues, ANLZ PCOB/PCO2 cues, and ANLZ PQTZ/PQT2 beatgrid millisecond fields by the same offset. `--cue-shift none` keeps stored positions unchanged and should be used only after validating that the target Rekordbox/player workflow honors gapless priming metadata. `install rekordbox-convert` verifies the token, source DB hash, staged DB hash, audio hashes, ANLZ hashes, backups, sidecars, and app-closed checks before writing.
 
 Live file writes from staged file operations copy to a temporary file beside the target and then use an atomic rename into place.
 

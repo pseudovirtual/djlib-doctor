@@ -7,6 +7,8 @@ import subprocess
 
 from .cli_common import fail
 from .file_operations import apply_file_operations_stage, stage_file_operations
+from .rekordbox_convert import stage_rekordbox_conversion
+from .rekordbox_convert_install import install_rekordbox_conversion
 from .rekordbox_db_stage import (
     install_rekordbox_db_stage,
     stage_rekordbox_db_apply,
@@ -46,9 +48,20 @@ def handle_stage(args: argparse.Namespace) -> int:
             report = stage_rekordbox_db_apply(args.db, args.apply_manifest, args.stage_dir)
             print(f"Rekordbox DB apply stage written: {report.stage_manifest_path}")
             print(f"Staged DB: {report.staged_db}")
+        elif args.stage_command == "rekordbox-convert":
+            report = stage_rekordbox_conversion(args.db, args.operations, args.stage_dir, cue_shift=args.cue_shift)
+            print(f"Rekordbox conversion stage written: {report.stage_manifest_path}")
+            print(f"Staged DB: {report.staged_db}")
         else:
             raise ValueError(f"Unknown stage command: {args.stage_command}")
-    except (OSError, sqlite3.Error, ValueError, RuntimeError, json.JSONDecodeError) as exc:
+    except (
+        OSError,
+        sqlite3.Error,
+        ValueError,
+        RuntimeError,
+        json.JSONDecodeError,
+        subprocess.CalledProcessError,
+    ) as exc:
         return fail("stage", exc)
     print(f"Install token: {report.install_token}")
     return 0
@@ -78,6 +91,11 @@ def handle_install(args: argparse.Namespace) -> int:
             report = install_rekordbox_db_stage(args.stage_dir, args.db, args.confirm_token, lines)
             print(f"Rekordbox DB stage installed: {args.stage_dir / 'rekordbox-db-install-report.json'}")
             print(f"Backup: {report['backup']}")
+        elif args.install_command == "rekordbox-convert":
+            lines = () if args.skip_process_check else _app_process_lines("rekordbox|Rekordbox")
+            report = install_rekordbox_conversion(args.stage_dir, args.db, args.confirm_token, lines)
+            print(f"Rekordbox conversion installed: {args.stage_dir / 'rekordbox-convert-install-report.json'}")
+            print(f"Backup directory: {report['backup_dir']}")
         else:
             raise ValueError(f"Unknown install command: {args.install_command}")
     except (OSError, sqlite3.Error, ValueError, RuntimeError, json.JSONDecodeError) as exc:

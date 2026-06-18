@@ -139,7 +139,18 @@ djlib-doctor fingerprint scan ~/Music --out run/fingerprints.json --redact-paths
 
 This is not acoustic matching. A future optional acoustic backend can be added without changing the read-only safety boundary.
 
-### 6. Dry-Run A Rekordbox To Serato Playlist Port
+### 6. Convert A Rekordbox Track Without Losing Cues
+
+Prepare a small operations file that names the track, source file, converted target, preset, and Rekordbox ANLZ files for that track. The stage encodes a copy, compensates cue and beatgrid positions for AAC/M4A encoder delay, updates a copied `master.db`, and writes shifted `.DAT`/`.EXT` copies.
+
+```bash
+djlib-doctor stage rekordbox-convert --db /path/to/rekordbox/master.db --operations run/convert.json --stage-dir run/rekordbox-convert --cue-shift auto
+djlib-doctor install rekordbox-convert --stage-dir run/rekordbox-convert --db /path/to/rekordbox/master.db --confirm-token INSTALL_REKORDBOX_CONVERT:...
+```
+
+`--cue-shift auto` is the safe default for AAC/M4A conversion: it measures encoder priming with `ffprobe` and shifts `master.db` cues, ANLZ PCOB/PCO2 cues, and ANLZ PQTZ/PQT2 beatgrid millisecond fields by the same offset. Use `--cue-shift none` only when you have validated that your target Rekordbox/player workflow honors gapless priming metadata and keeps cue/grid playback aligned without shifting stored positions.
+
+### 7. Dry-Run A Rekordbox To Serato Playlist Port
 
 Start with a preview before staging anything:
 
@@ -155,7 +166,7 @@ djlib-doctor stage serato --port-manifest run/rb-to-serato/port-manifest.json --
 djlib-doctor install serato-stage --stage-dir run/serato-stage --serato-library-dir /path/to/serato-library --serato-music-dir /path/to/_Serato_ --confirm-token INSTALL_SERATO_STAGE:...
 ```
 
-### 7. Choose Scope And Transfer Mode
+### 8. Choose Scope And Transfer Mode
 
 Use the same port command shape for smaller or larger jobs:
 
@@ -168,7 +179,7 @@ djlib-doctor port serato-to-rb --serato-library-dir /path/to/serato-library --co
 
 `full` plans tracks plus cue intent where the source adapter can read it. `cues-only` marks the manifest for cue migration onto existing matched tracks. `match-only` creates track matching/playlist structure with no cue writes.
 
-### 8. Port A Serato Crate Toward Rekordbox
+### 9. Port A Serato Crate Toward Rekordbox
 
 ```bash
 djlib-doctor port serato-to-rb --serato-library-dir /path/to/serato-library --crate /path/to/_Serato_/Subcrates/MySet.crate --collection-root ~/Music --out run/serato-to-rb
@@ -187,7 +198,7 @@ djlib-doctor migrate serato-to-rb --serato-library-dir /path/to/serato-library -
 
 The DB importer writes only through `stage rekordbox-db-import` plus `install rekordbox-db`. It supports the tested plain SQLite schema and pyrekordbox-readable encrypted `master.db` fixtures; real captured Rekordbox DB certification is still pending.
 
-### 9. Let An Agent Help, Safely
+### 10. Let An Agent Help, Safely
 
 In Codex, Claude Desktop, or another local coding agent, ask for read-only help first:
 

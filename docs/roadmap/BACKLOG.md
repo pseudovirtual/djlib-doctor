@@ -59,14 +59,17 @@ Scope: Rekordbox and Serato only. Do not add other DJ apps or a neutral universa
 ## Phase H - In-Place Rekordbox Doctoring
 
 - [x] H1: Apply reviewed cleanup plans back into Rekordbox via staged `master.db` writes.
-- [ ] H2: Convert files without losing cues: re-encode with presets, update `master.db` and ANLZ references, carry cues across, and compensate for AAC/M4A encoder delay.
+- [x] H2: Convert files without losing cues: re-encode with presets, update `master.db` and ANLZ references, carry cues across, and compensate for AAC/M4A encoder delay.
+- [x] H2a: Shift ANLZ PQTZ `.DAT` and PQT2 `.EXT` beatgrid millisecond fields by the same encoder-delay offset as cues.
+- [x] H2b: Install ffmpeg/ffprobe in CI so real encode compensation tests run instead of skipping.
+- [x] H2c: Add `--cue-shift {auto,none}` and document the gapless priming assumption.
 - [ ] H3: Move/rename files and update Rekordbox references in the same staged write.
 
 ## Phase I - Real-World Validation
 
-- [ ] I1: Validate `master.db` read/write against one real captured library. Blocked until captured data is available.
+- [ ] I1: Validate `master.db` read/write against one real captured library, including H2's cue-shift sign/necessity for the target Rekordbox version. Blocked until captured data is available.
 - [ ] I2: Validate Serato cue/tag fidelity against real Serato output and extend golden vectors. Blocked until captured data is available.
-- [ ] I3: Prove a manually corrected beatgrid survives a port/convert end-to-end.
+- [ ] I3: Prove a manually corrected beatgrid survives a port/convert end-to-end, and validate PCOB/PCO2 cue counts plus cue/beat offsets against real `.DAT`/`.EXT` files.
 
 ## Phase J - Release
 

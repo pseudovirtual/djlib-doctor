@@ -2,15 +2,15 @@
 
 ## Phase
 
-Primary-library foundation through Phase G is complete. Phase H is in progress: in-place Rekordbox doctoring.
+Primary-library foundation through Phase G is complete. Phase H H2 is implemented and awaiting the H2 commit; Phase I real-library validation is next for cue/grid conversion behavior.
 
 ## Last Done
 
-H1 added `stage rekordbox-db-apply`, which converts reviewed cleanup apply manifests into staged Rekordbox `master.db` path updates and delegates install to the existing token-gated `install rekordbox-db` flow.
+H2 added staged Rekordbox conversion with real ffmpeg encoding, AAC skip-samples compensation, `master.db` cue/path updates, ANLZ PCOB/PCO2 cue shifts, ANLZ PQTZ/PQT2 beatgrid shifts, CI ffmpeg coverage, and `--cue-shift {auto,none}` before token-gated install.
 
 ## Next
 
-H2: convert files without losing cues, including real encode/delay compensation and ANLZ `.DAT`/`.EXT` cue updates.
+Phase I validation: use an approved captured Rekordbox library to confirm the correct cue-shift sign/necessity for the target Rekordbox version, including the documented 26ms/gapless behavior, and verify PCOB/PCO2 cue-count offsets plus cue/beat offsets against real `.DAT`/`.EXT` files. H3 remains in the backlog after the conversion validation checkpoint.
 
 ## Phase-F Verification Results
 
