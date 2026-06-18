@@ -73,6 +73,13 @@ class DocsStructureTests(unittest.TestCase):
         for phrase in ("pyrekordbox", "djmdContent", "djmdCue", "StatsFull", "rb_local_usn", "UUID"):
             self.assertIn(phrase, text)
 
+    def test_rekordbox_db_schema_documents_real_cue_columns(self):
+        text = (ROOT / "docs" / "rekordbox-db-schema.md").read_text(encoding="utf-8")
+        for phrase in ("is_hot_cue", "is_memory_cue", "Kind - 1", "OutMsec > 0"):
+            self.assertIn(phrase, text)
+        self.assertNotIn("`Type` carries cue-vs-loop", text)
+        self.assertNotIn("`HotCue`/`Kind` distinguish", text)
+
     def test_roadmap_tracks_active_backlog_and_state(self):
         backlog = ROOT / "docs" / "roadmap" / "BACKLOG.md"
         state = ROOT / "docs" / "roadmap" / "STATE.md"

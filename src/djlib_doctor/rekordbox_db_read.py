@@ -67,13 +67,13 @@ def _cues_by_track(rows: tuple[Any, ...]) -> dict[str, tuple[Cue, ...]]:
 def _cue(row: Any) -> Cue:
     hotcue = _hotcue_slot(row)
     kind = CueKind.HOTCUE if hotcue is not None else CueKind.MEMORY
-    cue_type = _cue_type(row)
     raw_end = _value(row, "OutMsec")
+    cue_type = _cue_type(raw_end)
     return Cue(
         kind=kind,
         cue_type=cue_type,
         start=_msec(_value(row, "InMsec")),
-        end=None if cue_type is CueType.CUE and raw_end in (None, "", 0) else _msec(raw_end),
+        end=_msec(raw_end) if cue_type is CueType.LOOP else None,
         slot=hotcue if kind is CueKind.HOTCUE else None,
         name=_optional_str(_value(row, "Name", "Comment")),
         color=_optional_str(_value(row, "Color")),
@@ -81,21 +81,15 @@ def _cue(row: Any) -> Cue:
 
 
 def _hotcue_slot(row: Any) -> int | None:
-    raw_type = _optional_int(_value(row, "Type"))
-    raw_hotcue = _optional_int(_value(row, "HotCue"))
     raw_kind = _optional_int(_value(row, "Kind"))
-    if raw_type is not None:
-        if raw_hotcue and raw_kind is not None and raw_kind >= 0:
-            return raw_kind
+    if not _bool_value(_value(row, "is_hot_cue")) and (raw_kind is None or raw_kind < 1):
         return None
-    return raw_hotcue if raw_hotcue is not None and raw_hotcue >= 0 else None
+    return raw_kind - 1 if raw_kind is not None and raw_kind >= 1 else None
 
 
-def _cue_type(row: Any) -> CueType:
-    raw_type = _optional_int(_value(row, "Type"))
-    if raw_type is not None:
-        return CueType.LOOP if raw_type == 4 else CueType.CUE
-    return CueType.LOOP if _optional_int(_value(row, "Kind")) == 4 else CueType.CUE
+def _cue_type(raw_end: Any) -> CueType:
+    end = _optional_float(raw_end)
+    return CueType.LOOP if end is not None and end > 0 else CueType.CUE
 
 
 def _playlists(db: Any) -> tuple[tuple[Playlist, ...], tuple[PlaylistRef, ...]]:
@@ -194,3 +188,9 @@ def _optional_float(value: Any) -> float | None:
 
 def _optional_str(value: Any) -> str | None:
     return None if value in (None, "") else str(value)
+
+
+def _bool_value(value: Any) -> bool:
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes"}
+    return bool(value)

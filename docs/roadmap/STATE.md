@@ -6,7 +6,7 @@ Primary-library foundation through Phase H is complete. Phase K docs polish is c
 
 ## Last Done
 
-I5 was corrected after real-data validation: Serato `database V2` nested `otrk` extraction now uses `pfil` for path and `tsng`/`tart`/`talb`/`tgen`/`tkey`/`tbpm` for metadata, not crate-style `ptrk`/`pnam`/`part`. Completed Phase I follow-ups also include local ANLZ cue-scope documentation and an opt-in local Markers2 validation harness.
+Rekordbox `djmdCue` reading was corrected after live `master.db` validation: hotcue-vs-memory now uses `is_hot_cue`/`is_memory_cue` plus `Kind`, hotcue slots are `Kind - 1`, and loops are only rows with `OutMsec > 0`. Recent Phase I fixes also include Serato `database V2` nested `otrk` extraction, local ANLZ cue-scope documentation, and an opt-in local Markers2 validation harness.
 
 ## Next
 

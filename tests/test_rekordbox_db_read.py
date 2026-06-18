@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -34,7 +36,17 @@ class RekordboxDbReadTests(unittest.TestCase):
                     Commnt="Ready",
                 )
             ],
-            cues=[SimpleNamespace(ContentID="1", InMsec=12345, OutMsec=56000, Kind=4, HotCue=1, Comment="Loop B")],
+            cues=[
+                SimpleNamespace(
+                    ContentID="1",
+                    InMsec=12345,
+                    OutMsec=56000,
+                    Kind=2,
+                    is_hot_cue=True,
+                    is_memory_cue=False,
+                    Comment="Loop B",
+                )
+            ],
             playlists=[SimpleNamespace(ID="10", Name="Fixture Playlist", Attribute=0, ParentID=None)],
             songs=[SimpleNamespace(PlaylistID="10", ContentID="1", TrackNo=1)],
         )
@@ -71,9 +83,27 @@ class RekordboxDbReadTests(unittest.TestCase):
                 )
             ],
             cues=[
-                SimpleNamespace(ContentID="1", InMsec=1000, OutMsec=0, Type=0, Kind=0, HotCue=0, Name="Memory"),
-                SimpleNamespace(ContentID="1", InMsec=2000, OutMsec=0, Type=0, Kind=2, HotCue=1, Name="Hotcue C"),
-                SimpleNamespace(ContentID="1", InMsec=3000, OutMsec=4000, Type=4, Kind=0, HotCue=0, Name="Loop"),
+                SimpleNamespace(
+                    ContentID="1", InMsec=1000, OutMsec=-1, Kind=0, is_hot_cue=False, is_memory_cue=True, Name="Memory"
+                ),
+                SimpleNamespace(
+                    ContentID="1",
+                    InMsec=2000,
+                    OutMsec=-1,
+                    Kind=3,
+                    is_hot_cue=True,
+                    is_memory_cue=False,
+                    Name="Hotcue C",
+                ),
+                SimpleNamespace(
+                    ContentID="1",
+                    InMsec=3000,
+                    OutMsec=4000,
+                    Kind=0,
+                    is_hot_cue=False,
+                    is_memory_cue=True,
+                    Name="Loop",
+                ),
             ],
         )
 
