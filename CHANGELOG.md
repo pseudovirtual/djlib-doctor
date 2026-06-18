@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] I3b: Switched Rekordbox conversion auto cue/grid shifts to net target-minus-source decoder delay.
 - Added Phase I real-data follow-up tasks for Serato `database V2` extraction, local ANLZ cue-scope documentation, and opt-in Markers2 validation.
 - [x] I3a: Recorded Rekordbox 7.2.8 validation that AAC/M4A cue and beat shifts are positive and required.
 - Recorded expanded Phase I real-capture blockers and Phase J release-dependency tasks.

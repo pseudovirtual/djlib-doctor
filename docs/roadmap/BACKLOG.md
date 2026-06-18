@@ -71,7 +71,7 @@ Scope: Rekordbox and Serato only. Do not add other DJ apps or a neutral universa
 - [ ] I2: Validate ANLZ cue/beat offsets and the PCOB/PCO2 len_cues count offset against real `.DAT`/`.EXT` files. Blocked until captured data is available.
 - [ ] I3: Validate convert cue-shift SIGN/necessity against a real Rekordbox import for the target RB version, including the documented 26ms/gapless behavior, then set the `auto` default accordingly.
 - [x] I3a: Record Rekordbox 7.2.8 validation: Rekordbox >=7 ignores AAC gapless, cue/beat shift is positive, MP3-to-M4A was constant +21 ms, and WAV-to-M4A is about ~23 ms.
-- [ ] I3b: Switch convert auto-shift from raw target skip-samples to net target-minus-source decoder delay.
+- [x] I3b: Switch convert auto-shift from raw target skip-samples to net target-minus-source decoder delay.
 - [ ] I3c: Fix Rekordbox `djmdCue` reader classification for hotcues, memory cues, and saved loops using realistic cue fixtures.
 - [ ] I4: Validate Serato Markers2/BeatGrid against real Serato output and extend the vendored golden vectors. Blocked until captured data is available.
 - [ ] I5: Fix Serato `database V2` track extraction for real nested `otrk` records so Serato-as-primary reads real libraries.

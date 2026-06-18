@@ -65,7 +65,9 @@ def _stage_conversion(
     staged_audio = stage_dir / "staged-files" / f"OP-{index:04d}-{target.name}"
     staged_audio.parent.mkdir(parents=True, exist_ok=True)
     encode_audio(source, staged_audio, str(operation.get("preset") or "aac-m4a-256"))
-    measured_shift_ms = encoder_delay_ms(staged_audio) if staged_audio.suffix.lower() in {".m4a", ".mp4", ".aac"} else 0
+    target_delay_ms = encoder_delay_ms(staged_audio)
+    source_delay_ms = encoder_delay_ms(source)
+    measured_shift_ms = max(0, target_delay_ms - source_delay_ms)
     shift_ms = 0 if cue_shift == "none" else measured_shift_ms
     _update_staged_db(staged_db, str(operation["track_id"]), target, shift_ms)
     anlz_entries = [
@@ -81,7 +83,9 @@ def _stage_conversion(
         "staged_audio_sha256": sha256_file(staged_audio),
         "preset": str(operation.get("preset") or "aac-m4a-256"),
         "cue_shift": cue_shift,
-        "measured_encoder_delay_ms": measured_shift_ms,
+        "source_decoder_delay_ms": source_delay_ms,
+        "target_decoder_delay_ms": target_delay_ms,
+        "measured_encoder_delay_ms": target_delay_ms,
         "cue_shift_ms": shift_ms,
         "anlz_files": anlz_entries,
     }

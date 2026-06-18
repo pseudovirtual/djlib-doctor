@@ -17,3 +17,4 @@ shift_ms = target_decoder_delay_ms - source_decoder_delay_ms
 ```
 
 Clamp negative results to 0. For lossless WAV/AIFF sources, source delay is 0.
+The staged conversion manifest records `source_decoder_delay_ms`, `target_decoder_delay_ms`, and the resulting `cue_shift_ms`.

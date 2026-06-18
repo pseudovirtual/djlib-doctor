@@ -6,11 +6,11 @@ Primary-library foundation through Phase H is complete. Phase K docs polish is c
 
 ## Last Done
 
-I3a recorded real Rekordbox 7.2.8 results: Rekordbox >=7 ignores AAC gapless metadata in this path, cue/beat shift is positive, MP3-to-M4A showed a constant +21 ms beatgrid offset, and WAV-to-M4A is expected to use the full target AAC delay of about ~23 ms. Keep `--cue-shift auto` as the default.
+I3b switched Rekordbox conversion auto-shift to the empirically validated net-delay formula: `max(target_decoder_delay_ms - source_decoder_delay_ms, 0)`. WAV/AIFF sources still shift by the full target AAC delay; lossy sources subtract their own decoder delay before shifting cues and beatgrids.
 
 ## Next
 
-I3b: switch conversion auto-shift from raw target skip-samples to net target-minus-source decoder delay. I3c: fix real-schema `djmdCue` classification for hotcues, memory cues, and saved loops. After that, work the newly recorded real-data tasks: I5 Serato `database V2` nested `otrk` extraction, I6 local ANLZ cue-scope documentation, and I7 an opt-in local Markers2 validation harness.
+I3c: fix real-schema `djmdCue` classification for hotcues, memory cues, and saved loops. After that, work the newly recorded real-data tasks: I5 Serato `database V2` nested `otrk` extraction, I6 local ANLZ cue-scope documentation, and I7 an opt-in local Markers2 validation harness.
 
 Phase I still cannot complete I1, the device-export cue side of I2, or broad I4 golden-vector expansion from synthetic fixtures. Real validation on Rekordbox 7.2.8 and Serato DJ Pro has already confirmed local ANLZ beatgrid parsing, PCOB/PCO2 cue-count offsets for empty local cue containers, Serato crate reading, and the Markers2 parser path. The repo currently has only `tests/fixtures/real/.gitignore` and `tests/fixtures/real/README.md`; there is no `manifest.json` or captured library payload. Provide an approved local-only fixture under `tests/fixtures/real/manifest.json`, following `docs/real-fixtures.md`, with:
 
