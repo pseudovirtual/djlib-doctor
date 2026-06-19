@@ -58,6 +58,8 @@ Serato audio tag staging needs optional dependencies: `python3 -m pip install -e
 
 Rekordbox `master.db` work uses default dependencies: `pyrekordbox` and `sqlcipher3-wheels`. If SQLCipher cannot import on your platform, Rekordbox DB commands fail closed with a backend-unavailable message.
 
+SQLCipher support depends on prebuilt `sqlcipher3-wheels` coverage. The supported binary-wheel matrix currently covers the project CI targets: Ubuntu x64, Windows x64, and current GitHub macOS arm64 runners on Python 3.9 and 3.13. Prebuilt wheels are not available for every platform/Python combination; the known gap is Intel/x86_64 macOS on Python 3.13, where `pip install` may fail to build SQLCipher locally. On Intel macOS, use Python <=3.12 for now; Apple Silicon users should prefer the normal supported Python versions.
+
 Run the full suite:
 
 ```bash

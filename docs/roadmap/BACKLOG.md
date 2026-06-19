@@ -88,7 +88,7 @@ Scope: Rekordbox and Serato only. Do not add other DJ apps or a neutral universa
 
 ## Phase J - Release
 
-- [ ] J1: Decide and document the sqlcipher3-wheels coverage gap for Intel macOS plus Python 3.13: either document the supported matrix clearly or make Rekordbox DB dependencies optional again with a clear install message.
+- [x] J1: Decide and document the sqlcipher3-wheels coverage gap for Intel macOS plus Python 3.13: keep pyrekordbox/sqlcipher core, document the supported matrix, and recommend Apple Silicon or Python <=3.12 on Intel macOS.
 - [ ] J2: Execute the TestPyPI smoke after maintainer trusted-publisher setup, then flip README install instructions only after smoke passes.
 - [ ] J3: Cut a real pre-release tag and confirm the release workflow end to end.
 

@@ -34,6 +34,7 @@
 
 - Serato audio tag writes and Markers2 cue imports are fixture-tested and need broader real-world validation.
 - Rekordbox encrypted `master.db` reads and staged writes are generated-fixture tested through pyrekordbox; real captured DB certification is still pending.
+- Rekordbox DB support keeps `pyrekordbox` and `sqlcipher3-wheels` as core dependencies; Intel/x86_64 macOS on Python 3.13 is a known SQLCipher wheel gap, so use Apple Silicon or Python <=3.12 on Intel macOS.
 - Acoustic fingerprinting is planned; current fingerprinting is byte-level only.
 
 ## Main Commands

@@ -84,3 +84,5 @@ The reader follows the live Rekordbox 7 schema: hotcue-vs-memory comes from `is_
 Rekordbox 6/7 `master.db` files are SQLCipher databases. The generated encrypted fixture path uses the public SQLCipher key exposed by pyrekordbox and SQLCipher4 settings. Tests skip clearly when the SQLCipher backend cannot import.
 
 pyrekordbox and SQLCipher are default dependencies because Rekordbox DB support is core scope. Runtime failures must distinguish a missing SQLCipher backend from a key-locked or unsupported `master.db`. Real app acceptance remains a manual smoke test.
+
+`sqlcipher3-wheels` stays a core dependency, but its prebuilt wheel coverage is platform-dependent. The supported CI matrix is Ubuntu x64, Windows x64, and current GitHub macOS arm64 runners on Python 3.9 and 3.13. Prebuilt SQLCipher wheels are not available for every platform/Python combination; the known gap is Intel/x86_64 macOS on Python 3.13, where `pip install` can fail while trying to build SQLCipher. Recommended workarounds are Apple Silicon macOS or Python <=3.12 on Intel macOS.

@@ -6,6 +6,8 @@ Primary-library foundation through Phase H is complete. Phase K docs polish is c
 
 ## Last Done
 
+J1 release dependency decision is documented: `pyrekordbox` and `sqlcipher3-wheels` remain core dependencies because Rekordbox DB support is core scope. Prebuilt SQLCipher wheels are supported on the current CI matrix, while Intel/x86_64 macOS on Python 3.13 remains a known `pip install` gap; use Apple Silicon or Python <=3.12 on Intel macOS.
+
 Fixed a real Serato Markers2 writer bug: staged audio-tag writes now serialize GEOB data as Serato does, with an outer version header, wrapped base64 body, decoded `COLOR`/`BPMLOCK` defaults plus cue entries and footer, and null padding. Added a sanitized real-layout GEOB golden fixture and writer coverage across AIFF, MP3, and MP4 branches so the writer can no longer pass by raw self-round-trip alone. Current gate: 256 tests green with 23 expected skips, plus bytecode compile, Ruff check, and Ruff format check.
 
 J4 reran and documented the Phase J fixture-hardening gate. The final local suite is green at 254 tests with 23 skips; the skips are the expected SQLCipher/real-data gates in this sandbox. Copy-only `master.db` persistence coverage now exists for convert, move, and Serato-to-Rekordbox import, and encrypted writer tests include plain-SQLite rejection assertions. `docs/phase-i-results.md` records these results and the installed-backend expectation.
@@ -24,7 +26,7 @@ Recent Phase I fixes and validation remain recorded: Serato `database V2` nested
 
 ## Next
 
-Phase J-prep is complete. Next is Phase J release work: decide/document the sqlcipher3-wheels coverage gap, then run TestPyPI smoke after maintainer trusted-publisher setup.
+Phase J-prep and the J1 SQLCipher matrix decision are complete. Next is Phase J release work: run TestPyPI smoke after maintainer trusted-publisher setup.
 
 Phase I still cannot complete I1, the device-export cue side of I2, or broad I4 golden-vector expansion from synthetic fixtures. Real validation on Rekordbox 7.2.8 and Serato DJ Pro has already confirmed local ANLZ beatgrid parsing, PCOB/PCO2 cue-count offsets for empty local cue containers, Serato crate reading, the Markers2 parser path, and hotcue slot = Kind - 1 for Rekordbox cues. The repo currently has only `tests/fixtures/real/.gitignore` and `tests/fixtures/real/README.md`; there is no `manifest.json` or captured library payload. Provide an approved local-only fixture under `tests/fixtures/real/manifest.json`, following `docs/real-fixtures.md`, with:
 
