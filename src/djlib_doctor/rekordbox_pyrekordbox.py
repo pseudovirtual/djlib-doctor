@@ -23,6 +23,21 @@ def open_master_database(
         raise
 
 
+def close_master_database(db: Any) -> None:
+    engine = getattr(db, "engine", None)
+    session = getattr(db, "session", None)
+    if session is not None:
+        session_close = getattr(session, "close", None)
+        if callable(session_close):
+            session_close()
+    close = getattr(db, "close", None)
+    if callable(close):
+        close()
+    dispose = getattr(engine, "dispose", None)
+    if callable(dispose):
+        dispose()
+
+
 def _master_database(importer: Callable[[], Any] | None) -> Any:
     if importer is not None:
         try:

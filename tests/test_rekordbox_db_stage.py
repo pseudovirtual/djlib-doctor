@@ -1,8 +1,11 @@
 import json
+import shutil
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
+from tests.support.fake_pyrekordbox_db import FakePyrekordboxDb
 from tests.support.rekordbox_encrypted_assertions import (
     assert_plain_sqlite_rejects,
     read_encrypted_library,
@@ -102,6 +105,30 @@ class RekordboxDbStageTests(unittest.TestCase):
 
             with self.assertRaisesRegex(RuntimeError, "matched 0 rows"), rekordbox_not_running():
                 stage_rekordbox_db_operations(fixture.encrypted_db, ops, tmp / "stage")
+
+    def test_install_replaces_after_pyrekordbox_write_disposes_engine(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            live = tmp / "master.db"
+            live.write_bytes(b"not a plain sqlite database")
+            fake_db = FakePyrekordboxDb()
+            ops = _write_update_ops(tmp, "New Title")
+
+            def windows_like_replace(source: Path, target: Path) -> None:
+                if not fake_db.disposed:
+                    raise PermissionError("WinError 5: master.db handle still open")
+                shutil.move(source, target)
+
+            with patch("djlib_doctor.rekordbox_pyrekordbox.open_master_database", return_value=fake_db):
+                stage = stage_rekordbox_db_operations(live, ops, tmp / "stage")
+            with patch("djlib_doctor.stage_installer.os.replace", side_effect=windows_like_replace):
+                report = install_rekordbox_db_stage(
+                    tmp / "stage", live, confirm_token=stage.install_token, process_lines=()
+                )
+
+        self.assertTrue(report["passed"])
+        self.assertTrue(fake_db.closed)
+        self.assertTrue(fake_db.disposed)
 
 
 def _write_update_ops(tmp: Path, title: str) -> Path:

@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from pathlib import Path
+from pathlib import Path, PurePath
 from typing import Any
 
 from .io_utils import read_json, write_json
+from .path_utils import path_to_posix_string
 
 CONFIG_SCHEMA_VERSION = "1.0"
 PRIMARY_VALUES = {"rekordbox", "serato"}
@@ -20,23 +21,23 @@ CONFIG_KEYS = {
 
 
 def default_config(
-    rekordbox_xml: Path | None = None,
-    serato_library_dir: Path | None = None,
-    serato_music_dir: Path | None = None,
-    music_root: Path | None = None,
+    rekordbox_xml: PurePath | None = None,
+    serato_library_dir: PurePath | None = None,
+    serato_music_dir: PurePath | None = None,
+    music_root: PurePath | None = None,
     crate_prefix: str = "RB - ",
     primary: str = "rekordbox",
-    rekordbox_db: Path | None = None,
+    rekordbox_db: PurePath | None = None,
 ) -> dict[str, Any]:
     _validate_primary(primary)
     return {
         "schema_version": CONFIG_SCHEMA_VERSION,
         "primary": primary,
-        "rekordbox_xml": str(rekordbox_xml) if rekordbox_xml else "",
-        "rekordbox_db": str(rekordbox_db) if rekordbox_db else "",
-        "serato_library_dir": str(serato_library_dir) if serato_library_dir else "",
-        "serato_music_dir": str(serato_music_dir) if serato_music_dir else "",
-        "music_root": str(music_root) if music_root else "",
+        "rekordbox_xml": _path(rekordbox_xml),
+        "rekordbox_db": _path(rekordbox_db),
+        "serato_library_dir": _path(serato_library_dir),
+        "serato_music_dir": _path(serato_music_dir),
+        "music_root": _path(music_root),
         "crate_prefix": crate_prefix,
     }
 
@@ -64,3 +65,7 @@ def write_config(path: Path, config: dict[str, Any]) -> None:
 def _validate_primary(primary: Any) -> None:
     if primary not in PRIMARY_VALUES:
         raise ValueError("Config primary must be 'rekordbox' or 'serato'")
+
+
+def _path(path: PurePath | None) -> str:
+    return path_to_posix_string(path) if path else ""

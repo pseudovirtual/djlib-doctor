@@ -3,7 +3,7 @@ import io
 import json
 import sqlite3
 import unittest
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from tempfile import TemporaryDirectory
 
 from djlib_doctor.cli import main
@@ -60,6 +60,22 @@ class PortRekordboxTests(unittest.TestCase):
         self.assertEqual(plan.summary["skipped"], 1)
         self.assertEqual(plan.tracks[0].path, "/Users/test/Music/Track One.aiff")
         self.assertEqual(plan.skipped[0]["reason"], "not_local_file")
+
+    def test_build_serato_to_rekordbox_plan_serializes_windows_paths_with_forward_slashes(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            library = tmp / "Library"
+            library.mkdir()
+            make_serato_root(library / "root.sqlite")
+            crate = tmp / "Test.crate"
+            write_serato_crate(crate, ("Music/Track One.aiff",))
+
+            plan = build_serato_to_rekordbox_plan(
+                library, crate, collection_root=PureWindowsPath("D:/DJ"), tag_reader=lambda _path: ()
+            )
+
+        self.assertEqual(plan.tracks[0].path, "D:/DJ/Music/Track One.aiff")
+        self.assertEqual(plan.to_dict()["tracks"][0]["path"], "D:/DJ/Music/Track One.aiff")
 
     def test_write_serato_to_rekordbox_plan_writes_manifest_and_xml_preview(self):
         with TemporaryDirectory() as tmpdir:

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from .io_utils import render_json, write_json
+from .path_utils import path_to_posix_string
 from .port_cue_models import PortCueTiming
 from .rekordbox_uri import path_to_file_url
 from .serato_crate import read_serato_crate
@@ -100,7 +101,7 @@ def build_serato_to_rekordbox_plan(
     crate = read_serato_crate(crate_path)
     assets = _read_assets_by_portable_id(serato_library_dir / "root.sqlite")
     tracks, skipped = _build_tracks(crate.tracks, assets, collection_root, tag_reader)
-    return SeratoToRekordboxPlan(str(crate_path), playlist_name or crate_path.stem, tracks, skipped)
+    return SeratoToRekordboxPlan(path_to_posix_string(crate_path), playlist_name or crate_path.stem, tracks, skipped)
 
 
 def build_serato_track_to_rekordbox_plan(
@@ -186,7 +187,7 @@ def _track(
     return RekordboxPortTrack(
         str(index),
         portable_id,
-        str(path),
+        path_to_posix_string(path),
         str(asset.get("name") or Path(portable_id).stem),
         str(asset.get("artist") or ""),
         str(asset.get("album") or ""),

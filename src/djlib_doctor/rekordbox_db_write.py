@@ -77,12 +77,7 @@ def _write_pyrekordbox(db_path: Path, apply: Callable[[Any], None], label: str) 
             _require_sqlalchemy_integrity(conn, f"after {label}")
         _checkpoint_wal(db.engine)
     finally:
-        close = getattr(db, "close", None)
-        if callable(close):
-            close()
-        dispose = getattr(db.engine, "dispose", None)
-        if callable(dispose):
-            dispose()
+        rekordbox_pyrekordbox.close_master_database(db)
 
 
 def _checkpoint_wal(engine: Any) -> None:

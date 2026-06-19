@@ -52,6 +52,7 @@ class RekordboxDbReadTests(unittest.TestCase):
         library = read_rekordbox_master_db(Path("master.db"), opener=lambda *args, **kwargs: db)
 
         self.assertTrue(db.closed)
+        self.assertTrue(db.disposed)
         self.assertEqual(len(library.tracks), 1)
         track = library.tracks[0]
         self.assertEqual(track.track_id, "1")
@@ -69,6 +70,23 @@ class RekordboxDbReadTests(unittest.TestCase):
         self.assertEqual(track.cues[0].slot, 1)
         self.assertEqual(library.playlists[0].entries, ("1",))
         self.assertEqual(library.playlist_refs[0].playlist, "Fixture Playlist")
+
+    def test_reads_windows_db_paths_as_local_files(self):
+        db = _FakeRekordboxDb(
+            contents=[
+                SimpleNamespace(
+                    ID="1",
+                    FolderPath="C:\\Users\\DJ\\Music",
+                    FileNameL="Track One.aiff",
+                    Title="Track One",
+                )
+            ]
+        )
+
+        library = read_rekordbox_master_db(Path("master.db"), opener=lambda *args, **kwargs: db)
+
+        self.assertIsNotNone(library.tracks[0].path)
+        self.assertEqual(library.tracks[0].path.as_posix(), "C:/Users/DJ/Music/Track One.aiff")
 
     def test_classifies_real_schema_cue_rows(self):
         db = _FakeRekordboxDb(
@@ -135,6 +153,7 @@ class RekordboxDbReadTests(unittest.TestCase):
             read_rekordbox_master_db(Path("master.db"), opener=lambda *args, **kwargs: db)
 
         self.assertTrue(db.closed)
+        self.assertTrue(db.disposed)
 
 
 class _FakeQuery(tuple):
@@ -154,6 +173,8 @@ class _FakeRekordboxDb:
         self.playlists = _FakeQuery(playlists)
         self.songs = _FakeQuery(songs)
         self.closed = False
+        self.disposed = False
+        self.engine = _FakeEngine(self)
 
     def get_content(self):
         return self.contents
@@ -169,6 +190,14 @@ class _FakeRekordboxDb:
 
     def close(self):
         self.closed = True
+
+
+class _FakeEngine:
+    def __init__(self, db):
+        self.db = db
+
+    def dispose(self):
+        self.db.disposed = True
 
 
 if __name__ == "__main__":

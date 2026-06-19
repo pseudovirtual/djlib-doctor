@@ -6,7 +6,7 @@ from pathlib import Path
 
 from djlib_doctor.cues import CueKind, CueType
 from djlib_doctor.rekordbox_db_read import _all, library_from_pyrekordbox_db
-from djlib_doctor.rekordbox_pyrekordbox import open_master_database
+from djlib_doctor.rekordbox_pyrekordbox import close_master_database, open_master_database
 
 REAL_REKORDBOX_DB_ENV = "DJLIB_DOCTOR_REAL_REKORDBOX_DB"
 
@@ -27,9 +27,7 @@ class RealRekordboxDbReadTests(unittest.TestCase):
             raw_cues = _all(db.get_cue())
             library = library_from_pyrekordbox_db(db)
         finally:
-            close = getattr(db, "close", None)
-            if callable(close):
-                close()
+            close_master_database(db)
 
         parsed_cues = tuple(cue for track in library.tracks for cue in track.cues)
         raw_hotcues = sum(1 for cue in raw_cues if _raw_bool(cue, "is_hot_cue") or (_raw_int(cue, "Kind") or 0) >= 1)

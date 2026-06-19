@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed Windows CI failures by disposing pyrekordbox sessions/engines after reads and writes before staged replaces or temp cleanup, and by normalizing serialized paths and Rekordbox file URLs to forward-slash form across Windows and POSIX.
 - Fixed SQLCipher-enabled CI failures by skipping Rekordbox DB backend tests on Linux, building encrypted fixtures through pyrekordbox's own SQLCipher engine, converting raw DB driver failures to clear unsupported/encrypted messages, hardening backup names for shallow paths, and collapsing Rekordbox DB fixture setup onto pyrekordbox's schema plus one shared backend gate.
 
 ## 0.1.0 - 2026-06-19

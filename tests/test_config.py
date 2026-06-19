@@ -2,7 +2,7 @@ import contextlib
 import io
 import json
 import unittest
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from tempfile import TemporaryDirectory
 
 from djlib_doctor.cli import main
@@ -78,6 +78,15 @@ class ConfigTests(unittest.TestCase):
 
         self.assertEqual(shown["primary"], "serato")
         self.assertEqual(shown["rekordbox_db"], "/tmp/master.db")
+
+    def test_config_serializes_windows_paths_with_forward_slashes(self):
+        config = default_config(
+            rekordbox_xml=PureWindowsPath("C:/Users/dj/export.xml"),
+            rekordbox_db=PureWindowsPath("C:/Users/dj/AppData/Roaming/Pioneer/master.db"),
+        )
+
+        self.assertEqual(config["rekordbox_xml"], "C:/Users/dj/export.xml")
+        self.assertEqual(config["rekordbox_db"], "C:/Users/dj/AppData/Roaming/Pioneer/master.db")
 
 
 if __name__ == "__main__":

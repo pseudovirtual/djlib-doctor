@@ -1,5 +1,5 @@
 import unittest
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from tempfile import TemporaryDirectory
 
 from djlib_doctor.cues import CueKind, CueType
@@ -32,13 +32,13 @@ class RekordboxXmlTests(unittest.TestCase):
         kind, path = parse_location("file://localhost/Users/example/Music/SoundCloud%20Downloads/track.aiff")
 
         self.assertIs(kind, LocationKind.LOCAL_FILE)
-        self.assertEqual(str(path), "/Users/example/Music/SoundCloud Downloads/track.aiff")
+        self.assertEqual(path.as_posix(), "/Users/example/Music/SoundCloud Downloads/track.aiff")
 
     def test_file_url_preserves_encoded_fragment_characters(self):
         kind, path = parse_location("file:///Users/example/Music/Track%20%231%3F.aiff")
 
         self.assertIs(kind, LocationKind.LOCAL_FILE)
-        self.assertEqual(str(path), "/Users/example/Music/Track #1?.aiff")
+        self.assertEqual(path.as_posix(), "/Users/example/Music/Track #1?.aiff")
 
     def test_file_url_helper_builds_parses_and_redacts_localhost_urls(self):
         url = path_to_file_url("/Users/example/Music/Track #1?.aiff")
@@ -46,6 +46,18 @@ class RekordboxXmlTests(unittest.TestCase):
         self.assertEqual(url, "file://localhost/Users/example/Music/Track%20%231%3F.aiff")
         self.assertEqual(parse_location(url), (LocationKind.LOCAL_FILE, Path("/Users/example/Music/Track #1?.aiff")))
         self.assertEqual(redact_uri_or_path(url), "file://localhost<redacted>/Track #1?.aiff")
+
+    def test_windows_file_urls_parse_to_local_paths(self):
+        kind, path = parse_location("file:///C:/Users/example/Music/Track%201.aiff")
+
+        self.assertIs(kind, LocationKind.LOCAL_FILE)
+        self.assertEqual(path.as_posix(), "C:/Users/example/Music/Track 1.aiff")
+
+    def test_windows_path_helper_uses_forward_slashes_in_urls(self):
+        url = path_to_file_url(PureWindowsPath("C:/Users/example/Music/Track 1.aiff"))
+
+        self.assertEqual(url, "file://localhost/C:/Users/example/Music/Track%201.aiff")
+        self.assertEqual(parse_location(url)[1].as_posix(), "C:/Users/example/Music/Track 1.aiff")
 
     def test_cues_decode_memory_hotcue_and_loop(self):
         library = parse_rekordbox_xml(FIXTURE)
