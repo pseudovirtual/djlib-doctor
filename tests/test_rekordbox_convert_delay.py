@@ -8,12 +8,15 @@ from unittest.mock import patch
 from tests.support.fake_pyrekordbox_db import FakePyrekordboxDb
 from tests.support.rekordbox_anlz_fixture import write_empty_cue_anlz_fixture
 from tests.support.rekordbox_convert_fixture import write_operations
-from tests.support.rekordbox_encrypted_assertions import read_encrypted_master_copy, rekordbox_not_running
+from tests.support.rekordbox_encrypted_assertions import (
+    read_encrypted_library,
+    read_encrypted_master_copy,
+    rekordbox_not_running,
+)
 from tests.support.rekordbox_encrypted_fixture import (
-    SqlcipherUnavailable,
     generate_encrypted_rekordbox_fixture,
     rekordbox_public_sqlcipher_key,
-    skip_or_fail_for_missing_encrypted_backend,
+    requires_rekordbox_backend,
 )
 
 from djlib_doctor.rekordbox_anlz import read_anlz_beatgrid_times, read_anlz_cue_times
@@ -23,6 +26,7 @@ from djlib_doctor.rekordbox_db_write import update_track_location_and_cues
 
 
 class RekordboxConvertDelayTests(unittest.TestCase):
+    @requires_rekordbox_backend
     def test_auto_shift_uses_net_target_minus_source_decoder_delay(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
@@ -30,10 +34,7 @@ class RekordboxConvertDelayTests(unittest.TestCase):
             target = tmp / "Converted" / "Source.m4a"
             dat = tmp / "ANLZ0001.DAT"
             ext = tmp / "ANLZ0001.EXT"
-            try:
-                fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
-            except SqlcipherUnavailable as exc:
-                skip_or_fail_for_missing_encrypted_backend(self, exc)
+            fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
             source.write_bytes(b"synthetic mp3 bytes")
             write_empty_cue_anlz_fixture(dat, cue_tag=b"PCOB")
             write_empty_cue_anlz_fixture(ext, cue_tag=b"PCO2")
@@ -71,15 +72,11 @@ class RekordboxConvertDelayTests(unittest.TestCase):
         self.assertEqual(staged_dat_cues, ())
         self.assertEqual(staged_dat_grids[0].times_ms, (521, 1021, 1521))
 
+    @requires_rekordbox_backend
     def test_conversion_stages_encrypted_master_db(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
-            try:
-                from pyrekordbox.db6 import database
-
-                fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
-            except (ImportError, SqlcipherUnavailable) as exc:
-                skip_or_fail_for_missing_encrypted_backend(self, exc)
+            fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
             source = tmp / "Source.wav"
             target = tmp / "Converted" / "Source.m4a"
             dat = tmp / "ANLZ0001.DAT"
@@ -93,46 +90,35 @@ class RekordboxConvertDelayTests(unittest.TestCase):
                 staged.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(source, staged)
 
-            original_get_pid = database.get_rekordbox_pid
-            database.get_rekordbox_pid = lambda: 0
-            try:
-                with (
-                    patch("djlib_doctor.rekordbox_convert.require_audio_tools"),
-                    patch("djlib_doctor.rekordbox_convert.encode_audio", side_effect=fake_encode),
-                    patch("djlib_doctor.rekordbox_convert.encoder_delay_ms", return_value=21),
-                ):
-                    stage = stage_rekordbox_conversion(fixture.encrypted_db, ops, tmp / "stage")
+            with (
+                patch("djlib_doctor.rekordbox_convert.require_audio_tools"),
+                patch("djlib_doctor.rekordbox_convert.encode_audio", side_effect=fake_encode),
+                patch("djlib_doctor.rekordbox_convert.encoder_delay_ms", return_value=21),
+                rekordbox_not_running(),
+            ):
+                stage = stage_rekordbox_conversion(fixture.encrypted_db, ops, tmp / "stage")
                 library = read_rekordbox_master_db(stage.staged_db, key=rekordbox_public_sqlcipher_key())
-            finally:
-                database.get_rekordbox_pid = original_get_pid
 
         self.assertEqual(library.tracks[0].path, target)
         self.assertEqual(library.tracks[0].cues[0].start, 12.345)
 
+    @requires_rekordbox_backend
     def test_encrypted_write_persists_when_master_db_file_is_copied(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
-            try:
-                from pyrekordbox.db6 import database
-
-                fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
-            except (ImportError, SqlcipherUnavailable) as exc:
-                skip_or_fail_for_missing_encrypted_backend(self, exc)
+            fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
             copied = tmp / "copied-master.db"
             target = tmp / "Converted" / "Track One.m4a"
 
-            original_get_pid = database.get_rekordbox_pid
-            database.get_rekordbox_pid = lambda: 0
-            try:
+            with rekordbox_not_running():
                 update_track_location_and_cues(fixture.encrypted_db, "1", target, 23, "test encrypted write")
                 shutil.copy2(fixture.encrypted_db, copied)
-                library = read_rekordbox_master_db(copied, key=rekordbox_public_sqlcipher_key())
-            finally:
-                database.get_rekordbox_pid = original_get_pid
+                library = read_encrypted_library(copied)
 
         self.assertEqual(library.tracks[0].path, target)
         self.assertAlmostEqual(library.tracks[0].cues[0].start, 12.368, places=3)
 
+    @requires_rekordbox_backend
     def test_write_refuses_missing_track_id(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
@@ -140,10 +126,7 @@ class RekordboxConvertDelayTests(unittest.TestCase):
             target = tmp / "Converted" / "Source.m4a"
             db = tmp / "master.db"
             source.write_bytes(b"synthetic wav bytes")
-            try:
-                fixture = generate_encrypted_rekordbox_fixture(db)
-            except SqlcipherUnavailable as exc:
-                skip_or_fail_for_missing_encrypted_backend(self, exc)
+            fixture = generate_encrypted_rekordbox_fixture(db)
 
             with self.assertRaisesRegex(RuntimeError, "matched 0 rows"):
                 with rekordbox_not_running():

@@ -15,9 +15,8 @@ from tests.support.rekordbox_encrypted_assertions import (
     rekordbox_not_running,
 )
 from tests.support.rekordbox_encrypted_fixture import (
-    SqlcipherUnavailable,
     generate_encrypted_rekordbox_fixture,
-    skip_or_fail_for_missing_encrypted_backend,
+    requires_rekordbox_backend,
 )
 
 from djlib_doctor.cli import main
@@ -26,6 +25,7 @@ from djlib_doctor.rekordbox_anlz import read_anlz_beatgrid_times, read_anlz_cue_
 
 @unittest.skipUnless(shutil.which("ffmpeg") and shutil.which("ffprobe"), "ffmpeg and ffprobe are required")
 class RekordboxConvertTests(unittest.TestCase):
+    @requires_rekordbox_backend
     def test_real_m4a_encode_compensates_encrypted_db_and_anlz_cues(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
@@ -33,10 +33,7 @@ class RekordboxConvertTests(unittest.TestCase):
             target = tmp / "Converted" / "Track One.m4a"
             dat = tmp / "ANLZ0001.DAT"
             ext = tmp / "ANLZ0001.EXT"
-            try:
-                fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
-            except SqlcipherUnavailable as exc:
-                skip_or_fail_for_missing_encrypted_backend(self, exc)
+            fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
             assert_plain_sqlite_rejects(self, fixture.encrypted_db)
             write_click_wav(source)
             write_anlz_fixture(dat, cue_tag=b"PCOB", time_ms=1000, loop_ms=1500)
@@ -104,6 +101,7 @@ class RekordboxConvertTests(unittest.TestCase):
         self.assertEqual(install_exit, 0)
         self.assertTrue(target_exists)
 
+    @requires_rekordbox_backend
     def test_cue_shift_none_records_measurement_without_moving_positions(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
@@ -111,10 +109,7 @@ class RekordboxConvertTests(unittest.TestCase):
             target = tmp / "Converted" / "Track One.m4a"
             dat = tmp / "ANLZ0001.DAT"
             ext = tmp / "ANLZ0001.EXT"
-            try:
-                fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
-            except SqlcipherUnavailable as exc:
-                skip_or_fail_for_missing_encrypted_backend(self, exc)
+            fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
             write_click_wav(source)
             write_anlz_fixture(dat, cue_tag=b"PCOB", time_ms=1000, loop_ms=1500)
             write_anlz_fixture(ext, cue_tag=b"PCO2", time_ms=1000, loop_ms=1500)

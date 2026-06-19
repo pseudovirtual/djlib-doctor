@@ -3,15 +3,16 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from tests.support.rekordbox_encrypted_assertions import read_encrypted_library
 from tests.support.rekordbox_encrypted_fixture import (
-    SqlcipherUnavailable,
     build_plain_rekordbox_fixture_db,
     generate_encrypted_rekordbox_fixture,
-    skip_or_fail_for_missing_encrypted_backend,
+    requires_rekordbox_backend,
 )
 
 
 class RekordboxEncryptedFixtureTests(unittest.TestCase):
+    @requires_rekordbox_backend
     def test_plain_fixture_schema_matches_target_tables(self):
         with TemporaryDirectory() as tmpdir:
             db = Path(tmpdir) / "plain-master.db"
@@ -34,17 +35,17 @@ class RekordboxEncryptedFixtureTests(unittest.TestCase):
         self.assertEqual(content, ("/Music", "Track One.aiff", "Track One"))
         self.assertEqual(cue, (12345, -1, 1, 1, 0, "Cue A"))
 
+    @requires_rekordbox_backend
     def test_generate_encrypted_fixture_or_skip_when_sqlcipher_missing(self):
         with TemporaryDirectory() as tmpdir:
             out = Path(tmpdir) / "encrypted-master.db"
-            try:
-                result = generate_encrypted_rekordbox_fixture(out)
-            except SqlcipherUnavailable as exc:
-                skip_or_fail_for_missing_encrypted_backend(self, exc)
+            result = generate_encrypted_rekordbox_fixture(out)
 
             self.assertTrue(result.encrypted_db.exists())
             self.assertTrue(result.plain_db.exists())
             self.assertEqual(result.schema, "sqlcipher4")
+            library = read_encrypted_library(result.encrypted_db)
+            self.assertEqual(library.tracks[0].track_id, "1")
 
 
 if __name__ == "__main__":

@@ -1,19 +1,17 @@
 from __future__ import annotations
 
+import sqlite3
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 
-from tests.support.rekordbox_encrypted_fixture import (
-    SqlcipherUnavailable,
-    generate_encrypted_rekordbox_fixture,
-    rekordbox_public_sqlcipher_key,
-    skip_or_fail_for_missing_encrypted_backend,
-)
+from tests.support.rekordbox_encrypted_assertions import read_encrypted_library
+from tests.support.rekordbox_encrypted_fixture import generate_encrypted_rekordbox_fixture, requires_rekordbox_backend
 
 from djlib_doctor.cues import CueKind, CueType
 from djlib_doctor.rekordbox_db_read import read_rekordbox_master_db
+from djlib_doctor.rekordbox_pyrekordbox import PyrekordboxUnavailable
 
 
 class RekordboxDbReadTests(unittest.TestCase):
@@ -120,28 +118,33 @@ class RekordboxDbReadTests(unittest.TestCase):
         self.assertEqual(loop.cue_type, CueType.LOOP)
         self.assertEqual(loop.end, 4.0)
 
+    @requires_rekordbox_backend
     def test_reads_generated_encrypted_fixture_when_backends_are_available(self):
         with TemporaryDirectory() as tmpdir:
-            try:
-                from pyrekordbox.db6 import database
-
-                fixture = generate_encrypted_rekordbox_fixture(Path(tmpdir) / "master.db")
-            except (ImportError, SqlcipherUnavailable) as exc:
-                skip_or_fail_for_missing_encrypted_backend(self, exc)
-            original_get_pid = database.get_rekordbox_pid
-            database.get_rekordbox_pid = lambda: 0
-            try:
-                library = read_rekordbox_master_db(fixture.encrypted_db, key=rekordbox_public_sqlcipher_key())
-            finally:
-                database.get_rekordbox_pid = original_get_pid
+            fixture = generate_encrypted_rekordbox_fixture(Path(tmpdir) / "master.db")
+            library = read_encrypted_library(fixture.encrypted_db)
 
         self.assertEqual(library.tracks[0].track_id, "1")
         self.assertEqual(library.tracks[0].cues[0].start, 12.345)
+
+    def test_read_wraps_query_time_database_driver_errors(self):
+        db = _FakeRekordboxDb()
+        db.contents = _FailingQuery()
+
+        with self.assertRaisesRegex(PyrekordboxUnavailable, r"could not unlock or read Rekordbox master.db"):
+            read_rekordbox_master_db(Path("master.db"), opener=lambda *args, **kwargs: db)
+
+        self.assertTrue(db.closed)
 
 
 class _FakeQuery(tuple):
     def all(self):
         return list(self)
+
+
+class _FailingQuery:
+    def all(self):
+        raise sqlite3.DatabaseError("file is not a database")
 
 
 class _FakeRekordboxDb:

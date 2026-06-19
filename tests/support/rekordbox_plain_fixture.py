@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sqlite3
+import unittest
 from pathlib import Path
 
 
@@ -8,33 +9,22 @@ def build_plain_rekordbox_fixture_db(path: Path) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists():
         path.unlink()
-    _create_schema(path)
+    _create_pyrekordbox_schema(path)
     conn = sqlite3.connect(path)
     try:
-        _insert_fixture_rows(conn)
+        populate_rekordbox_fixture_db(conn)
         conn.commit()
     finally:
         conn.close()
     return path
 
 
-def _create_schema(path: Path) -> None:
-    if _create_pyrekordbox_schema(path):
-        return
-    conn = sqlite3.connect(path)
-    try:
-        _create_fallback_schema(conn)
-        conn.commit()
-    finally:
-        conn.close()
-
-
-def _create_pyrekordbox_schema(path: Path) -> bool:
+def _create_pyrekordbox_schema(path: Path) -> None:
     try:
         from pyrekordbox.db6.tables import Base
         from sqlalchemy import create_engine
     except ImportError:
-        return False
+        raise unittest.SkipTest("pyrekordbox is required to build Rekordbox DB fixtures") from None
     engine = create_engine(f"sqlite+pysqlite:///{path}")
     try:
         Base.metadata.create_all(engine)
@@ -46,7 +36,6 @@ def _create_pyrekordbox_schema(path: Path) -> bool:
         conn.commit()
     finally:
         conn.close()
-    return True
 
 
 def _ensure_columns(conn: sqlite3.Connection, table: str, columns: dict[str, str]) -> None:
@@ -56,32 +45,7 @@ def _ensure_columns(conn: sqlite3.Connection, table: str, columns: dict[str, str
             conn.execute(f"ALTER TABLE {_quote(table)} ADD COLUMN {_quote(name)} {column_type}")
 
 
-def _create_fallback_schema(conn: sqlite3.Connection) -> None:
-    conn.executescript(
-        """
-        CREATE TABLE djmdContent(
-            ID INTEGER PRIMARY KEY, UUID TEXT NOT NULL, FolderPath TEXT, FileNameL TEXT, Title TEXT,
-            ArtistName TEXT, AlbumName TEXT, GenreName TEXT, KeyName TEXT, BPM REAL, Length INTEGER,
-            rb_local_usn INTEGER, created_at TEXT, updated_at TEXT
-        );
-        CREATE TABLE djmdCue(
-            ID INTEGER PRIMARY KEY, UUID TEXT NOT NULL, ContentID INTEGER, InMsec INTEGER, OutMsec INTEGER,
-            Kind INTEGER, is_hot_cue INTEGER, is_memory_cue INTEGER, Name TEXT, Comment TEXT,
-            rb_local_usn INTEGER, created_at TEXT, updated_at TEXT
-        );
-        CREATE TABLE djmdPlaylist(
-            ID INTEGER PRIMARY KEY, UUID TEXT, Seq INTEGER, Name TEXT, Attribute INTEGER, ParentID INTEGER,
-            rb_local_usn INTEGER, created_at TEXT, updated_at TEXT
-        );
-        CREATE TABLE djmdSongPlaylist(
-            ID INTEGER PRIMARY KEY, UUID TEXT, PlaylistID INTEGER, ContentID INTEGER, TrackNo INTEGER,
-            rb_local_usn INTEGER, created_at TEXT, updated_at TEXT
-        );
-        """
-    )
-
-
-def _insert_fixture_rows(conn: sqlite3.Connection) -> None:
+def populate_rekordbox_fixture_db(conn: sqlite3.Connection) -> None:
     now = "2026-01-01 00:00:00"
     _insert(
         conn,

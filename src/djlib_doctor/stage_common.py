@@ -31,5 +31,6 @@ def require_install_token(prefix: str, payload: object, recorded_token: str, con
 
 
 def backup_name(path: Path) -> str:
-    safe_parent = "__".join(path.parent.parts[-3:])
-    return f"{safe_parent}__{path.name}"
+    parent_parts = [part for part in path.parent.parts[-3:] if part not in (path.anchor, "/", "")]
+    safe_parent = "__".join(parent_parts)
+    return f"{safe_parent}__{path.name}" if safe_parent else path.name

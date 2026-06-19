@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Fixed SQLCipher-enabled CI failures by mapping raw DB driver/open failures to clear Rekordbox unsupported/encrypted messages and making the plain Rekordbox fixture remain stdlib-readable while preserving pyrekordbox table shape.
+- Fixed SQLCipher-enabled CI failures by skipping Rekordbox DB backend tests on Linux, building encrypted fixtures through pyrekordbox's own SQLCipher engine, converting raw DB driver failures to clear unsupported/encrypted messages, hardening backup names for shallow paths, and collapsing Rekordbox DB fixture setup onto pyrekordbox's schema plus one shared backend gate.
 
 ## 0.1.0 - 2026-06-19
 

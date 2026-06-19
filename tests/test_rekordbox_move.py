@@ -12,24 +12,21 @@ from tests.support.rekordbox_encrypted_assertions import (
     rekordbox_not_running,
 )
 from tests.support.rekordbox_encrypted_fixture import (
-    SqlcipherUnavailable,
     generate_encrypted_rekordbox_fixture,
-    skip_or_fail_for_missing_encrypted_backend,
+    requires_rekordbox_backend,
 )
 
 from djlib_doctor.cli import main
 
 
 class RekordboxMoveTests(unittest.TestCase):
+    @requires_rekordbox_backend
     def test_stage_and_install_moves_file_and_updates_encrypted_db_path(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
             source = tmp / "Old Folder" / "Track One.aiff"
             target = tmp / "New Folder" / "Track One Renamed.aiff"
-            try:
-                fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
-            except SqlcipherUnavailable as exc:
-                skip_or_fail_for_missing_encrypted_backend(self, exc)
+            fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
             assert_plain_sqlite_rejects(self, fixture.encrypted_db)
             source.parent.mkdir()
             source.write_bytes(b"audio")
@@ -81,15 +78,13 @@ class RekordboxMoveTests(unittest.TestCase):
         self.assertEqual(installed_library.tracks[0].path, target)
         self.assertTrue(report_exists)
 
+    @requires_rekordbox_backend
     def test_install_refuses_when_source_hash_changed_after_staging(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
             source = tmp / "Old Folder" / "Track One.aiff"
             target = tmp / "New Folder" / "Track One Renamed.aiff"
-            try:
-                fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
-            except SqlcipherUnavailable as exc:
-                skip_or_fail_for_missing_encrypted_backend(self, exc)
+            fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
             source.parent.mkdir()
             source.write_bytes(b"audio")
             operations = _write_operations(tmp, source, target)

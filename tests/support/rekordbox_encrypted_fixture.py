@@ -1,24 +1,23 @@
 from __future__ import annotations
 
 import base64
-import shutil
+import functools
+import sys
 import unittest
 import zlib
 from dataclasses import dataclass
-from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
-from tempfile import TemporaryDirectory
+from typing import Callable, TypeVar
 
-from tests.support.rekordbox_plain_fixture import build_plain_rekordbox_fixture_db
+from tests.support.rekordbox_plain_fixture import (
+    _ensure_columns,
+    build_plain_rekordbox_fixture_db,
+    populate_rekordbox_fixture_db,
+)
 
 PUBLIC_KEY_BLOB = b"PN_Pq^*N>(JYe*u^8;Yg76HuZ<mR13S?=>)b9;DpoTXV(6ItkU`}8*m6tx_I{Solh_N#dfe{v="
 BLOB_KEY = b"657f48f84c437cc1"
-SQLCIPHER4_PRAGMAS = (
-    "PRAGMA cipher_page_size = 4096",
-    "PRAGMA kdf_iter = 256000",
-    "PRAGMA cipher_hmac_algorithm = HMAC_SHA512",
-    "PRAGMA cipher_kdf_algorithm = PBKDF2_HMAC_SHA512",
-)
+F = TypeVar("F", bound=Callable[..., object])
 
 
 class SqlcipherUnavailable(RuntimeError):
@@ -38,56 +37,88 @@ def rekordbox_public_sqlcipher_key() -> str:
     return zlib.decompress(xored).decode("utf-8")
 
 
-def skip_or_fail_for_missing_encrypted_backend(testcase: unittest.TestCase, exc: Exception) -> None:
-    message = f"{exc}; install djlib-doctor with default dependencies before running the full local gate"
-    if _djlib_doctor_is_installed():
-        testcase.fail(message)
-    testcase.skipTest(message)
+def requires_rekordbox_backend(test: F) -> F:
+    @functools.wraps(test)
+    def wrapper(*args: object, **kwargs: object) -> object:
+        reason = rekordbox_backend_skip_reason()
+        if reason:
+            raise unittest.SkipTest(reason)
+        return test(*args, **kwargs)
+
+    return wrapper  # type: ignore[return-value]
 
 
-def _djlib_doctor_is_installed() -> bool:
+def rekordbox_backend_skip_reason() -> str | None:
+    if sys.platform == "linux":
+        return "pyrekordbox Rekordbox DB backend is unsupported on Linux"
     try:
-        version("djlib-doctor")
-    except PackageNotFoundError:
-        return False
-    return True
+        _import_pyrekordbox_backend()
+    except (ImportError, RuntimeError) as exc:
+        return f"pyrekordbox/SQLCipher Rekordbox DB backend is unavailable: {exc}"
+    return None
 
 
 def generate_encrypted_rekordbox_fixture(out_path: Path) -> EncryptedRekordboxFixture:
-    sqlcipher = _sqlcipher()
+    reason = rekordbox_backend_skip_reason()
+    if reason:
+        raise SqlcipherUnavailable(reason)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     if out_path.exists():
         out_path.unlink()
     plain_copy = out_path.with_suffix(".plain.db")
     if plain_copy.exists():
         plain_copy.unlink()
-    with TemporaryDirectory() as tmpdir:
-        plain = Path(tmpdir) / "plain-master.db"
-        build_plain_rekordbox_fixture_db(plain)
-        shutil.copy2(plain, plain_copy)
-        _encrypt_plain_db(sqlcipher, plain_copy, out_path)
+    build_plain_rekordbox_fixture_db(plain_copy)
+    _build_pyrekordbox_encrypted_db(out_path)
+    _assert_pyrekordbox_readable(out_path)
     return EncryptedRekordboxFixture(out_path, plain_copy)
 
 
-def _encrypt_plain_db(sqlcipher: object, plain: Path, encrypted: Path) -> None:
-    conn = sqlcipher.connect(str(plain))
+def _build_pyrekordbox_encrypted_db(path: Path) -> None:
     try:
-        key = rekordbox_public_sqlcipher_key().replace("'", "''")
-        target = str(encrypted).replace("'", "''")
-        conn.execute(f"ATTACH DATABASE '{target}' AS encrypted KEY '{key}'")
-        for pragma in SQLCIPHER4_PRAGMAS:
-            conn.execute(pragma.replace("PRAGMA ", "PRAGMA encrypted."))
-        conn.execute("SELECT sqlcipher_export('encrypted')")
-        conn.execute("DETACH DATABASE encrypted")
+        rb_database, Base, create_engine = _import_pyrekordbox_backend()
+    except (ImportError, RuntimeError) as exc:
+        raise SqlcipherUnavailable(f"pyrekordbox encrypted DB backend is unavailable: {exc}") from exc
+    engine = create_engine(
+        f"sqlite+pysqlcipher://:{rekordbox_public_sqlcipher_key()}@/{path}?", module=rb_database.sqlite3
+    )
+    try:
+        Base.metadata.create_all(engine)
+        conn = engine.raw_connection()
+        try:
+            _ensure_columns(conn, "djmdCue", {"is_hot_cue": "INTEGER", "is_memory_cue": "INTEGER", "Name": "TEXT"})
+            populate_rekordbox_fixture_db(conn)
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception as exc:
+        raise SqlcipherUnavailable(f"could not create pyrekordbox-readable encrypted fixture: {exc}") from exc
     finally:
-        conn.close()
+        engine.dispose()
 
 
-def _sqlcipher() -> object:
+def _assert_pyrekordbox_readable(path: Path) -> None:
     try:
-        from sqlcipher3 import dbapi2 as sqlcipher
-    except ImportError as exc:
-        raise SqlcipherUnavailable(
-            "sqlcipher3 is unavailable; reinstall djlib-doctor with its default Rekordbox DB dependencies"
-        ) from exc
-    return sqlcipher
+        from pyrekordbox.db6 import database
+
+        from djlib_doctor.rekordbox_db_read import read_rekordbox_master_db
+    except (ImportError, RuntimeError) as exc:
+        raise SqlcipherUnavailable(f"pyrekordbox encrypted DB backend is unavailable: {exc}") from exc
+    original_get_pid = database.get_rekordbox_pid
+    database.get_rekordbox_pid = lambda: 0
+    try:
+        library = read_rekordbox_master_db(path, key=rekordbox_public_sqlcipher_key())
+    except Exception as exc:
+        raise SqlcipherUnavailable(f"encrypted fixture did not reopen through pyrekordbox: {exc}") from exc
+    finally:
+        database.get_rekordbox_pid = original_get_pid
+    if not library.tracks or library.tracks[0].track_id != "1":
+        raise SqlcipherUnavailable("encrypted fixture reopened without the expected fixture track")
+
+
+def _import_pyrekordbox_backend() -> tuple[object, object, Callable[..., object]]:
+    from pyrekordbox.db6 import database as rb_database
+    from pyrekordbox.db6.tables import Base
+    from sqlalchemy import create_engine
+
+    return rb_database, Base, create_engine

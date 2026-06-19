@@ -5,7 +5,7 @@ from typing import Any, Callable
 
 from .cues import Cue, CueKind, CueType
 from .locations import parse_location
-from .rekordbox_pyrekordbox import open_master_database
+from .rekordbox_pyrekordbox import is_database_driver_error, open_master_database, unsupported_database_error
 from .rekordbox_uri import path_to_file_url
 from .rekordbox_xml import Playlist, PlaylistRef, RekordboxLibrary, Track
 
@@ -17,7 +17,12 @@ FILE_TYPES = {1: "MP3", 4: "M4A", 5: "FLAC", 11: "WAV", 12: "AIFF"}
 def read_rekordbox_master_db(path: Path, key: str = "", opener: DbOpener = open_master_database) -> RekordboxLibrary:
     db = opener(path, key=key, unlock=True)
     try:
-        return library_from_pyrekordbox_db(db)
+        try:
+            return library_from_pyrekordbox_db(db)
+        except Exception as exc:
+            if is_database_driver_error(exc):
+                raise unsupported_database_error(path, exc) from exc
+            raise
     finally:
         close = getattr(db, "close", None)
         if callable(close):

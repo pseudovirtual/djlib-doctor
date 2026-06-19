@@ -16,10 +16,10 @@ def open_master_database(
     try:
         return master_database(path=path, key=key, unlock=unlock)
     except (OSError, RuntimeError, ValueError) as exc:
-        raise _unsupported_database(path, exc) from exc
+        raise unsupported_database_error(path, exc) from exc
     except Exception as exc:
-        if _is_database_driver_error(exc):
-            raise _unsupported_database(path, exc) from exc
+        if is_database_driver_error(exc):
+            raise unsupported_database_error(path, exc) from exc
         raise
 
 
@@ -45,7 +45,7 @@ def _unavailable(exc: ImportError) -> PyrekordboxUnavailable:
     return error
 
 
-def _unsupported_database(path: Path, exc: BaseException) -> PyrekordboxUnavailable:
+def unsupported_database_error(path: Path, exc: BaseException) -> PyrekordboxUnavailable:
     error = PyrekordboxUnavailable(
         f"pyrekordbox could not unlock or read Rekordbox master.db: {path}. "
         "The database may be key-locked, unsupported by the installed pyrekordbox/SQLCipher backend, "
@@ -55,7 +55,7 @@ def _unsupported_database(path: Path, exc: BaseException) -> PyrekordboxUnavaila
     return error
 
 
-def _is_database_driver_error(exc: Exception) -> bool:
+def is_database_driver_error(exc: Exception) -> bool:
     return isinstance(exc, _database_driver_errors())
 
 

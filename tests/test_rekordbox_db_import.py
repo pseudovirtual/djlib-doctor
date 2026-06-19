@@ -13,9 +13,8 @@ from tests.support.rekordbox_encrypted_assertions import (
     rekordbox_not_running,
 )
 from tests.support.rekordbox_encrypted_fixture import (
-    SqlcipherUnavailable,
     generate_encrypted_rekordbox_fixture,
-    skip_or_fail_for_missing_encrypted_backend,
+    requires_rekordbox_backend,
 )
 from tests.support.rekordbox_import_fixture import (
     make_serato_root,
@@ -30,13 +29,11 @@ from djlib_doctor.serato_crate import write_serato_crate
 
 
 class RekordboxDbImportTests(unittest.TestCase):
+    @requires_rekordbox_backend
     def test_stage_and_install_encrypted_rekordbox_db_import_from_serato_port_manifest(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
-            try:
-                fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
-            except (ImportError, SqlcipherUnavailable) as exc:
-                skip_or_fail_for_missing_encrypted_backend(self, exc)
+            fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
             assert_plain_sqlite_rejects(self, fixture.encrypted_db)
             manifest = tmp / "port-manifest.json"
             make_serato_to_rekordbox_manifest(manifest)
@@ -56,13 +53,11 @@ class RekordboxDbImportTests(unittest.TestCase):
         self.assertEqual(installed.tracks[0].name, "Track One")
         self.assertGreaterEqual(len(installed.tracks[0].cues), 2)
 
+    @requires_rekordbox_backend
     def test_cli_stage_rekordbox_db_import_prints_install_token(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
-            try:
-                fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
-            except (ImportError, SqlcipherUnavailable) as exc:
-                skip_or_fail_for_missing_encrypted_backend(self, exc)
+            fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
             manifest = tmp / "port-manifest.json"
             make_serato_to_rekordbox_manifest(manifest)
             stdout = io.StringIO()
@@ -85,15 +80,13 @@ class RekordboxDbImportTests(unittest.TestCase):
         self.assertIn("Rekordbox DB import stage written:", stdout.getvalue())
         self.assertIn("Install token: INSTALL_SQLITE_STAGE:", stdout.getvalue())
 
+    @requires_rekordbox_backend
     def test_cli_migrate_serato_to_rb_can_stage_rekordbox_db(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
             library = tmp / "Library"
             library.mkdir()
-            try:
-                fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
-            except (ImportError, SqlcipherUnavailable) as exc:
-                skip_or_fail_for_missing_encrypted_backend(self, exc)
+            fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
             crate = tmp / "Test.crate"
             make_serato_root(library / "root.sqlite")
             write_serato_crate(crate, ("Music/Track One.aiff",))
@@ -158,6 +151,7 @@ class RekordboxDbImportTests(unittest.TestCase):
         self.assertEqual(loop["Kind"], 2)
         self.assertEqual(loop["OutMsec"], 56000)
 
+    @requires_rekordbox_backend
     def test_rekordbox_db_import_refuses_encrypted_sqlcipher_db_clearly(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
@@ -169,13 +163,11 @@ class RekordboxDbImportTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, r"encrypted SQLCipher.*pyrekordbox/SQLCipher backend"):
                 stage_rekordbox_db_import(db, manifest, tmp / "stage")
 
+    @requires_rekordbox_backend
     def test_stage_rekordbox_db_import_updates_encrypted_db_fixture(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
-            try:
-                fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
-            except (ImportError, SqlcipherUnavailable) as exc:
-                skip_or_fail_for_missing_encrypted_backend(self, exc)
+            fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
             manifest = tmp / "port-manifest.json"
             make_serato_to_rekordbox_manifest(manifest)
 

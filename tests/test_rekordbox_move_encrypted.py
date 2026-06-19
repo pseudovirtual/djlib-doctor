@@ -7,22 +7,19 @@ from unittest.mock import patch
 from tests.support.fake_pyrekordbox_db import FakePyrekordboxDb
 from tests.support.rekordbox_encrypted_assertions import read_encrypted_master_copy, rekordbox_not_running
 from tests.support.rekordbox_encrypted_fixture import (
-    SqlcipherUnavailable,
     generate_encrypted_rekordbox_fixture,
-    skip_or_fail_for_missing_encrypted_backend,
+    requires_rekordbox_backend,
 )
 
 from djlib_doctor.rekordbox_move import stage_rekordbox_move
 
 
 class RekordboxMoveEncryptedTests(unittest.TestCase):
+    @requires_rekordbox_backend
     def test_move_stages_encrypted_master_db(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
-            try:
-                fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
-            except (ImportError, SqlcipherUnavailable) as exc:
-                skip_or_fail_for_missing_encrypted_backend(self, exc)
+            fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
             source = tmp / "Old Folder" / "Track One.aiff"
             target = tmp / "New Folder" / "Track One Renamed.aiff"
             source.parent.mkdir()

@@ -10,22 +10,19 @@ from tests.support.rekordbox_encrypted_assertions import (
     rekordbox_not_running,
 )
 from tests.support.rekordbox_encrypted_fixture import (
-    SqlcipherUnavailable,
     generate_encrypted_rekordbox_fixture,
-    skip_or_fail_for_missing_encrypted_backend,
+    requires_rekordbox_backend,
 )
 
 from djlib_doctor.rekordbox_db_stage import install_rekordbox_db_stage, stage_rekordbox_db_operations
 
 
 class RekordboxDbStageTests(unittest.TestCase):
+    @requires_rekordbox_backend
     def test_stage_and_install_encrypted_rekordbox_db_update(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
-            try:
-                fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
-            except (ImportError, SqlcipherUnavailable) as exc:
-                skip_or_fail_for_missing_encrypted_backend(self, exc)
+            fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
             assert_plain_sqlite_rejects(self, fixture.encrypted_db)
             ops = _write_update_ops(tmp, "New Title")
 
@@ -43,21 +40,17 @@ class RekordboxDbStageTests(unittest.TestCase):
         self.assertTrue(report["passed"])
         self.assertEqual(installed.tracks[0].name, "New Title")
 
+    @requires_rekordbox_backend
     def test_plain_sqlite_fixture_is_rejected_by_plain_sqlite_probe_when_encrypted(self):
         with TemporaryDirectory() as tmpdir:
-            try:
-                fixture = generate_encrypted_rekordbox_fixture(Path(tmpdir) / "master.db")
-            except (ImportError, SqlcipherUnavailable) as exc:
-                skip_or_fail_for_missing_encrypted_backend(self, exc)
+            fixture = generate_encrypted_rekordbox_fixture(Path(tmpdir) / "master.db")
             assert_plain_sqlite_rejects(self, fixture.encrypted_db)
 
+    @requires_rekordbox_backend
     def test_install_refuses_when_live_db_changed_after_stage(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
-            try:
-                fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
-            except (ImportError, SqlcipherUnavailable) as exc:
-                skip_or_fail_for_missing_encrypted_backend(self, exc)
+            fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
             ops = _write_update_ops(tmp, "New Title")
             with rekordbox_not_running():
                 stage = stage_rekordbox_db_operations(fixture.encrypted_db, ops, tmp / "stage")
@@ -68,13 +61,11 @@ class RekordboxDbStageTests(unittest.TestCase):
                     tmp / "stage", fixture.encrypted_db, confirm_token=stage.install_token, process_lines=()
                 )
 
+    @requires_rekordbox_backend
     def test_install_refuses_when_rekordbox_process_is_running(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
-            try:
-                fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
-            except (ImportError, SqlcipherUnavailable) as exc:
-                skip_or_fail_for_missing_encrypted_backend(self, exc)
+            fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
             ops = _write_update_ops(tmp, "New Title")
             with rekordbox_not_running():
                 stage = stage_rekordbox_db_operations(fixture.encrypted_db, ops, tmp / "stage")
@@ -87,13 +78,11 @@ class RekordboxDbStageTests(unittest.TestCase):
                     process_lines=("123 rekordbox",),
                 )
 
+    @requires_rekordbox_backend
     def test_zero_row_update_refuses_to_stage(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
-            try:
-                fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
-            except (ImportError, SqlcipherUnavailable) as exc:
-                skip_or_fail_for_missing_encrypted_backend(self, exc)
+            fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
             ops = tmp / "ops.json"
             ops.write_text(
                 json.dumps(

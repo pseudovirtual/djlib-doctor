@@ -5,15 +5,47 @@ from tests.support import rekordbox_encrypted_fixture as encrypted
 
 
 class EncryptedBackendPolicyTests(unittest.TestCase):
-    def test_installed_package_fails_when_backend_is_missing(self):
-        with mock.patch.object(encrypted, "_djlib_doctor_is_installed", return_value=True):
-            with self.assertRaises(AssertionError):
-                encrypted.skip_or_fail_for_missing_encrypted_backend(self, ImportError("missing backend"))
+    def test_requires_backend_skips_linux(self):
+        calls = []
 
-    def test_minimal_pythonpath_environment_skips_when_backend_is_missing(self):
-        with mock.patch.object(encrypted, "_djlib_doctor_is_installed", return_value=False):
+        @encrypted.requires_rekordbox_backend
+        def sample():
+            calls.append(True)
+
+        with mock.patch.object(encrypted.sys, "platform", "linux"):
             with self.assertRaises(unittest.SkipTest):
-                encrypted.skip_or_fail_for_missing_encrypted_backend(self, ImportError("missing backend"))
+                sample()
+
+        self.assertEqual(calls, [])
+
+    def test_requires_backend_skips_missing_backend(self):
+        calls = []
+
+        @encrypted.requires_rekordbox_backend
+        def sample():
+            calls.append(True)
+
+        with mock.patch.object(encrypted.sys, "platform", "darwin"):
+            with mock.patch.object(
+                encrypted, "_import_pyrekordbox_backend", side_effect=ImportError("missing backend")
+            ):
+                with self.assertRaises(unittest.SkipTest):
+                    sample()
+
+        self.assertEqual(calls, [])
+
+    def test_requires_backend_runs_when_available(self):
+        @encrypted.requires_rekordbox_backend
+        def sample(value):
+            return value + 1
+
+        with mock.patch.object(encrypted.sys, "platform", "darwin"):
+            with mock.patch.object(
+                encrypted, "_import_pyrekordbox_backend", return_value=(object(), object(), object())
+            ):
+                result = sample(2)
+
+        self.assertEqual(result, 3)
 
 
 if __name__ == "__main__":

@@ -7,6 +7,7 @@ from tempfile import TemporaryDirectory
 from unittest import mock
 
 from tests.helpers import make_rekordbox_import_db, make_serato_root
+from tests.support.rekordbox_encrypted_fixture import requires_rekordbox_backend
 
 from djlib_doctor.cli import main
 from djlib_doctor.config import default_config, write_config
@@ -49,6 +50,7 @@ class DoctorTests(unittest.TestCase):
         self.assertIn("No Rekordbox or Serato libraries found", stdout.getvalue())
         self.assertIn("djlib-doctor detect", stdout.getvalue())
 
+    @requires_rekordbox_backend
     def test_doctor_checks_configured_rekordbox_db_and_serato_database_v2(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
@@ -69,6 +71,7 @@ class DoctorTests(unittest.TestCase):
         self.assertIn("Rekordbox DB: PASS", output)
         self.assertIn("Serato database V2: PASS", output)
 
+    @requires_rekordbox_backend
     def test_doctor_reports_configured_encrypted_rekordbox_db_clearly(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
