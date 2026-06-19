@@ -6,6 +6,8 @@ Primary-library foundation through Phase H is complete. Phase K docs polish is c
 
 ## Last Done
 
+C4 Serato audio-tag writer cleanup is complete. AIFF and MP3 now share one ID3 writer path for standard frames plus Serato Markers2 GEOB, while MP4 remains format-specific. The staging/install module is back under the 200-line guideline, and the fake mutagen test scaffold moved to shared test helpers. Current gate: 265 tests green with 23 expected skips, plus bytecode compile, Ruff check, and Ruff format check.
+
 C3 atomic replacement consolidation is complete. `stage_installer.backup_and_replace()` now owns live-file backup plus same-filesystem temp-copy and `os.replace` semantics, and Rekordbox convert, Rekordbox move, generic SQLite stage, Serato stage, file ops, and Serato audio-tag installs route live replacements through it. Added a shared failure-path test proving a simulated replace error leaves the original live file intact and the backup present. Current gate: 264 tests green with 23 expected skips, plus bytecode compile, Ruff check, and Ruff format check.
 
 C2 safety consolidation is complete. `stage_installer.py` now owns shared staged-install guard helpers for confirmation-token recomputation, staged/live hash verification, SQLite sidecar refusal, app-closed refusal, and required backup creation. Rekordbox convert, Rekordbox move, Rekordbox DB stage/import, generic SQLite stage, Serato stage, file ops, and Serato audio tag install paths now use the shared helpers while preserving existing manifest formats and install reports. Current gate: 263 tests green with 23 expected skips, plus bytecode compile, Ruff check, and Ruff format check.

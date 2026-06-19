@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import contextlib
 import sqlite3
+import sys
+import types
 from pathlib import Path
+from unittest import mock
 
 
 def make_serato_root(path: Path) -> None:
@@ -66,3 +70,65 @@ def make_rekordbox_import_db(path: Path) -> None:
         conn.commit()
     finally:
         conn.close()
+
+
+class _FakeTags(dict):
+    def setall(self, key, values):
+        self[key] = values
+
+
+class _FakeAudio:
+    def __init__(self, path):
+        self.path = path
+        self.tags = _FakeTags()
+
+    def add_tags(self):
+        self.tags = _FakeTags()
+
+    def save(self):
+        pass
+
+
+class _FakeGEOB:
+    def __init__(self, **kwargs):
+        self.data = kwargs["data"]
+
+
+class _FakeMP4FreeForm(bytes):
+    def __new__(cls, data, dataformat=None):
+        return bytes.__new__(cls, data)
+
+
+@contextlib.contextmanager
+def fake_mutagen():
+    written = []
+
+    def audio_factory(path):
+        return _FakeAudio(path)
+
+    def geob_factory(**kwargs):
+        frame = _FakeGEOB(**kwargs)
+        written.append(frame.data)
+        return frame
+
+    def freeform_factory(data, dataformat=None):
+        written.append(bytes(data))
+        return _FakeMP4FreeForm(data, dataformat=dataformat)
+
+    aiff = types.ModuleType("mutagen.aiff")
+    aiff.AIFF = audio_factory
+    mp3 = types.ModuleType("mutagen.mp3")
+    mp3.MP3 = audio_factory
+    mp4 = types.ModuleType("mutagen.mp4")
+    mp4.MP4 = audio_factory
+    mp4.MP4FreeForm = freeform_factory
+    mp4.AtomDataType = types.SimpleNamespace(IMPLICIT=0)
+    id3 = types.ModuleType("mutagen.id3")
+    id3.GEOB = geob_factory
+    for name in ("TALB", "TBPM", "TCON", "TIT2", "TKEY", "TPE1"):
+        setattr(id3, name, lambda **kwargs: kwargs)
+    with mock.patch.dict(
+        sys.modules,
+        {"mutagen.aiff": aiff, "mutagen.id3": id3, "mutagen.mp3": mp3, "mutagen.mp4": mp4},
+    ):
+        yield written
