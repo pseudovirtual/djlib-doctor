@@ -6,6 +6,8 @@ Primary-library foundation through Phase H is complete. Phase K docs polish is c
 
 ## Last Done
 
+J4 reran and documented the Phase J fixture-hardening gate. The final local suite is green at 254 tests with 23 skips; the skips are the expected SQLCipher/real-data gates in this sandbox. Copy-only `master.db` persistence coverage now exists for convert, move, and Serato-to-Rekordbox import, and encrypted writer tests include plain-SQLite rejection assertions. `docs/phase-i-results.md` records these results and the installed-backend expectation.
+
 J3 added `docs/testing-fixtures.md` and linked it from the docs index. The guide states that fixtures must mirror real bytes, columns, encryption, and tag structure; records database V2, `djmdCue`, ANLZ, and Serato tag mappings; and names `DJLIB_DOCTOR_REAL_*` real-data gates plus the copy-only `master.db` persistence rule.
 
 J2 aligned format fixtures with real structures: Serato `database V2` tests now use `pfil` plus `t*` metadata tags by default, Rekordbox import and encrypted fixtures use real `djmdCue` fields (`OutMsec=-1`, `Kind=slot+1`, `is_hot_cue`/`is_memory_cue`) instead of `HotCue`, and ANLZ helpers document local empty cue containers versus cue-bearing device exports.
@@ -20,7 +22,7 @@ Recent Phase I fixes and validation remain recorded: Serato `database V2` nested
 
 ## Next
 
-Next is J4: re-run and document full-suite fixture hardening results, including encrypted writer tests and plain-DB rejection coverage.
+Phase J-prep is complete. Next is Phase J release work: decide/document the sqlcipher3-wheels coverage gap, then run TestPyPI smoke after maintainer trusted-publisher setup.
 
 Phase I still cannot complete I1, the device-export cue side of I2, or broad I4 golden-vector expansion from synthetic fixtures. Real validation on Rekordbox 7.2.8 and Serato DJ Pro has already confirmed local ANLZ beatgrid parsing, PCOB/PCO2 cue-count offsets for empty local cue containers, Serato crate reading, the Markers2 parser path, and hotcue slot = Kind - 1 for Rekordbox cues. The repo currently has only `tests/fixtures/real/.gitignore` and `tests/fixtures/real/README.md`; there is no `manifest.json` or captured library payload. Provide an approved local-only fixture under `tests/fixtures/real/manifest.json`, following `docs/real-fixtures.md`, with:
 

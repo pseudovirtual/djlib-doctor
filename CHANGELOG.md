@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] J4: Recorded fixture-hardening verification results: 254-test full gate, copy-only encrypted writer coverage, and plain-SQLite rejection coverage.
 - [x] J3: Added `docs/testing-fixtures.md` with real-format fixture rules, confirmed field mappings, and real-data test backstops.
 - [x] J2: Aligned Serato database V2, Rekordbox `djmdCue`, and ANLZ fixtures with real field names and local/device cue behavior.
 - [x] J1: Made encrypted Rekordbox DB fixtures the default for convert, move, DB-stage, import, and read writer tests, with master.db-copy persistence checks and install-first release CI.

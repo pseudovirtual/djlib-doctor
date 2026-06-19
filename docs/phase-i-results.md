@@ -41,3 +41,15 @@ Real Rekordbox 7.2.8 `djmdCue` rows confirmed:
 - `OutMsec=-1` means no loop end; only `OutMsec > 0` is a saved loop.
 - `Kind` and `is_hot_cue` classify hotcues; hotcue slot = Kind - 1.
 - The validation library read 1086 hotcues, 29 loops, and ~40 memory cues.
+
+## J4 fixture-hardening verification
+
+The Phase J hardening pass reran the full suite at 254 tests. In this local sandbox, SQLCipher-backed tests skip because the backend is not installed; in installed CI/local environments, the encrypted fixture policy fails if the SQLCipher backend is installed incorrectly or missing after package install.
+
+Coverage now includes:
+
+- copy only `master.db` persistence checks for convert, move, and Serato-to-Rekordbox import
+- plain-SQLite rejection assertions for encrypted Rekordbox writer fixtures
+- real database V2 `pfil/t*` field tags instead of crate-style tags
+- real `djmdCue` fields instead of invented `Type` or `HotCue` columns
+- local ANLZ empty cue containers plus separate device-export cue fixture coverage

@@ -25,6 +25,19 @@ class PhaseIResultsDocsTests(unittest.TestCase):
         ):
             self.assertIn(phrase, docs)
 
+    def test_fixture_hardening_results_are_recorded(self):
+        result = (ROOT / "docs" / "phase-i-results.md").read_text(encoding="utf-8")
+
+        for phrase in (
+            "J4 fixture-hardening verification",
+            "254 tests",
+            "copy only `master.db`",
+            "convert, move, and Serato-to-Rekordbox import",
+            "plain-SQLite rejection assertions",
+            "SQLCipher backend is installed",
+        ):
+            self.assertIn(phrase, result)
+
 
 if __name__ == "__main__":
     unittest.main()
