@@ -78,6 +78,22 @@ def _check_rekordbox_xml(path: Path) -> dict[str, Any]:
 
 def _check_rekordbox_db(path: Path) -> dict[str, Any]:
     try:
+        library = read_rekordbox_master_db(path)
+        return {
+            "label": "Rekordbox DB",
+            "path": str(path),
+            "status": "PASS",
+            "summary": _rekordbox_library_summary(library),
+        }
+    except PyrekordboxUnavailable as exc:
+        plain_check = _check_plain_rekordbox_db(path)
+        return plain_check if plain_check is not None else _rekordbox_db_failure(path, exc)
+    except (OSError, ValueError) as exc:
+        return _rekordbox_db_failure(path, exc)
+
+
+def _check_plain_rekordbox_db(path: Path) -> dict[str, Any] | None:
+    try:
         conn = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
         try:
             columns = table_columns(conn, CONTENT_TABLE)
@@ -93,10 +109,8 @@ def _check_rekordbox_db(path: Path) -> dict[str, Any]:
             "status": "PASS",
             "summary": {"tracks": int(count), "content_table": CONTENT_TABLE},
         }
-    except sqlite3.DatabaseError as exc:
-        return _check_rekordbox_db_with_pyrekordbox(path, exc)
-    except (OSError, ValueError) as exc:
-        return {"label": "Rekordbox DB", "path": str(path), "status": "FAIL", "error": str(exc)}
+    except (sqlite3.DatabaseError, OSError, ValueError):
+        return None
 
 
 def _check_serato_root(path: Path) -> dict[str, Any]:
@@ -125,29 +139,17 @@ def _check_serato_database_v2(path: Path) -> dict[str, Any]:
         return {"label": "Serato database V2", "path": str(path), "status": "FAIL", "error": str(exc)}
 
 
-def _check_rekordbox_db_with_pyrekordbox(path: Path, sqlite_error: sqlite3.DatabaseError) -> dict[str, Any]:
-    try:
-        library = read_rekordbox_master_db(path)
-    except PyrekordboxUnavailable as exc:
-        return {"label": "Rekordbox DB", "path": str(path), "status": "FAIL", "error": str(exc)}
-    except (OSError, ValueError) as exc:
-        return {
-            "label": "Rekordbox DB",
-            "path": str(path),
-            "status": "FAIL",
-            "error": _unsupported_rekordbox_db_message(path, sqlite_error, exc),
-        }
+def _rekordbox_library_summary(library: Any) -> dict[str, Any]:
     return {
-        "label": "Rekordbox DB",
-        "path": str(path),
-        "status": "PASS",
-        "summary": {
-            "tracks": len(library.tracks),
-            "playlists": len(library.playlists),
-            "cues": sum(len(track.cues) for track in library.tracks),
-            "reader": "pyrekordbox",
-        },
+        "tracks": len(library.tracks),
+        "playlists": len(library.playlists),
+        "cues": sum(len(track.cues) for track in library.tracks),
+        "reader": "rekordbox-db",
     }
+
+
+def _rekordbox_db_failure(path: Path, exc: Exception) -> dict[str, Any]:
+    return {"label": "Rekordbox DB", "path": str(path), "status": "FAIL", "error": str(exc)}
 
 
 def _check_line(check: dict[str, Any]) -> str:
@@ -195,15 +197,6 @@ def _unique_findings(findings: list[dict[str, str]]) -> list[dict[str, str]]:
 
 def _finding(platform: str, kind: str, path: str) -> dict[str, str]:
     return {"platform": platform, "kind": kind, "path": path}
-
-
-def _unsupported_rekordbox_db_message(path: Path, sqlite_error: sqlite3.DatabaseError, reader_error: Exception) -> str:
-    return (
-        f"Unsupported Rekordbox DB format: {path}. Could not read it as the tested plain-SQLite "
-        "schema or through the pyrekordbox encrypted DB reader. Use a Rekordbox XML export "
-        "or a supported pyrekordbox-readable master.db. "
-        f"SQLite error: {sqlite_error}; pyrekordbox error: {reader_error}"
-    )
 
 
 def _punch_list(detection: dict[str, Any], checks: list[dict[str, Any]]) -> list[str]:

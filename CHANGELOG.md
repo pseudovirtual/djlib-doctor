@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] C9: Simplified `doctor` Rekordbox DB checks so they use the shared Rekordbox DB reader first, with the existing plain-fixture schema probe kept only as a compatibility fallback.
 - [x] C8: Added a shared cue timing value object reused by both directional cue serializers while keeping Serato and Rekordbox cue models separate.
 - [x] C7: Added a model-backed schema drift guard that compares registered schema top-level fields against real `to_dict()` runtime examples.
 - [x] C6: Updated Serato format capability statuses so shipped AIFF/AIF/M4A/MP4/MP3 tag-writing formats use current-state labels instead of future-tense labels.

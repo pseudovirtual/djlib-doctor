@@ -107,6 +107,27 @@ class DoctorTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertIn("Rekordbox DB: PASS", output)
 
+    def test_doctor_uses_shared_rekordbox_db_reader_for_plain_db(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            db = tmp / "master.db"
+            config_path = tmp / "djlib-doctor.json"
+            make_rekordbox_import_db(db)
+            write_config(config_path, default_config(rekordbox_db=db))
+            library = RekordboxLibrary(
+                tracks=(Track("1", "Track One", "Artist One", None, "unknown", None, "AIFF"),),
+                playlist_refs=(),
+            )
+            stdout = io.StringIO()
+
+            with mock.patch("djlib_doctor.doctor.read_rekordbox_master_db", return_value=library) as reader:
+                with contextlib.redirect_stdout(stdout):
+                    exit_code = main(["doctor", "--home", str(tmp / "empty-home"), "--config", str(config_path)])
+
+        self.assertEqual(exit_code, 0)
+        reader.assert_called_once_with(db)
+        self.assertIn("Rekordbox DB: PASS", stdout.getvalue())
+
     def test_doctor_json_outputs_machine_readable_report(self):
         with TemporaryDirectory() as tmpdir:
             home = Path(tmpdir) / "home"
