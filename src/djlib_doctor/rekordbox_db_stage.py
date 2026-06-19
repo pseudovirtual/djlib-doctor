@@ -8,7 +8,6 @@ from .io_utils import read_json, write_json
 from .rekordbox_cleanup_apply import build_rekordbox_cleanup_operations
 from .rekordbox_db_import import build_rekordbox_db_import_operations
 from .rekordbox_db_write import apply_rekordbox_operations
-from .safety import all_checks_passed, check_app_processes_closed, check_sqlite_sidecars
 from .sqlite_stage import (
     SQLITE_INSTALL_SCHEMA_VERSION,
     SQLITE_STAGE_SCHEMA_VERSION,
@@ -16,6 +15,7 @@ from .sqlite_stage import (
     install_sqlite_stage,
 )
 from .stage_common import install_token, sha256_file
+from .stage_installer import require_app_closed, require_no_sqlite_sidecars
 
 
 def stage_rekordbox_db_operations(live_db: Path, operations_manifest: Path, stage_dir: Path) -> SqliteStage:
@@ -39,17 +39,16 @@ def stage_rekordbox_db_apply(live_db: Path, apply_manifest: Path, stage_dir: Pat
 def install_rekordbox_db_stage(
     stage_dir: Path, live_db: Path, confirm_token: str, process_lines: tuple[str, ...] | list[str] | None = None
 ) -> dict[str, Any]:
-    if process_lines is not None:
-        checks = check_app_processes_closed(process_lines, {"rekordbox": ("rekordbox",)})
-        if not all_checks_passed(checks):
-            raise RuntimeError("Refusing to install while Rekordbox appears to be running")
+    require_app_closed(
+        process_lines, {"rekordbox": ("rekordbox",)}, "Refusing to install while Rekordbox appears to be running"
+    )
     return install_sqlite_stage(stage_dir, live_db, confirm_token, label="rekordbox", artifact_prefix="rekordbox-db")
 
 
 def _stage_rekordbox_db_operations(live_db: Path, operations_manifest: Path, stage_dir: Path) -> SqliteStage:
-    sidecar_checks = check_sqlite_sidecars(live_db, code="rekordbox_sqlite_sidecar_absent")
-    if not all_checks_passed(sidecar_checks):
-        raise RuntimeError("Refusing to stage Rekordbox DB operations while sidecars exist")
+    require_no_sqlite_sidecars(
+        live_db, "rekordbox_sqlite_sidecar_absent", "Refusing to stage Rekordbox DB operations while sidecars exist"
+    )
     stage_dir.mkdir(parents=True, exist_ok=True)
     staged_db = stage_dir / live_db.name
     shutil.copy2(live_db, staged_db)

@@ -7,9 +7,9 @@ from pathlib import Path
 from typing import Any
 
 from .io_utils import read_json, write_json
-from .safety import all_checks_passed, check_sqlite_sidecars
 from .sqlite_utils import quote_identifier, require_integrity
-from .stage_common import install_token, require_install_token, require_sha256, sha256_file
+from .stage_common import install_token, sha256_file
+from .stage_installer import copy_required_backup, require_file_hashes, require_no_sqlite_sidecars, require_stage_token
 
 SQLITE_STAGE_SCHEMA_VERSION = "1.0"
 SQLITE_INSTALL_SCHEMA_VERSION = "1.0"
@@ -26,9 +26,9 @@ class SqliteStage:
 def stage_sqlite_operations(
     live_db: Path, operations_manifest: Path, stage_dir: Path, label: str = "sqlite", artifact_prefix: str | None = None
 ) -> SqliteStage:
-    sidecar_checks = check_sqlite_sidecars(live_db, code=f"{label}_sqlite_sidecar_absent")
-    if not all_checks_passed(sidecar_checks):
-        raise RuntimeError("Refusing to stage SQLite operations while sidecars exist")
+    require_no_sqlite_sidecars(
+        live_db, f"{label}_sqlite_sidecar_absent", "Refusing to stage SQLite operations while sidecars exist"
+    )
     stage_dir.mkdir(parents=True, exist_ok=True)
     staged_db = stage_dir / live_db.name
     shutil.copy2(live_db, staged_db)
@@ -69,17 +69,21 @@ def install_sqlite_stage(
     output_prefix = artifact_prefix or f"{label}-sqlite"
     manifest_path = stage_dir / f"{output_prefix}-stage-manifest.json"
     manifest = read_json(manifest_path)
-    require_install_token("INSTALL_SQLITE_STAGE", manifest["hashes"], manifest["install_token"], confirm_token)
+    require_stage_token("INSTALL_SQLITE_STAGE", manifest["hashes"], manifest["install_token"], confirm_token)
     staged_db = Path(manifest["staged_db"])
-    require_sha256(staged_db, manifest["hashes"]["staged_db"], "Staged SQLite")
-    require_sha256(live_db, manifest["hashes"]["source_db"], "Live SQLite source")
-    sidecar_checks = check_sqlite_sidecars(live_db, code=f"{label}_sqlite_sidecar_absent")
-    if not all_checks_passed(sidecar_checks):
-        raise RuntimeError("Refusing to install SQLite stage while sidecars exist")
+    require_file_hashes(
+        [
+            (staged_db, manifest["hashes"]["staged_db"], "Staged SQLite"),
+            (live_db, manifest["hashes"]["source_db"], "Live SQLite source"),
+        ]
+    )
+    require_no_sqlite_sidecars(
+        live_db, f"{label}_sqlite_sidecar_absent", "Refusing to install SQLite stage while sidecars exist"
+    )
     backup_dir = stage_dir / "sqlite-backups"
     backup_dir.mkdir(parents=True, exist_ok=True)
     backup = backup_dir / live_db.name
-    shutil.copy2(live_db, backup)
+    copy_required_backup(live_db, backup)
     shutil.copy2(staged_db, live_db)
     passed = sha256_file(live_db) == sha256_file(staged_db)
     report = {

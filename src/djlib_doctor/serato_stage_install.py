@@ -7,10 +7,15 @@ from pathlib import Path
 from typing import Any
 
 from .io_utils import read_json, write_json
-from .safety import all_checks_passed, check_app_processes_closed, check_serato_sqlite_sidecars
 from .serato_stage_common import file_hash_check, install_token_payload, installed_file_record
 from .serato_stage_models import SERATO_INSTALL_SCHEMA_VERSION, SeratoInstallReport, SeratoVerificationReport
-from .stage_common import require_install_token, require_sha256
+from .stage_installer import (
+    copy_required_backup,
+    require_app_closed,
+    require_file_hash,
+    require_no_sqlite_sidecars,
+    require_stage_token,
+)
 
 
 def verify_serato_stage(stage_dir: Path) -> SeratoVerificationReport:
@@ -33,19 +38,19 @@ def install_serato_stage(
     process_lines: tuple[str, ...] | list[str] | None = None,
 ) -> SeratoInstallReport:
     manifest = read_json(stage_dir / "serato-stage-manifest.json")
-    require_install_token(
+    require_stage_token(
         "INSTALL_SERATO_STAGE", install_token_payload(manifest), manifest["install_token"], confirm_token
     )
     if not verify_serato_stage(stage_dir).passed:
         raise RuntimeError("Refusing to install because staged verification failed")
     live_root = live_serato_library_dir / "root.sqlite"
-    require_sha256(live_root, manifest["source_hashes"]["root_sqlite"], "Live Serato root.sqlite source")
-    if not all_checks_passed(check_serato_sqlite_sidecars(live_root)):
-        raise RuntimeError("Refusing to install while Serato SQLite sidecars exist")
-    if process_lines is not None and not all_checks_passed(
-        check_app_processes_closed(process_lines, {"serato": ("Serato DJ", "serato")})
-    ):
-        raise RuntimeError("Refusing to install while Serato appears to be running")
+    require_file_hash(live_root, manifest["source_hashes"]["root_sqlite"], "Live Serato root.sqlite source")
+    require_no_sqlite_sidecars(
+        live_root, "serato_sqlite_sidecar_absent", "Refusing to install while Serato SQLite sidecars exist"
+    )
+    require_app_closed(
+        process_lines, {"serato": ("Serato DJ", "serato")}, "Refusing to install while Serato appears to be running"
+    )
     return _install_files(stage_dir, live_root, live_serato_music_dir, manifest)
 
 
@@ -85,9 +90,7 @@ def _install_files(
 
 
 def _copy_required_backup(source: Path, backup: Path) -> None:
-    shutil.copy2(source, backup)
-    if not backup.is_file():
-        raise RuntimeError(f"Required backup was not created: {backup}")
+    copy_required_backup(source, backup)
 
 
 def _copy_installs(

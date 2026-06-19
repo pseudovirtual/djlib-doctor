@@ -6,6 +6,8 @@ Primary-library foundation through Phase H is complete. Phase K docs polish is c
 
 ## Last Done
 
+C2 safety consolidation is complete. `stage_installer.py` now owns shared staged-install guard helpers for confirmation-token recomputation, staged/live hash verification, SQLite sidecar refusal, app-closed refusal, and required backup creation. Rekordbox convert, Rekordbox move, Rekordbox DB stage/import, generic SQLite stage, Serato stage, file ops, and Serato audio tag install paths now use the shared helpers while preserving existing manifest formats and install reports. Current gate: 263 tests green with 23 expected skips, plus bytecode compile, Ruff check, and Ruff format check.
+
 J1 release dependency decision is documented: `pyrekordbox` and `sqlcipher3-wheels` remain core dependencies because Rekordbox DB support is core scope. Prebuilt SQLCipher wheels are supported on the current CI matrix, while Intel/x86_64 macOS on Python 3.13 remains a known `pip install` gap; use Apple Silicon or Python <=3.12 on Intel macOS.
 
 Fixed a real Serato Markers2 writer bug: staged audio-tag writes now serialize GEOB data as Serato does, with an outer version header, wrapped base64 body, decoded `COLOR`/`BPMLOCK` defaults plus cue entries and footer, and null padding. Added a sanitized real-layout GEOB golden fixture and writer coverage across AIFF, MP3, and MP4 branches so the writer can no longer pass by raw self-round-trip alone. Current gate: 256 tests green with 23 expected skips, plus bytecode compile, Ruff check, and Ruff format check.

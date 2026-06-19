@@ -8,8 +8,14 @@ from typing import Any
 
 from .io_utils import read_json, write_json
 from .rekordbox_db_write import update_track_location_and_cues
-from .safety import all_checks_passed, check_app_processes_closed, check_sqlite_sidecars
-from .stage_common import backup_name, install_token, require_install_token, require_sha256, sha256_file
+from .stage_common import backup_name, install_token, sha256_file
+from .stage_installer import (
+    copy_required_backup,
+    require_app_closed,
+    require_file_hashes,
+    require_no_sqlite_sidecars,
+    require_stage_token,
+)
 
 MOVE_STAGE_SCHEMA_VERSION = "1.0"
 MOVE_INSTALL_SCHEMA_VERSION = "1.0"
@@ -59,7 +65,7 @@ def install_rekordbox_move(
 ) -> dict[str, Any]:
     manifest_path = stage_dir / "rekordbox-move-stage-manifest.json"
     manifest = read_json(manifest_path)
-    require_install_token(
+    require_stage_token(
         "INSTALL_REKORDBOX_MOVE",
         {"hashes": manifest["hashes"], "operations": manifest["operations"]},
         manifest["install_token"],
@@ -67,8 +73,12 @@ def install_rekordbox_move(
     )
     _check_processes(process_lines)
     _check_db_sidecars(live_db, "install")
-    require_sha256(live_db, manifest["hashes"]["source_db"], "Live Rekordbox DB")
-    require_sha256(Path(manifest["staged_db"]), manifest["hashes"]["staged_db"], "Staged Rekordbox DB")
+    require_file_hashes(
+        [
+            (live_db, manifest["hashes"]["source_db"], "Live Rekordbox DB"),
+            (Path(manifest["staged_db"]), manifest["hashes"]["staged_db"], "Staged Rekordbox DB"),
+        ]
+    )
     for operation in manifest["operations"]:
         _verify_operation(operation)
     backup_dir = stage_dir / "rekordbox-move-backups"
@@ -119,20 +129,24 @@ def _install_operation(operation: dict[str, Any], backup_dir: Path) -> list[dict
     staged = Path(operation["staged_path"])
     backups = [_copy_with_backup(staged, target, backup_dir)]
     backup = backup_dir / backup_name(source)
-    shutil.copy2(source, backup)
+    copy_required_backup(source, backup)
     backups.append({"path": str(source), "backup": str(backup), "existed": True})
     source.unlink()
     return backups
 
 
 def _verify_operation(operation: dict[str, Any]) -> None:
-    require_sha256(Path(operation["source"]), operation["source_sha256"], "Move source")
-    require_sha256(Path(operation["staged_path"]), operation["staged_sha256"], "Staged move file")
+    require_file_hashes(
+        [
+            (Path(operation["source"]), operation["source_sha256"], "Move source"),
+            (Path(operation["staged_path"]), operation["staged_sha256"], "Staged move file"),
+        ]
+    )
 
 
 def _install_db(staged_db: Path, live_db: Path, backup_dir: Path) -> dict[str, Any]:
     backup = backup_dir / backup_name(live_db)
-    shutil.copy2(live_db, backup)
+    copy_required_backup(live_db, backup)
     shutil.copy2(staged_db, live_db)
     return {"path": str(live_db), "backup": str(backup), "kind": "rekordbox_db"}
 
@@ -142,7 +156,7 @@ def _copy_with_backup(source: Path, target: Path, backup_dir: Path) -> dict[str,
     backup = backup_dir / backup_name(target)
     existed = target.exists()
     if existed:
-        shutil.copy2(target, backup)
+        copy_required_backup(target, backup)
     _copy_atomically(source, target)
     return {"path": str(target), "backup": str(backup) if existed else "", "existed": existed}
 
@@ -158,14 +172,12 @@ def _copy_atomically(source: Path, target: Path) -> None:
 
 
 def _check_processes(process_lines: tuple[str, ...] | list[str] | None) -> None:
-    if process_lines is None:
-        return
-    checks = check_app_processes_closed(process_lines, {"rekordbox": ("rekordbox",)})
-    if not all_checks_passed(checks):
-        raise RuntimeError("Refusing to install while Rekordbox appears to be running")
+    require_app_closed(
+        process_lines, {"rekordbox": ("rekordbox",)}, "Refusing to install while Rekordbox appears to be running"
+    )
 
 
 def _check_db_sidecars(live_db: Path, action: str) -> None:
-    checks = check_sqlite_sidecars(live_db, code="rekordbox_sqlite_sidecar_absent")
-    if not all_checks_passed(checks):
-        raise RuntimeError(f"Refusing to {action} Rekordbox move while DB sidecars exist")
+    require_no_sqlite_sidecars(
+        live_db, "rekordbox_sqlite_sidecar_absent", f"Refusing to {action} Rekordbox move while DB sidecars exist"
+    )

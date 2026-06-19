@@ -7,7 +7,8 @@ from typing import Any
 
 from .io_utils import read_json, write_json
 from .serato_markers import build_markers2_payload, encode_markers2_geob_data
-from .stage_common import backup_name, install_token, require_install_token, require_sha256, sha256_file
+from .stage_common import backup_name, install_token, sha256_file
+from .stage_installer import copy_required_backup, require_file_hashes, require_stage_token
 
 SERATO_AUDIO_TAG_STAGE_SCHEMA_VERSION = "1.0"
 SERATO_AUDIO_TAG_INSTALL_SCHEMA_VERSION = "1.0"
@@ -65,7 +66,7 @@ def build_serato_audio_tag_stage(port_manifest_path: Path, stage_dir: Path) -> S
 def install_serato_audio_tag_stage(stage_dir: Path, confirm_token: str) -> dict[str, Any]:
     manifest_path = stage_dir / "serato-audio-tag-stage-manifest.json"
     manifest = read_json(manifest_path)
-    require_install_token(
+    require_stage_token(
         "INSTALL_SERATO_TAGS",
         _install_token_payload(manifest["hashes"], manifest["source_hashes"]),
         manifest["install_token"],
@@ -79,11 +80,15 @@ def install_serato_audio_tag_stage(stage_dir: Path, confirm_token: str) -> dict[
             continue
         source = Path(row["source_path"])
         staged = Path(row["staged_path"])
-        require_sha256(staged, row["staged_sha256"], "Staged tagged audio")
-        require_sha256(source, row["source_sha256"], "Live audio source")
+        require_file_hashes(
+            [
+                (staged, row["staged_sha256"], "Staged tagged audio"),
+                (source, row["source_sha256"], "Live audio source"),
+            ]
+        )
         backup = backup_dir / backup_name(source)
         if not backup.exists():
-            shutil.copy2(source, backup)
+            copy_required_backup(source, backup)
         shutil.copy2(staged, source)
         installed.append(
             {

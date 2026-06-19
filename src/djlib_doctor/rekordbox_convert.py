@@ -9,8 +9,8 @@ from .audio_encoding import encode_audio, encoder_delay_ms, require_audio_tools
 from .io_utils import read_json, write_json
 from .rekordbox_anlz import shift_anlz_beatgrids, shift_anlz_cues
 from .rekordbox_db_write import update_track_location_and_cues
-from .safety import all_checks_passed, check_sqlite_sidecars
 from .stage_common import install_token, sha256_file
+from .stage_installer import require_no_sqlite_sidecars
 
 CONVERT_STAGE_SCHEMA_VERSION = "1.0"
 
@@ -112,6 +112,8 @@ def _update_staged_db(db: Path, track_id: str, target: Path, shift_ms: int) -> N
 
 
 def _check_db_sidecars(live_db: Path) -> None:
-    checks = check_sqlite_sidecars(live_db, code="rekordbox_sqlite_sidecar_absent")
-    if not all_checks_passed(checks):
-        raise RuntimeError("Refusing to stage or install Rekordbox conversion while DB sidecars exist")
+    require_no_sqlite_sidecars(
+        live_db,
+        "rekordbox_sqlite_sidecar_absent",
+        "Refusing to stage or install Rekordbox conversion while DB sidecars exist",
+    )

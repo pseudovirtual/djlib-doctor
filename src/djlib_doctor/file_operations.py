@@ -8,7 +8,8 @@ from pathlib import Path
 from typing import Any
 
 from .io_utils import read_json, write_json
-from .stage_common import backup_name, install_token, require_install_token, require_sha256, sha256_file
+from .stage_common import backup_name, install_token, sha256_file
+from .stage_installer import copy_required_backup, require_file_hash, require_stage_token, restore_backups
 
 FILE_OPS_STAGE_SCHEMA_VERSION = "1.0"
 FILE_OPS_INSTALL_SCHEMA_VERSION = "1.0"
@@ -45,7 +46,7 @@ def stage_file_operations(operations_manifest: Path, stage_dir: Path) -> FileOpe
 def apply_file_operations_stage(stage_dir: Path, confirm_token: str, continue_on_error: bool = False) -> dict[str, Any]:
     manifest_path = stage_dir / "file-operations-stage-manifest.json"
     manifest = read_json(manifest_path)
-    require_install_token("INSTALL_FILE_OPS", manifest["operations"], manifest["install_token"], confirm_token)
+    require_stage_token("INSTALL_FILE_OPS", manifest["operations"], manifest["install_token"], confirm_token)
     backup_dir = stage_dir / "file-operation-backups"
     backup_dir.mkdir(parents=True, exist_ok=True)
     applied = []
@@ -138,28 +139,28 @@ def _apply_operation(operation: dict[str, Any], backup_dir: Path) -> dict[str, A
     if kind in {"copy", "move", "convert"}:
         target = Path(operation["target"])
         staged = Path(operation["staged_path"])
-        require_sha256(staged, operation["staged_sha256"], "Staged file")
+        require_file_hash(staged, operation["staged_sha256"], "Staged file")
         if kind == "move":
-            require_sha256(source, operation["source_sha256"], "Move source")
+            require_file_hash(source, operation["source_sha256"], "Move source")
         backups = []
         target.parent.mkdir(parents=True, exist_ok=True)
         if target.exists():
             backup = backup_dir / backup_name(target)
-            shutil.copy2(target, backup)
+            copy_required_backup(target, backup)
             backups.append({"path": str(target), "backup": str(backup), "existed": True})
         else:
             backups.append({"path": str(target), "backup": "", "existed": False})
         _copy_atomically(staged, target)
         if kind == "move":
             backup = backup_dir / backup_name(source)
-            shutil.copy2(source, backup)
+            copy_required_backup(source, backup)
             backups.append({"path": str(source), "backup": str(backup), "existed": True})
             source.unlink()
         return {"operation_id": operation["operation_id"], "operation": kind, "target": str(target), "backups": backups}
     if kind == "delete":
-        require_sha256(source, operation["source_sha256"], "Delete source")
+        require_file_hash(source, operation["source_sha256"], "Delete source")
         backup = backup_dir / backup_name(source)
-        shutil.copy2(source, backup)
+        copy_required_backup(source, backup)
         source.unlink()
         return {
             "operation_id": operation["operation_id"],
@@ -171,12 +172,7 @@ def _apply_operation(operation: dict[str, Any], backup_dir: Path) -> dict[str, A
 
 
 def _rollback(backups: list[dict[str, Any]]) -> None:
-    for item in reversed(backups):
-        path = Path(item["path"])
-        if item.get("existed"):
-            shutil.copy2(Path(item["backup"]), path)
-        elif path.exists():
-            path.unlink()
+    restore_backups(backups)
 
 
 def _copy_atomically(source: Path, target: Path) -> None:
