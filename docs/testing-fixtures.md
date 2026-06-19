@@ -45,6 +45,7 @@ Serato audio tags:
 
 - `Serato Markers2` and `Serato BeatGrid` must be validated through the mutagen tag path when real files are configured
 - synthetic Markers2 byte fixtures should stay paired with decode/encode/decode golden-vector tests
+- writer fixtures must cover the full Serato GEOB container, not only the decoded entry stream: outer `01 01`, wrapped base64 body, `COLOR`/`BPMLOCK` defaults, cue/loop entries, footer, and null padding
 
 ## Real-Data Backstops
 

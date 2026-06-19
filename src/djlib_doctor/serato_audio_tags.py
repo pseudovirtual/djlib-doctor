@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from .io_utils import read_json, write_json
-from .serato_markers import build_markers2_payload
+from .serato_markers import build_markers2_payload, encode_markers2_geob_data
 from .stage_common import backup_name, install_token, require_install_token, require_sha256, sha256_file
 
 SERATO_AUDIO_TAG_STAGE_SCHEMA_VERSION = "1.0"
@@ -141,7 +141,7 @@ def _write_tags(path: Path, track: dict[str, Any]) -> None:
         from mutagen.mp4 import MP4, AtomDataType, MP4FreeForm
     except ImportError as exc:
         raise ImportError("Install djlib-doctor[audio-tags] to stage Serato audio tags") from exc
-    payload = build_markers2_payload(track.get("cue_intents", ()))
+    payload = encode_markers2_geob_data(build_markers2_payload(track.get("cue_intents", ())))
     suffix = path.suffix.lower()
     if suffix in {".aiff", ".aif"}:
         audio = AIFF(path)

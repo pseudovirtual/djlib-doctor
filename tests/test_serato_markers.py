@@ -35,6 +35,27 @@ class SeratoMarkersGoldenVectorTests(unittest.TestCase):
 
         self.assertEqual(parse_markers2_payload(encode_markers2_payload(decoded)), decoded)
 
+    def test_encode_reference_hotcue_matches_real_geob_entry_stream_shape(self):
+        fixture = _fixture("geob-markers2-real-hotcue.json")
+
+        payload = encode_markers2_payload(
+            (
+                {
+                    "kind": "hotcue",
+                    "cue_type": "cue",
+                    "start_ms": 22222,
+                    "slot": 2,
+                    "label": "Cue C",
+                    "color": "cccc00",
+                },
+            )
+        )
+
+        self.assertEqual(payload, bytes.fromhex(fixture["entry_stream_hex"]))
+        self.assertIn(b"COLOR\x00", payload)
+        self.assertIn(b"BPMLOCK\x00", payload)
+        self.assertTrue(payload.endswith(b"\x00"))
+
 
 def _fixture(name: str) -> dict[str, object]:
     return json.loads((FIXTURE_DIR / name).read_text(encoding="utf-8"))

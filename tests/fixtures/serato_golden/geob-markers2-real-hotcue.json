@@ -1,0 +1,17 @@
+{
+  "name": "geob-markers2-real-hotcue",
+  "provenance": "Sanitized real-layout vector from Serato-authored Markers2 GEOB validation and Holzhaus/serato-tags storage rules: outer version header, base64-wrapped decoded Markers2 stream, COLOR/BPMLOCK/CUE entries, and footer.",
+  "entry_stream_hex": "01 01 43 4f 4c 4f 52 00 00 00 00 04 00 ff ff ff 42 50 4d 4c 4f 43 4b 00 00 00 00 01 00 43 55 45 00 00 00 00 12 00 02 00 00 56 ce 00 cc cc 00 00 00 43 75 65 20 43 00 00",
+  "base64_body": "AQFDT0xPUgAAAAAEAP///0JQTUxPQ0sAAAAAAQBDVUUAAAAAEgACAABWzgDMzAAAAEN1ZSBD\nAAA=",
+  "expected_markers": [
+    {
+      "kind": "hotcue",
+      "cue_type": "cue",
+      "start_ms": 22222,
+      "end_ms": null,
+      "slot": 2,
+      "label": "Cue C",
+      "color": "cccc00"
+    }
+  ]
+}

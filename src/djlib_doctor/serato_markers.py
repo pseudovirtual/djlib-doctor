@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+import base64
 import struct
 from typing import Any
 
 VERSION = (1, 1)
 VERSION_FORMAT = ">2B"
+VERSION_BYTES = struct.pack(VERSION_FORMAT, *VERSION)
+GEOB_MIN_BYTES = 470
+GEOB_WRAP_BYTES = 72
 LOOP_PREFIX = b"\x00\x00\x00\xff"
+TRACK_COLOR_WHITE = b"\xff\xff\xff"
 CUE_COLORS = (
     b"\xcc\x00\x00",
     b"\xcc\x88\x00",
@@ -29,7 +34,7 @@ def build_markers2_payload(cue_intents: list[dict[str, Any]] | tuple[dict[str, A
 
 
 def encode_markers2_payload(markers: list[dict[str, Any]] | tuple[dict[str, Any], ...]) -> bytes:
-    contents = [struct.pack(VERSION_FORMAT, *VERSION)]
+    contents = [VERSION_BYTES, _named_entry("COLOR", b"\x00" + TRACK_COLOR_WHITE), _named_entry("BPMLOCK", b"\x00")]
     for marker in markers:
         slot = int(marker.get("slot") or 0)
         label = str(marker.get("label") or "")
@@ -50,7 +55,14 @@ def encode_markers2_payload(markers: list[dict[str, Any]] | tuple[dict[str, Any]
             contents.append(
                 _named_entry("CUE", _cue_entry(slot, int(marker["start_ms"]), label, str(marker.get("color") or "")))
             )
+    contents.append(b"\x00")
     return b"".join(contents)
+
+
+def encode_markers2_geob_data(entry_stream: bytes) -> bytes:
+    encoded = base64.b64encode(entry_stream)
+    wrapped = b"\n".join(encoded[index : index + GEOB_WRAP_BYTES] for index in range(0, len(encoded), GEOB_WRAP_BYTES))
+    return (VERSION_BYTES + wrapped).ljust(GEOB_MIN_BYTES, b"\x00")
 
 
 def _marker(intent: dict[str, Any], kind: str, cue_type: str) -> dict[str, Any]:
@@ -71,6 +83,8 @@ def parse_markers2_payload(payload: bytes | None) -> tuple[dict[str, Any], ...]:
     offset = 2
     markers = []
     while offset < len(payload):
+        if payload[offset] == 0:
+            break
         end = payload.find(b"\x00", offset)
         if end < 0 or end + 5 > len(payload):
             break
