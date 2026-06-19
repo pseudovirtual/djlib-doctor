@@ -1,3 +1,4 @@
+import sqlite3
 import unittest
 from pathlib import Path
 
@@ -23,6 +24,14 @@ class RekordboxPyrekordboxTests(unittest.TestCase):
 
         with self.assertRaisesRegex(PyrekordboxUnavailable, r"could not unlock or read Rekordbox master.db"):
             open_master_database(Path("master.db"), importer=lambda: LockedMasterDatabase)
+
+    def test_open_master_database_maps_driver_database_errors(self):
+        class DriverFailingMasterDatabase:
+            def __init__(self, path=None, key="", unlock=True):
+                raise sqlite3.DatabaseError("file is not a database")
+
+        with self.assertRaisesRegex(PyrekordboxUnavailable, r"could not unlock or read Rekordbox master.db"):
+            open_master_database(Path("master.db"), importer=lambda: DriverFailingMasterDatabase)
 
     def test_open_master_database_uses_pyrekordbox_master_database(self):
         FakeMasterDatabase.calls.clear()

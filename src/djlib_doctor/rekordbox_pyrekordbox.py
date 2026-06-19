@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sqlite3
 from pathlib import Path
 from typing import Any, Callable
 
@@ -16,6 +17,10 @@ def open_master_database(
         return master_database(path=path, key=key, unlock=unlock)
     except (OSError, RuntimeError, ValueError) as exc:
         raise _unsupported_database(path, exc) from exc
+    except Exception as exc:
+        if _is_database_driver_error(exc):
+            raise _unsupported_database(path, exc) from exc
+        raise
 
 
 def _master_database(importer: Callable[[], Any] | None) -> Any:
@@ -48,3 +53,25 @@ def _unsupported_database(path: Path, exc: BaseException) -> PyrekordboxUnavaila
     )
     error.__cause__ = exc
     return error
+
+
+def _is_database_driver_error(exc: Exception) -> bool:
+    return isinstance(exc, _database_driver_errors())
+
+
+def _database_driver_errors() -> tuple[type[BaseException], ...]:
+    errors: list[type[BaseException]] = [sqlite3.DatabaseError]
+    try:
+        from sqlcipher3 import dbapi2 as sqlcipher
+
+        errors.append(sqlcipher.DatabaseError)
+    except ImportError:
+        pass
+    try:
+        from sqlalchemy.exc import DatabaseError as SqlalchemyDatabaseError
+        from sqlalchemy.exc import OperationalError as SqlalchemyOperationalError
+
+        errors.extend((SqlalchemyDatabaseError, SqlalchemyOperationalError))
+    except ImportError:
+        pass
+    return tuple(dict.fromkeys(errors))

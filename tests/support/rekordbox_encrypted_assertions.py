@@ -22,7 +22,8 @@ def assert_plain_sqlite_rejects(testcase: unittest.TestCase, db: Path) -> None:
 
 
 def read_encrypted_library(db: Path) -> RekordboxLibrary:
-    return read_rekordbox_master_db(db, key=rekordbox_public_sqlcipher_key())
+    with rekordbox_not_running():
+        return read_rekordbox_master_db(db, key=rekordbox_public_sqlcipher_key())
 
 
 def read_encrypted_master_copy(source: Path, target: Path) -> RekordboxLibrary:

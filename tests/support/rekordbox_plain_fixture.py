@@ -35,12 +35,25 @@ def _create_pyrekordbox_schema(path: Path) -> bool:
         from sqlalchemy import create_engine
     except ImportError:
         return False
-    engine = create_engine(f"sqlite:///{path}")
+    engine = create_engine(f"sqlite+pysqlite:///{path}")
     try:
         Base.metadata.create_all(engine)
     finally:
         engine.dispose()
+    conn = sqlite3.connect(path)
+    try:
+        _ensure_columns(conn, "djmdCue", {"is_hot_cue": "INTEGER", "is_memory_cue": "INTEGER", "Name": "TEXT"})
+        conn.commit()
+    finally:
+        conn.close()
     return True
+
+
+def _ensure_columns(conn: sqlite3.Connection, table: str, columns: dict[str, str]) -> None:
+    existing = {row[1] for row in conn.execute(f"PRAGMA table_info({_quote(table)})")}
+    for name, column_type in columns.items():
+        if name not in existing:
+            conn.execute(f"ALTER TABLE {_quote(table)} ADD COLUMN {_quote(name)} {column_type}")
 
 
 def _create_fallback_schema(conn: sqlite3.Connection) -> None:
