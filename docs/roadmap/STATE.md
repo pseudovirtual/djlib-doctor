@@ -6,6 +6,8 @@ Primary-library foundation through Phase H is complete. Phase K docs polish is c
 
 ## Last Done
 
+J3 added `docs/testing-fixtures.md` and linked it from the docs index. The guide states that fixtures must mirror real bytes, columns, encryption, and tag structure; records database V2, `djmdCue`, ANLZ, and Serato tag mappings; and names `DJLIB_DOCTOR_REAL_*` real-data gates plus the copy-only `master.db` persistence rule.
+
 J2 aligned format fixtures with real structures: Serato `database V2` tests now use `pfil` plus `t*` metadata tags by default, Rekordbox import and encrypted fixtures use real `djmdCue` fields (`OutMsec=-1`, `Kind=slot+1`, `is_hot_cue`/`is_memory_cue`) instead of `HotCue`, and ANLZ helpers document local empty cue containers versus cue-bearing device exports.
 
 J1 made encrypted Rekordbox fixtures the default for convert, move, Rekordbox DB-stage, import, and read writer coverage. Convert, move, and Serato-to-Rekordbox import tests now follow the copy-only persistence pattern: stage/write, copy only `master.db`, reopen the copy, and assert the changed library state. Release CI now installs the package before running tests so installed-backend expectations match the local gate.
@@ -18,7 +20,7 @@ Recent Phase I fixes and validation remain recorded: Serato `database V2` nested
 
 ## Next
 
-Next is J3: add `docs/testing-fixtures.md` with the real-format fixture rule, confirmed field mappings, and `DJLIB_DOCTOR_REAL_*` backstops.
+Next is J4: re-run and document full-suite fixture hardening results, including encrypted writer tests and plain-DB rejection coverage.
 
 Phase I still cannot complete I1, the device-export cue side of I2, or broad I4 golden-vector expansion from synthetic fixtures. Real validation on Rekordbox 7.2.8 and Serato DJ Pro has already confirmed local ANLZ beatgrid parsing, PCOB/PCO2 cue-count offsets for empty local cue containers, Serato crate reading, the Markers2 parser path, and hotcue slot = Kind - 1 for Rekordbox cues. The repo currently has only `tests/fixtures/real/.gitignore` and `tests/fixtures/real/README.md`; there is no `manifest.json` or captured library payload. Provide an approved local-only fixture under `tests/fixtures/real/manifest.json`, following `docs/real-fixtures.md`, with:
 

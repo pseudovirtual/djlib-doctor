@@ -169,6 +169,22 @@ class DocsStructureTests(unittest.TestCase):
         for phrase in ("pfil", "tsng", "tart", "tbpm", "ptrk", "pnam", "part"):
             self.assertIn(phrase, docs)
 
+    def test_testing_fixture_rules_are_documented(self):
+        doc = ROOT / "docs" / "testing-fixtures.md"
+        text = doc.read_text(encoding="utf-8")
+
+        for phrase in (
+            "must mirror real bytes, columns, encryption, and tag structure",
+            "pfil/tsng/tart/talb/tgen/tkey/tbpm",
+            "Kind - 1",
+            "is_hot_cue",
+            "local ANLZ",
+            "DJLIB_DOCTOR_REAL_SERATO",
+            "DJLIB_DOCTOR_REAL_REKORDBOX_DB",
+            "copy only `master.db`",
+        ):
+            self.assertIn(phrase, text)
+
 
 if __name__ == "__main__":
     unittest.main()

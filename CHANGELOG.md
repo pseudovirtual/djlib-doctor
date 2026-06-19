@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] J3: Added `docs/testing-fixtures.md` with real-format fixture rules, confirmed field mappings, and real-data test backstops.
 - [x] J2: Aligned Serato database V2, Rekordbox `djmdCue`, and ANLZ fixtures with real field names and local/device cue behavior.
 - [x] J1: Made encrypted Rekordbox DB fixtures the default for convert, move, DB-stage, import, and read writer tests, with master.db-copy persistence checks and install-first release CI.
 - Hardened encrypted Rekordbox writes by checkpointing SQLCipher WAL pages into `master.db`, disposing the writer engine, refusing zero-row cue/location updates, and adding a copy-only encrypted round-trip persistence test.

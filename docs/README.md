@@ -13,6 +13,7 @@ Start with the current docs below. Archived docs are retained for project histor
 - [Product Architecture](product-architecture.md)
 - [Safety](safety.md)
 - [Serato Porting](serato-porting.md)
+- [Testing Fixtures](testing-fixtures.md)
 - [Agent Friendliness And Discovery](agent-friendliness-and-discovery.md)
 - [Reports And Schemas](reports.md)
 - [Rekordbox XML Concepts](rekordbox-xml-concepts.md)

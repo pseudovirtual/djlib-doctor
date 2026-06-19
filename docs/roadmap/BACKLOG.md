@@ -83,7 +83,7 @@ Scope: Rekordbox and Serato only. Do not add other DJ apps or a neutral universa
 - [x] J0: Route in-place Rekordbox write staging for DB operations, conversion, and move/rename through the encrypted-capable `open_master_database` path when plain SQLite rejects `master.db`.
 - [x] J1: Make encrypted Rekordbox DB fixtures the default in convert, move, sqlite-stage, import, and read tests, with explicit plain-SQLite rejection assertions.
 - [x] J2: Audit Serato/Rekordbox parser fixtures so real database V2 tags, real `djmdCue` columns, and local ANLZ empty-cue behavior are the defaults.
-- [ ] J3: Add `docs/testing-fixtures.md` with the real-format fixture rule, confirmed field mappings, and `DJLIB_DOCTOR_REAL_*` backstops.
+- [x] J3: Add `docs/testing-fixtures.md` with the real-format fixture rule, confirmed field mappings, and `DJLIB_DOCTOR_REAL_*` backstops.
 - [ ] J4: Re-run and document full-suite fixture hardening results, including encrypted writer tests and plain-DB rejection coverage.
 
 ## Phase J - Release
