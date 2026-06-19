@@ -6,6 +6,8 @@ Primary-library foundation through Phase H is complete. Phase K docs polish is c
 
 ## Last Done
 
+C6 stale capability labels are fixed. Serato format capabilities now mark shipped AIFF/AIF/M4A/MP4/MP3 tag-writing formats as `supported_for_tag_writes`; remaining future/planned wording is still limited to genuinely unimplemented or safety-scoped areas such as acoustic fingerprinting, FLAC/Ogg/WAV Serato cue metadata, and Serato BeatGrid writes. Current gate: 266 tests green with 23 expected skips, plus bytecode compile, Ruff check, and Ruff format check.
+
 C5 Rekordbox-to-Serato module split is complete. The public `port_rekordbox_serato.py` module is now a compatibility facade over focused modules for models, planning, cue mapping, output/CSV/summary, format policy, and verification; source modules are under the 200-line guideline and existing imports continue to work. Current gate: 266 tests green with 23 expected skips, plus bytecode compile, Ruff check, and Ruff format check.
 
 C4 Serato audio-tag writer cleanup is complete. AIFF and MP3 now share one ID3 writer path for standard frames plus Serato Markers2 GEOB, while MP4 remains format-specific. The staging/install module is back under the 200-line guideline, and the fake mutagen test scaffold moved to shared test helpers. Current gate: 265 tests green with 23 expected skips, plus bytecode compile, Ruff check, and Ruff format check.

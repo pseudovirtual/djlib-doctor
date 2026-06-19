@@ -5,22 +5,22 @@ from pathlib import Path
 SERATO_MANAGED_CRATE_PREFIX = "RB - "
 SERATO_FORMAT_CAPABILITIES = {
     ".aif": {
-        "status": "supported_for_future_tag_writes",
+        "status": "supported_for_tag_writes",
         "cue_tags": "aiff_id3_geob_markers2",
         "notes": "Serato Markers2 cue data is stored in an ID3 GEOB frame.",
     },
     ".aiff": {
-        "status": "supported_for_future_tag_writes",
+        "status": "supported_for_tag_writes",
         "cue_tags": "aiff_id3_geob_markers2",
         "notes": "Serato Markers2 cue data is stored in an ID3 GEOB frame.",
     },
     ".m4a": {
-        "status": "supported_for_future_tag_writes",
+        "status": "supported_for_tag_writes",
         "cue_tags": "mp4_freeform_markersv2",
         "notes": "Serato markersv2 cue data is stored in an MP4 freeform atom.",
     },
     ".mp4": {
-        "status": "supported_for_future_tag_writes",
+        "status": "supported_for_tag_writes",
         "cue_tags": "mp4_freeform_markersv2",
         "notes": "Serato markersv2 cue data is stored in an MP4 freeform atom.",
     },
