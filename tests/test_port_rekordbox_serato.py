@@ -21,6 +21,13 @@ FIXTURE = Path(__file__).parent / "fixtures" / "rekordbox" / "simple.xml"
 
 
 class PortSeratoTests(unittest.TestCase):
+    def test_rekordbox_to_serato_modules_stay_small(self):
+        module_paths = Path(__file__).parents[1].glob("src/djlib_doctor/port_rekordbox_serato*.py")
+
+        for module_path in module_paths:
+            with self.subTest(module=module_path.name):
+                self.assertLessEqual(len(module_path.read_text(encoding="utf-8").splitlines()), 200)
+
     def test_build_rekordbox_to_serato_plan_maps_playlist_and_cues(self):
         plan = build_rekordbox_to_serato_plan(FIXTURE, "ROOT / Fixture Playlist", crate_prefix="RB - ")
         track = plan.tracks[0]

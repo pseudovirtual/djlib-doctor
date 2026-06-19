@@ -60,11 +60,22 @@ class DocsStructureTests(unittest.TestCase):
         self.assertIn("verify_library", text)
         self.assertIn("build_missing_files_plan", text)
 
-    def test_port_workflow_modules_are_consolidated(self):
+    def test_rekordbox_to_serato_modules_are_split_by_responsibility(self):
         src = ROOT / "src" / "djlib_doctor"
-        leftovers = sorted(src.glob("port_rekordbox_serato_*.py")) + sorted(src.glob("port_serato_rekordbox_*.py"))
+        expected = {
+            "port_rekordbox_serato.py",
+            "port_rekordbox_serato_cues.py",
+            "port_rekordbox_serato_models.py",
+            "port_rekordbox_serato_output.py",
+            "port_rekordbox_serato_planning.py",
+            "port_rekordbox_serato_policy.py",
+            "port_rekordbox_serato_verify.py",
+        }
 
-        self.assertEqual(leftovers, [])
+        modules = {path.name for path in src.glob("port_rekordbox_serato*.py")}
+        self.assertEqual(modules, expected)
+        for module in expected:
+            self.assertLessEqual(len((src / module).read_text(encoding="utf-8").splitlines()), 200)
 
     def test_rekordbox_db_schema_reference_documents_target_tables(self):
         doc = ROOT / "docs" / "rekordbox-db-schema.md"
