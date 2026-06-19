@@ -27,8 +27,10 @@ class DocsStructureTests(unittest.TestCase):
         self.assertIn("## Experimental / Limited Coverage", readme)
         self.assertNotIn("fixture-backed", available)
         self.assertNotIn("Serato audio tags", available)
-        self.assertIn("encrypted `master.db` reads and staged writes are generated-fixture tested", readme)
-        self.assertIn("real captured DB certification is still pending", readme)
+        self.assertIn("## What's Validated", readme)
+        self.assertIn("Rekordbox encrypted `master.db` reads through pyrekordbox/SQLCipher", readme)
+        self.assertIn("Serato saved-loop display is not yet verified", readme)
+        self.assertIn("Broad Rekordbox and Serato version coverage", readme)
 
     def test_how_to_docs_are_linked_from_readme_and_docs_index(self):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
@@ -102,7 +104,7 @@ class DocsStructureTests(unittest.TestCase):
         state_text = state.read_text(encoding="utf-8")
         for label in ("Phase A", "A1", "Phase B", "B1", "Phase C", "C1", "Phase D", "D1"):
             self.assertIn(label, backlog_text)
-        self.assertIn("Primary-library foundation", state_text)
+        self.assertIn("Code for the current 0.1.0 release target is complete", state_text)
         self.assertIn("Next", state_text)
 
     def test_roadmap_records_real_validation_and_release_blockers(self):

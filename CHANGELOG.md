@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+- Nothing yet.
+
+## 0.1.0 - 2026-06-19
+
+Validated against real data:
+
+- Reads encrypted Rekordbox `master.db` files through pyrekordbox/SQLCipher for tracks, playlists, and real `djmdCue` hotcue, memory cue, and loop rows.
+- Stages cue-safe Rekordbox conversion with net encoder-delay shifting; validated on Rekordbox 7.2.8 with a real encrypted write round-trip where the cue persisted.
+- Writes Serato Markers2 hotcues in Serato's real version-header plus base64-body GEOB container; a written hotcue loaded in Serato DJ at the exact position.
+- Reads real Serato crates, `database V2` `pfil`/`t*` fields, and Serato Markers2/BeatGrid file tags.
+- Parses real Rekordbox ANLZ `PQTZ`/`PQT2` beatgrid tags and `PCOB`/`PCO2` cue container offsets.
+
+Known limitations:
+
+- ANLZ beat-shift during conversion still needs a real track-with-ANLZ write round-trip.
+- Serato saved-loop display is not yet verified in the Serato GUI.
+- Broad Rekordbox and Serato version coverage beyond the captured validation data remains experimental.
+- Intel/x86_64 macOS on Python 3.13 is a known SQLCipher wheel gap; use Apple Silicon or Python <=3.12 on Intel macOS.
+
 - [x] C9: Simplified `doctor` Rekordbox DB checks so they use the shared Rekordbox DB reader first, with the existing plain-fixture schema probe kept only as a compatibility fallback.
 - [x] C8: Added a shared cue timing value object reused by both directional cue serializers while keeping Serato and Rekordbox cue models separate.
 - [x] C7: Added a model-backed schema drift guard that compares registered schema top-level fields against real `to_dict()` runtime examples.

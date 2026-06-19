@@ -22,6 +22,7 @@
 - Dry-run Serato-to-Rekordbox port manifests with Rekordbox XML representation.
 - Serato-to-Rekordbox cue import reads `Serato Markers2` audio-file tags when optional audio-tag dependencies are installed.
 - Serato file-tag inspection can parse `Serato BeatGrid` GEOB marker rows.
+- Serato Markers2 hotcue writes use Serato's real version-header plus base64-body container and were confirmed in Serato DJ at the exact written hotcue position.
 - Migration scopes for single tracks, playlists/crates, multiple playlists, and whole collections.
 - Transfer modes for `full`, `cues-only`, and `match-only` workflows.
 - Staged Serato library installs through `stage serato` and `install serato-stage`.
@@ -32,8 +33,9 @@
 
 ## Experimental / Limited Coverage
 
-- Serato audio tag writes and Markers2 cue imports are fixture-tested and need broader real-world validation.
-- Rekordbox encrypted `master.db` reads and staged writes are generated-fixture tested through pyrekordbox; real captured DB certification is still pending.
+- ANLZ beat-shift during conversion is lightly covered end-to-end: parsing is real-data validated, while the write path still needs a real track-with-ANLZ round-trip.
+- Serato saved-loop display is not yet verified in the Serato GUI; hot cue display is verified.
+- Broad Rekordbox and Serato version coverage beyond validated Rekordbox 7.2.8 and captured Serato DJ Pro data is still experimental.
 - Rekordbox DB support keeps `pyrekordbox` and `sqlcipher3-wheels` as core dependencies; Intel/x86_64 macOS on Python 3.13 is a known SQLCipher wheel gap, so use Apple Silicon or Python <=3.12 on Intel macOS.
 - Acoustic fingerprinting is planned; current fingerprinting is byte-level only.
 
@@ -72,4 +74,4 @@ djlib-doctor migrate rb-to-serato --rekordbox-xml export.xml --playlist "ROOT / 
 - More Rekordbox DB schema adapters and playlist/cue table variants are needed for broader real-world coverage.
 - Claude Desktop extension packaging is still a template.
 - PyPI publishing uses tag-triggered GitHub Actions and still requires repository-side trusted publishing configuration.
-- More real-world Serato fixture validation is needed before broad public claims.
+- Broader real-world version coverage is needed before broad public claims.

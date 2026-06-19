@@ -11,6 +11,7 @@ Start with the current docs below. Archived docs are retained for project histor
 - [Python API Examples](api-examples.md)
 - [Phase I Results](phase-i-results.md)
 - [Product Architecture](product-architecture.md)
+- [Release Checklist](RELEASE.md)
 - [Safety](safety.md)
 - [Serato Porting](serato-porting.md)
 - [Testing Fixtures](testing-fixtures.md)

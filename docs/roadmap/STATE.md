@@ -2,9 +2,11 @@
 
 ## Phase
 
-Primary-library foundation through Phase H is complete. Phase K docs polish is complete. Phase J-prep real-format test hardening is in progress after Phase I validation surfaced false-green fixtures.
+Code for the current 0.1.0 release target is complete. Release-prep docs now distinguish real-data validated behavior from experimental coverage, and remaining work is the human TestPyPI/PyPI release flow in `docs/RELEASE.md`.
 
 ## Last Done
+
+Release-prep documentation is complete. README and the release changelog now state the validated real-data facts plainly: encrypted Rekordbox `master.db` reads, real `djmdCue` cue semantics, net encoder-delay cue shifting validated on Rekordbox 7.2.8, Serato Markers2 hotcue write validation in Serato DJ, real Serato crate/database V2/tag reads, and real ANLZ offset parsing. Experimental coverage is scoped to ANLZ beat-shift write round-trips, Serato saved-loop GUI display, and broader version coverage. Current gate: 269 tests green with 23 expected skips, plus bytecode compile, Ruff check, and Ruff format check.
 
 C9 doctor cleanup is complete. `doctor` now checks Rekordbox `master.db` files through the shared Rekordbox DB reader first, while keeping the old plain-SQLite fixture schema probe only as a fallback for supported synthetic/plain schemas. Added a focused guard proving configured plain DB checks call the shared reader before the fallback. Current gate: 269 tests green with 23 expected skips, plus bytecode compile, Ruff check, and Ruff format check.
 
@@ -42,7 +44,7 @@ Recent Phase I fixes and validation remain recorded: Serato `database V2` nested
 
 ## Next
 
-Phase J-prep and the J1 SQLCipher matrix decision are complete. Next is Phase J release work: run TestPyPI smoke after maintainer trusted-publisher setup.
+Phase J-prep and the J1 SQLCipher matrix decision are complete. Next is human release execution: follow `docs/RELEASE.md` to configure/confirm trusted publishers, run the TestPyPI rc smoke, update README to `pip install djlib-doctor` only after smoke passes, then tag and verify the real PyPI release.
 
 Phase I still cannot complete I1, the device-export cue side of I2, or broad I4 golden-vector expansion from synthetic fixtures. Real validation on Rekordbox 7.2.8 and Serato DJ Pro has already confirmed local ANLZ beatgrid parsing, PCOB/PCO2 cue-count offsets for empty local cue containers, Serato crate reading, the Markers2 parser path, and hotcue slot = Kind - 1 for Rekordbox cues. The repo currently has only `tests/fixtures/real/.gitignore` and `tests/fixtures/real/README.md`; there is no `manifest.json` or captured library payload. Provide an approved local-only fixture under `tests/fixtures/real/manifest.json`, following `docs/real-fixtures.md`, with:
 
@@ -62,7 +64,7 @@ Phase H implementation is complete; Phase I remains the real-world validation ch
 
 ## Blockers
 
-TestPyPI trusted publisher setup is a maintainer/account action:
+TestPyPI and PyPI trusted publisher setup is a maintainer/account action. See `docs/RELEASE.md` for the release checklist. Minimum TestPyPI setup:
 
 1. Sign in to https://test.pypi.org as the owning account for `djlib-doctor`.
 2. Go to Account settings -> Publishing -> Add a new pending publisher.

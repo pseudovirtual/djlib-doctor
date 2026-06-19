@@ -44,7 +44,7 @@ Cue source rule:
 Markers2 codec coverage:
 
 - Supported today: `CUE` hotcues and `LOOP` saved loops, including slot, position, loop end, label, and raw color bytes.
-- Serato audio-tag writes use the real GEOB container shape: outer Markers2 version header, wrapped base64 body, default `COLOR` and `BPMLOCK` entries, cue/loop entries, footer, and null padding.
+- Serato audio-tag writes use the real GEOB container shape: outer Markers2 version header, wrapped base64 body, default `COLOR` and `BPMLOCK` entries, cue/loop entries, footer, and null padding. Hotcue display was confirmed in real Serato DJ at the exact written position; saved-loop display still needs GUI validation.
 - Dropped on import today: `COLOR`, `BPMLOCK`, `FLIP`, and unknown entry types. They are ignored rather than guessed.
 - BeatGrid GEOB parsing supports version `1.0` marker rows from the Holzhaus reference layout. Carrying BeatGrid through migration manifests is a later task and should be reported separately until implemented.
 - WAV cue import is out of scope today because WAV has no Serato audio-tag container; plans record `wav_has_no_serato_tag_container` instead of silently dropping cues.
@@ -104,7 +104,8 @@ Backups and install reports are written inside the stage directory.
 
 ## Supported Serato Boundary
 
-- Fixture-backed: `.crate` TLV parsing/writing against a static vector, `root.sqlite` inspection, `database V2` nested `otrk` track/metadata extraction, and Markers2 `CUE`/`LOOP` parsing.
+- Real-data validated: crate parsing, `database V2` nested `otrk` track/metadata extraction, and Markers2/BeatGrid tag reads on captured Serato DJ Pro data.
+- Fixture-backed: `.crate` TLV writing against a static vector, `root.sqlite` inspection, and Markers2 `CUE`/`LOOP` parser coverage.
 - `database V2` `otrk` records use `pfil` for file path plus `tsng`, `tart`, `talb`, `tgen`, `tkey`, and `tbpm` for title, artist, album, genre, key, and BPM. They do not use crate-style `ptrk`/`pnam`/`part` tags.
-- Certified real Serato versions: none yet. Real-version certification depends on anonymized fixtures under `tests/fixtures/real/`.
+- Broad real-version certification depends on anonymized fixtures under `tests/fixtures/real/`.
 - Cue and beatgrid source of truth remains audio-file tags, not `database V2` or `root.sqlite`.

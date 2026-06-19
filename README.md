@@ -26,10 +26,21 @@ This is an open-source project from [@pseudovirtual](https://github.com/pseudovi
 - supports transfer modes: `full`, `cues-only`, and `match-only`
 - stages implemented write workflows behind explicit approvals and install tokens
 
+## What's Validated
+
+Confirmed against real DJ-library data:
+
+- Rekordbox encrypted `master.db` reads through pyrekordbox/SQLCipher: tracks, playlists, and `djmdCue` hotcue, memory cue, and saved-loop rows using the real `InMsec`/`OutMsec`/`Kind`/`is_hot_cue`/`is_memory_cue` schema.
+- Rekordbox conversion shifts cues by net encoder delay, so WAV/AIFF/MP3 to M4A conversions keep cues aligned. This was validated on a real Rekordbox 7.2.8 library, including a real encrypted write round-trip where the cue persisted. Rekordbox 7 and later did not compensate AAC gapless metadata in that validation, so the positive cue shift is required.
+- Serato Markers2 cue writes use Serato's real container shape: version header plus base64 body. A written hot cue was confirmed in real Serato DJ at the exact written position.
+- Serato reads cover real crates, real `database V2` records using `pfil`/`tsng`/`tart`/`talb`/`tgen`/`tkey` fields, and Serato Markers2/BeatGrid file tags.
+- Rekordbox ANLZ beatgrid tags (`PQTZ`/`PQT2`) and cue container offsets (`PCOB`/`PCO2`) parse correctly on real analysis files.
+
 ## Experimental / Limited Coverage
 
-- Serato audio tag writes and Serato Markers2 cue import are fixture-tested and need broader real-world validation.
-- Rekordbox encrypted `master.db` reads and staged writes are generated-fixture tested through pyrekordbox; real captured DB certification is still pending.
+- ANLZ beat-shift during conversion is lightly covered end-to-end. Parsing is validated against real analysis files, but the write path still needs a real track-with-ANLZ round-trip.
+- Serato saved-loop display is not yet verified in the Serato GUI. Hot cue display is verified.
+- Broad Rekordbox and Serato version coverage beyond the validated Rekordbox 7.2.8 and captured Serato DJ Pro data is still experimental.
 - Acoustic fingerprinting is planned behind an optional backend; current fingerprinting is byte-level only.
 
 ## Safety Model
@@ -114,19 +125,7 @@ djlib-doctor review --plan run/dupes/plan.json --out run/dupes/review.json
 
 Other duplicate policies: `quality` and `keep-both`.
 
-### 4. Compare Before And After Exports
-
-```bash
-djlib-doctor compare exports --baseline ~/Desktop/rekordbox-before.xml --final ~/Desktop/rekordbox-after.xml --out run/compare.json
-```
-
-### 5. Compare Two Files By Bytes
-
-```bash
-djlib-doctor fingerprint compare ~/Music/copy-a.wav ~/Music/copy-b.wav --out run/file-compare.json
-```
-
-### 6. Convert A Rekordbox Track Without Losing Cues
+### 4. Convert A Rekordbox Track Without Losing Cues
 
 Prepare a small operations file naming the track, source, converted target, preset, and Rekordbox ANLZ files. See [Convert Without Losing Cues](docs/how-to-convert-without-losing-cues.md) for the full staged workflow.
 
@@ -135,7 +134,7 @@ djlib-doctor stage rekordbox-convert --db /path/to/rekordbox/master.db --operati
 djlib-doctor install rekordbox-convert --stage-dir run/rekordbox-convert --db /path/to/rekordbox/master.db --confirm-token INSTALL_REKORDBOX_CONVERT:...
 ```
 
-### 7. Move Or Rename A Rekordbox Track Safely
+### 5. Move Or Rename A Rekordbox Track Safely
 
 Use `rekordbox-move` when the file location should change and Rekordbox should point at the new path in the same staged install.
 
@@ -144,7 +143,7 @@ djlib-doctor stage rekordbox-move --db /path/to/rekordbox/master.db --operations
 djlib-doctor install rekordbox-move --stage-dir run/rekordbox-move --db /path/to/rekordbox/master.db --confirm-token INSTALL_REKORDBOX_MOVE:...
 ```
 
-### 8. Dry-Run A Rekordbox To Serato Playlist Port
+### 6. Dry-Run A Rekordbox To Serato Playlist Port
 
 ```bash
 djlib-doctor port rb-to-serato --rekordbox-xml ~/Desktop/rekordbox-export.xml --playlist "ROOT / My Set" --out run/rb-to-serato --verify-preview
@@ -158,7 +157,7 @@ djlib-doctor stage serato --port-manifest run/rb-to-serato/port-manifest.json --
 djlib-doctor install serato-stage --stage-dir run/serato-stage --serato-library-dir /path/to/serato-library --serato-music-dir /path/to/_Serato_ --confirm-token INSTALL_SERATO_STAGE:...
 ```
 
-### 9. Choose Scope And Transfer Mode
+### 7. Choose Scope And Transfer Mode
 
 ```bash
 djlib-doctor port rb-to-serato --rekordbox-xml export.xml --track-id 123 --transfer-mode cues-only --out run/one-track-cues
@@ -169,7 +168,7 @@ djlib-doctor port serato-to-rb --serato-library-dir /path/to/serato-library --co
 
 Transfer modes: `full`, `cues-only`, and `match-only`.
 
-### 10. Port A Serato Crate Toward Rekordbox
+### 8. Port A Serato Crate Toward Rekordbox
 
 Full walkthrough: [Port One Serato Crate To Rekordbox](docs/how-to-port-one-crate.md).
 
@@ -186,7 +185,7 @@ djlib-doctor install rekordbox-db --stage-dir run/rekordbox-stage --db /path/to/
 djlib-doctor migrate serato-to-rb --serato-library-dir /path/to/serato-library --crate /path/to/_Serato_/Subcrates/MySet.crate --collection-root ~/Music --out run/serato-to-rb --stage-db --rekordbox-db /path/to/rekordbox/master.db
 ```
 
-### 11. Let An Agent Help, Safely
+### 9. Let An Agent Help, Safely
 
 In Codex, Claude Desktop, or another local coding agent, ask for read-only help first:
 
@@ -196,5 +195,5 @@ Use djlib-doctor to inspect my Rekordbox XML export. Stay read-only, explain the
 
 ## Project Status
 
-Implemented: verification, snapshots, cleanup plans, review logs, schema output, export comparison, byte fingerprinting, migration certification, Serato inspection, two-way dry-run porting, and staged/token-gated install workflows. Still pre-release: polished release automation, broader real-world Serato cue/tag validation, and certified Rekordbox DB version coverage.
+Implemented: verification, snapshots, cleanup plans, review logs, schema output, export comparison, byte fingerprinting, migration certification, Serato inspection, two-way dry-run porting, and staged/token-gated install workflows. Still pre-release: TestPyPI/PyPI smoke validation, broader version coverage, ANLZ write-path round-trip validation, and Serato saved-loop GUI validation.
 More docs: [index](docs/README.md), [features](docs/feature-list.md), [workflows](docs/human-workflows.md), [convert](docs/how-to-convert-without-losing-cues.md), [crate port](docs/how-to-port-one-crate.md), [Serato porting](docs/serato-porting.md), [architecture](docs/product-architecture.md).

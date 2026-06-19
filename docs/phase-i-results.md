@@ -30,7 +30,8 @@ Validated on 150 real .DAT files and 2160 .EXT files: ANLZ beatgrid parsing and 
 Real Serato DJ Pro captures confirmed:
 
 - Serato crates: 30/30 real crates parsed, covering 1550 track refs.
-- Serato Markers2: real GEOB cue tags parsed through the file-tag path.
+- Serato Markers2/BeatGrid: real GEOB tags parsed through the file-tag path.
+- Serato Markers2 writes: a written hot cue used Serato's real version-header plus base64-body container and loaded in Serato DJ at the exact written position.
 - Serato `database V2`: 704/704 real otrk records parsed using database field tags `pfil/tsng/tart/talb/tgen/tkey`.
 
 ## Rekordbox djmdCue Validation
