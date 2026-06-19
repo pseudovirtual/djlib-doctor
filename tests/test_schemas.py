@@ -3,8 +3,17 @@ import io
 import json
 import unittest
 
+from djlib_doctor.apply_manifest import ApplyManifest
+from djlib_doctor.certify import CertificationReport
 from djlib_doctor.cli import main
-from djlib_doctor.schemas import get_schema, schema_names
+from djlib_doctor.compare import CompareReport
+from djlib_doctor.fingerprint import FileComparison, FileFingerprint, FingerprintManifest
+from djlib_doctor.plan import MatchConfidence, PlanAction, PlanReport
+from djlib_doctor.port_rekordbox_serato import RekordboxToSeratoBatchPlan, RekordboxToSeratoPlan
+from djlib_doctor.port_serato_rekordbox import SeratoToRekordboxPlan
+from djlib_doctor.schemas import MODEL_SCHEMA_NAMES, get_schema, schema_names
+from djlib_doctor.serato_sqlite import SeratoInspection, SeratoTableInspection
+from djlib_doctor.verify_models import VerificationReport
 
 
 class SchemaTests(unittest.TestCase):
@@ -61,6 +70,39 @@ class SchemaTests(unittest.TestCase):
         self.assertIn("crates", schema["top_level_fields"])
         self.assertIn("warnings", schema["top_level_fields"])
         self.assertIn("cue_counts", schema["summary_fields"])
+
+    def test_model_schema_top_level_fields_match_runtime_to_dicts(self):
+        cases = _model_schema_cases()
+
+        self.assertEqual(set(cases), set(MODEL_SCHEMA_NAMES))
+        for name, examples in cases.items():
+            schema_fields = set(get_schema(name)["top_level_fields"])
+            runtime_fields = set().union(*(set(example.to_dict()) for example in examples))
+            with self.subTest(schema=name):
+                self.assertEqual(runtime_fields, schema_fields)
+
+
+def _model_schema_cases():
+    fingerprint = FileFingerprint("track.wav", 4, "0" * 64, (0.0,) * 16)
+    action = PlanAction("keep", "1", "Artist", "Title", MatchConfidence.EXACT, False, "reason", ("evidence",))
+    return {
+        "verification": (VerificationReport("1.0", "export.xml", False, 0, 0, 0, 0, 0, (), 0, 0, 0, 0, ()),),
+        "plan": (PlanReport("missing-files", (action,)),),
+        "compare": (CompareReport(()),),
+        "apply-manifest": (ApplyManifest("missing-files", ({"operation_id": "OP-1"},)),),
+        "fingerprint": (fingerprint,),
+        "fingerprint-comparison": (FileComparison(fingerprint, fingerprint, 1.0, "exact_duplicate"),),
+        "fingerprint-manifest": (FingerprintManifest("root", (fingerprint,)),),
+        "certification": (CertificationReport("manifest.json", "rekordbox", "serato", {}, ()),),
+        "serato-inspection": (
+            SeratoInspection("root.sqlite", (SeratoTableInspection("asset", ("id",), 1),), "0" * 64, {}),
+        ),
+        "port-manifest": (
+            RekordboxToSeratoPlan("Playlist", "RB - Playlist", (), ()),
+            RekordboxToSeratoBatchPlan((RekordboxToSeratoPlan("Playlist", "RB - Playlist", (), ()),)),
+        ),
+        "rekordbox-port-manifest": (SeratoToRekordboxPlan("crate", "Playlist", (), ()),),
+    }
 
 
 if __name__ == "__main__":

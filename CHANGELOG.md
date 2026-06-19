@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] C7: Added a model-backed schema drift guard that compares registered schema top-level fields against real `to_dict()` runtime examples.
 - [x] C6: Updated Serato format capability statuses so shipped AIFF/AIF/M4A/MP4/MP3 tag-writing formats use current-state labels instead of future-tense labels.
 - [x] C5: Split Rekordbox-to-Serato porting into facade, models, planning/cue mapping, output, policy, and verification modules while preserving the public import surface.
 - [x] C4: Split Serato audio-tag writing into a focused writer module and collapsed duplicated AIFF/MP3 ID3 GEOB handling behind one helper while preserving Markers2 golden coverage.

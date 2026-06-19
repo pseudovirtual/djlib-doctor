@@ -89,6 +89,19 @@ CERTIFICATION_FIELDS = (
     "summary",
     "issues",
 )
+MODEL_SCHEMA_NAMES = (
+    "verification",
+    "plan",
+    "compare",
+    "apply-manifest",
+    "fingerprint",
+    "fingerprint-comparison",
+    "fingerprint-manifest",
+    "certification",
+    "serato-inspection",
+    "port-manifest",
+    "rekordbox-port-manifest",
+)
 
 
 def _json_schema(version: str, fields: tuple[str, ...], **extra: Any) -> dict[str, Any]:
