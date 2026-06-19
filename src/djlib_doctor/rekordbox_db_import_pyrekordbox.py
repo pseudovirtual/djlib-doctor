@@ -87,11 +87,16 @@ def _cue_operations(
 
 
 def _cue_values(cue: dict[str, Any], content_id: int, cue_id: int) -> dict[str, Any]:
+    slot = cue.get("slot")
+    is_hot = slot is not None
     return {
         "ID": cue_id,
         "ContentID": content_id,
         "InMsec": int(cue["start_ms"]),
-        "OutMsec": 0 if cue.get("end_ms") is None else int(cue["end_ms"]),
-        "Kind": 4 if cue.get("cue_type") == "loop" else 0,
+        "OutMsec": -1 if cue.get("end_ms") is None else int(cue["end_ms"]),
+        "Kind": int(slot) + 1 if is_hot else 0,
+        "is_hot_cue": is_hot,
+        "is_memory_cue": not is_hot,
+        "Name": str(cue.get("label") or ""),
         "Comment": str(cue.get("label") or ""),
     }

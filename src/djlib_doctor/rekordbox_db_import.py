@@ -13,7 +13,7 @@ IMPORT_SCHEMA_VERSION = "1.0"
 CONTENT_TABLE = "djmdContent"
 CUE_TABLE = "djmdCue"
 REQUIRED_COLUMNS = ("ID", "FolderPath", "FileNameL", "Title")
-CUE_COLUMNS = ("ID", "ContentID", "InMsec", "OutMsec", "Kind", "HotCue", "Name")
+CUE_COLUMNS = ("ID", "ContentID", "InMsec", "OutMsec", "Kind")
 
 
 def build_rekordbox_db_import_operations(live_db: Path, port_manifest: Path, out_path: Path) -> Path:
@@ -145,7 +145,8 @@ def _cue_operations(
     _require_supported_cue_schema(columns)
     operations = [{"operation": "delete", "table": CUE_TABLE, "where": {"ContentID": content_id}}]
     for cue in cues:
-        operations.append({"operation": "insert", "table": CUE_TABLE, "values": _cue_values(cue, content_id, next_id)})
+        values = {column: value for column, value in _cue_values(cue, content_id, next_id).items() if column in columns}
+        operations.append({"operation": "insert", "table": CUE_TABLE, "values": values})
         next_id += 1
     return operations, next_id
 
@@ -157,14 +158,30 @@ def _require_supported_cue_schema(columns: tuple[str, ...]) -> None:
 
 
 def _cue_values(cue: dict[str, Any], content_id: int, cue_id: int) -> dict[str, Any]:
-    return {
+    values = {
         "ID": cue_id,
         "ContentID": content_id,
         "InMsec": int(cue["start_ms"]),
-        "OutMsec": None if cue.get("end_ms") is None else int(cue["end_ms"]),
-        "Kind": 4 if cue.get("cue_type") == "loop" else 0,
-        "HotCue": -1 if cue.get("slot") is None else int(cue["slot"]),
+        "OutMsec": -1 if cue.get("end_ms") is None else int(cue["end_ms"]),
+        "Kind": _cue_kind(cue),
+    }
+    values.update(_optional_cue_values(cue))
+    return values
+
+
+def _cue_kind(cue: dict[str, Any]) -> int:
+    slot = cue.get("slot")
+    return int(slot) + 1 if slot is not None else 0
+
+
+def _optional_cue_values(cue: dict[str, Any]) -> dict[str, Any]:
+    slot = cue.get("slot")
+    is_hot = slot is not None
+    return {
+        "is_hot_cue": is_hot,
+        "is_memory_cue": not is_hot,
         "Name": str(cue.get("label") or ""),
+        "Comment": str(cue.get("label") or ""),
     }
 
 

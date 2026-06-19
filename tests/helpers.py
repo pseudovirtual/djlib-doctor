@@ -50,12 +50,15 @@ def make_rekordbox_import_db(path: Path) -> None:
                 ArtistName TEXT
             );
             CREATE TABLE djmdCue(
+                -- Real Rekordbox 7 cue rows use InMsec/OutMsec, Kind, and
+                -- is_hot_cue/is_memory_cue; there is no HotCue column.
                 ID INTEGER PRIMARY KEY,
                 ContentID INTEGER,
                 InMsec INTEGER,
                 OutMsec INTEGER,
                 Kind INTEGER,
-                HotCue INTEGER,
+                is_hot_cue INTEGER,
+                is_memory_cue INTEGER,
                 Name TEXT
             );
             """

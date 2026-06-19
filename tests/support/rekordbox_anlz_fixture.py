@@ -5,11 +5,15 @@ from pathlib import Path
 
 
 def write_anlz_fixture(path: Path, cue_tag: bytes, time_ms: int, loop_ms: int) -> None:
+    # Device-export ANLZ may contain PCOB/PCO2 cue entries; local libraries
+    # usually store user cues in master.db and leave these cue lists empty.
     cue_payload = _pcob_payload(time_ms, loop_ms) if cue_tag == b"PCOB" else _pco2_payload(time_ms, loop_ms)
     _write_anlz(path, [_tag_bytes(cue_tag, 24 if cue_tag == b"PCOB" else 20, cue_payload)])
 
 
 def write_empty_cue_anlz_fixture(path: Path, cue_tag: bytes) -> None:
+    # Real local ANLZ keeps PCOB/PCO2 containers with zero PCPT/PCP2 cue rows;
+    # PQTZ/PQT2 beat times are absolute milliseconds.
     cue_payload = _empty_pcob_payload() if cue_tag == b"PCOB" else _empty_pco2_payload()
     _write_anlz(path, [_tag_bytes(cue_tag, 24 if cue_tag == b"PCOB" else 20, cue_payload)])
 

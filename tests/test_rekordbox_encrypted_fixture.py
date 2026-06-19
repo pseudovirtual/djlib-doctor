@@ -21,15 +21,18 @@ class RekordboxEncryptedFixtureTests(unittest.TestCase):
             try:
                 tables = {row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
                 content = conn.execute("SELECT FolderPath, FileNameL, Title FROM djmdContent").fetchone()
-                cue = conn.execute("SELECT InMsec, OutMsec, Kind, Comment FROM djmdCue").fetchone()
+                cue_columns = {row[1] for row in conn.execute("PRAGMA table_info(djmdCue)")}
+                cue = conn.execute(
+                    "SELECT InMsec, OutMsec, Kind, is_hot_cue, is_memory_cue, Comment FROM djmdCue"
+                ).fetchone()
             finally:
                 conn.close()
 
         self.assertIn("djmdContent", tables)
         self.assertIn("djmdCue", tables)
+        self.assertNotIn("HotCue", cue_columns)
         self.assertEqual(content, ("/Music", "Track One.aiff", "Track One"))
-        self.assertEqual((cue[0], cue[2], cue[3]), (12345, 0, "Cue A"))
-        self.assertIn(cue[1], (None, 0))
+        self.assertEqual(cue, (12345, -1, 1, 1, 0, "Cue A"))
 
     def test_generate_encrypted_fixture_or_skip_when_sqlcipher_missing(self):
         with TemporaryDirectory() as tmpdir:

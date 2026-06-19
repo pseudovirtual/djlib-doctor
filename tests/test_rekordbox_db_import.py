@@ -5,6 +5,7 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from tests.helpers import make_rekordbox_import_db
 from tests.support.rekordbox_encrypted_assertions import (
     assert_plain_sqlite_rejects,
     read_encrypted_library,
@@ -23,6 +24,7 @@ from tests.support.rekordbox_import_fixture import (
 )
 
 from djlib_doctor.cli import main
+from djlib_doctor.rekordbox_db_import import build_rekordbox_db_import_operations
 from djlib_doctor.rekordbox_db_stage import install_rekordbox_db_stage, stage_rekordbox_db_import
 from djlib_doctor.serato_crate import write_serato_crate
 
@@ -130,6 +132,31 @@ class RekordboxDbImportTests(unittest.TestCase):
 
             with self.assertRaises(ValueError):
                 stage_rekordbox_db_import(db, manifest, tmp / "stage")
+
+    def test_import_operations_use_real_djmdcue_fields(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            db = tmp / "master.db"
+            manifest = tmp / "port-manifest.json"
+            ops_path = tmp / "ops.json"
+            make_rekordbox_import_db(db)
+            make_serato_to_rekordbox_manifest(manifest)
+
+            build_rekordbox_db_import_operations(db, manifest, ops_path)
+            cue_ops = [
+                operation
+                for operation in json.loads(ops_path.read_text(encoding="utf-8"))["operations"]
+                if operation["table"] == "djmdCue" and operation["operation"] == "insert"
+            ]
+
+        point, loop = (operation["values"] for operation in cue_ops)
+        self.assertNotIn("HotCue", point)
+        self.assertEqual(
+            {key: point[key] for key in ("InMsec", "OutMsec", "Kind", "is_hot_cue", "is_memory_cue")},
+            {"InMsec": 12345, "OutMsec": -1, "Kind": 1, "is_hot_cue": True, "is_memory_cue": False},
+        )
+        self.assertEqual(loop["Kind"], 2)
+        self.assertEqual(loop["OutMsec"], 56000)
 
     def test_rekordbox_db_import_refuses_encrypted_sqlcipher_db_clearly(self):
         with TemporaryDirectory() as tmpdir:

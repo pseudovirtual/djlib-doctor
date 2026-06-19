@@ -14,6 +14,7 @@ class SeratoDatabaseV2Tests(unittest.TestCase):
                 b"".join(
                     (
                         record("vrsn", text("1.0/Serato ScratchLive Database")),
+                        # Real database V2 otrk path fields use pfil, not crate-style ptrk.
                         record("otrk", record("pfil", text("Music/Track One.aiff"))),
                         record("otrk", record("pfil", text("Music/Track Two.mp3"))),
                     )
@@ -36,6 +37,7 @@ class SeratoDatabaseV2Tests(unittest.TestCase):
                             "otrk",
                             record(
                                 "info",
+                                # Real database V2 metadata uses pfil plus t-prefixed UTF-16-BE fields.
                                 b"".join(
                                     (
                                         record("pfil", text("Music/Nested Track.aiff")),
@@ -66,6 +68,7 @@ class SeratoDatabaseV2Tests(unittest.TestCase):
     def test_database_v2_does_not_treat_crate_ptrk_as_track_path(self):
         with TemporaryDirectory() as tmpdir:
             path = Path(tmpdir) / "database V2"
+            # ptrk is valid in Serato crate records, but not in database V2 otrk track payloads.
             path.write_bytes(record("otrk", record("ptrk", text("Music/Wrong Field.aiff"))))
 
             database = read_serato_database_v2(path)

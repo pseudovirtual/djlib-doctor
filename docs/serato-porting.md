@@ -66,7 +66,7 @@ Supported DB boundary today:
 - supported read/check formats: plain SQLite `master.db`; encrypted SQLCipher `master.db` through pyrekordbox when the backend can unlock it
 - supported staged write formats: plain SQLite `master.db`; pyrekordbox-readable encrypted SQLCipher `master.db`
 - required content table: `djmdContent` with `ID`, `FolderPath`, `FileNameL`, and `Title`
-- optional cue table: `djmdCue` with `ID`, `ContentID`, `InMsec`, `OutMsec`, `Kind`, `HotCue`, and `Name`
+- optional cue table: `djmdCue` with `ID`, `ContentID`, `InMsec`, `OutMsec`, `Kind`, `is_hot_cue`, `is_memory_cue`, `Name`, and/or `Comment`
 - unsupported staged write format: any encrypted `master.db` that pyrekordbox/SQLCipher cannot unlock or map
 
 ## Scopes And Transfer Modes

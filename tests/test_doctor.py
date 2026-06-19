@@ -126,11 +126,21 @@ class DoctorTests(unittest.TestCase):
 
 
 def _write_serato_database_v2(path: Path) -> None:
+    # Real database V2 otrk fields use pfil/tsng/tart, not crate-style ptrk/pnam/part.
     path.write_bytes(
         b"".join(
             (
                 record("vrsn", text("1.0/Serato ScratchLive Database")),
-                record("otrk", record("ptrk", text("Music/Track One.aiff"))),
+                record(
+                    "otrk",
+                    b"".join(
+                        (
+                            record("pfil", text("Music/Track One.aiff")),
+                            record("tsng", text("Track One")),
+                            record("tart", text("Artist One")),
+                        )
+                    ),
+                ),
             )
         )
     )
