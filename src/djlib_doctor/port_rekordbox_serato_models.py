@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from .io_utils import render_json
+from .port_cue_models import PortCueTiming
 from .port_rekordbox_serato_policy import (
     CUE_POLICY,
     cue_counts_for_tracks,
@@ -28,7 +29,12 @@ class SeratoCueIntent:
     source_type: str = ""
 
     def to_dict(self) -> dict[str, object]:
-        return self.__dict__.copy()
+        return {
+            "intent": self.intent,
+            **PortCueTiming(self.start_ms, self.end_ms, self.slot, self.label).to_dict(),
+            "source_kind": self.source_kind,
+            "source_type": self.source_type,
+        }
 
 
 @dataclass(frozen=True)

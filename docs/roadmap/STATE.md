@@ -6,6 +6,8 @@ Primary-library foundation through Phase H is complete. Phase K docs polish is c
 
 ## Last Done
 
+C8 scoped cue model deduplication is complete. `PortCueTiming` now owns the shared `start_ms`/`end_ms`/`slot`/`label` serialization used by both Rekordbox-to-Serato cue intents and Serato-to-Rekordbox cue rows, while direction-specific fields such as Serato intent/source fields and Rekordbox kind/type/color remain separate. Current gate: 268 tests green with 23 expected skips, plus bytecode compile, Ruff check, and Ruff format check.
+
 C7 schema drift guard is complete. `schemas.py` now declares the model-backed schema names, and `tests/test_schemas.py` builds real runtime model examples to assert their `to_dict()` top-level fields match the registered schema fields, including the single and batch variants of the Rekordbox-to-Serato port manifest. Current gate: 267 tests green with 23 expected skips, plus bytecode compile, Ruff check, and Ruff format check.
 
 C6 stale capability labels are fixed. Serato format capabilities now mark shipped AIFF/AIF/M4A/MP4/MP3 tag-writing formats as `supported_for_tag_writes`; remaining future/planned wording is still limited to genuinely unimplemented or safety-scoped areas such as acoustic fingerprinting, FLAC/Ogg/WAV Serato cue metadata, and Serato BeatGrid writes. Current gate: 266 tests green with 23 expected skips, plus bytecode compile, Ruff check, and Ruff format check.

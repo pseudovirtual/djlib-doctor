@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from .io_utils import render_json, write_json
+from .port_cue_models import PortCueTiming
 from .rekordbox_uri import path_to_file_url
 from .serato_crate import read_serato_crate
 from .serato_file_tags import read_serato_markers2_file_tags
@@ -28,7 +29,12 @@ class RekordboxPortCue:
     color: str = ""
 
     def to_dict(self) -> dict[str, Any]:
-        return self.__dict__.copy()
+        return {
+            "kind": self.kind,
+            "cue_type": self.cue_type,
+            **PortCueTiming(self.start_ms, self.end_ms, self.slot, self.label).to_dict(),
+            "color": self.color,
+        }
 
 
 @dataclass(frozen=True)
