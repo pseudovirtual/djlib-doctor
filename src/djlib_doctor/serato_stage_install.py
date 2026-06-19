@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import shutil
 import sqlite3
 from datetime import datetime
 from pathlib import Path
@@ -10,7 +9,7 @@ from .io_utils import read_json, write_json
 from .serato_stage_common import file_hash_check, install_token_payload, installed_file_record
 from .serato_stage_models import SERATO_INSTALL_SCHEMA_VERSION, SeratoInstallReport, SeratoVerificationReport
 from .stage_installer import (
-    copy_required_backup,
+    backup_and_replace,
     require_app_closed,
     require_file_hash,
     require_no_sqlite_sidecars,
@@ -64,14 +63,11 @@ def _install_files(
     backup_subcrates = backup_dir / "_Serato_" / "Subcrates"
     backup_library.mkdir(parents=True, exist_ok=True)
     backup_subcrates.mkdir(parents=True, exist_ok=True)
-    _copy_required_backup(live_root, backup_library / "root.sqlite")
     live_subcrates = live_serato_music_dir / "Subcrates"
     live_subcrates.mkdir(parents=True, exist_ok=True)
-    for staged_crate in staged_crates:
-        live_crate = live_subcrates / staged_crate.name
-        if live_crate.exists():
-            _copy_required_backup(live_crate, backup_subcrates / live_crate.name)
-    installed_files = _copy_installs(staged_root, live_root, staged_crates, live_subcrates)
+    installed_files = _copy_installs(
+        staged_root, live_root, backup_library, staged_crates, live_subcrates, backup_subcrates
+    )
     report_path = stage_dir / "serato-install-report.json"
     passed = all(record["source_sha256"] == record["target_sha256"] for record in installed_files)
     write_json(
@@ -89,19 +85,20 @@ def _install_files(
     return SeratoInstallReport(True, report_path, backup_dir, tuple(installed_files))
 
 
-def _copy_required_backup(source: Path, backup: Path) -> None:
-    copy_required_backup(source, backup)
-
-
 def _copy_installs(
-    staged_root: Path, live_root: Path, staged_crates: tuple[Path, ...], live_subcrates: Path
+    staged_root: Path,
+    live_root: Path,
+    backup_library: Path,
+    staged_crates: tuple[Path, ...],
+    live_subcrates: Path,
+    backup_subcrates: Path,
 ) -> list[dict[str, str]]:
     installed_files = []
-    shutil.copy2(staged_root, live_root)
+    backup_and_replace(staged_root, live_root, backup_library / "root.sqlite")
     installed_files.append(installed_file_record(staged_root, live_root))
     for staged_crate in staged_crates:
         live_crate = live_subcrates / staged_crate.name
-        shutil.copy2(staged_crate, live_crate)
+        backup_and_replace(staged_crate, live_crate, backup_subcrates / live_crate.name)
         installed_files.append(installed_file_record(staged_crate, live_crate))
     return installed_files
 

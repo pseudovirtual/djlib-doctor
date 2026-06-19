@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import os
 import shutil
 from pathlib import Path
 from typing import Any
 
 from .safety import all_checks_passed, check_app_processes_closed, check_sqlite_sidecars
-from .stage_common import require_install_token, require_sha256, sha256_file
+from .stage_common import require_install_token, require_sha256
 
 
 def require_stage_token(prefix: str, payload: object, recorded_token: str, confirm_token: str) -> None:
@@ -42,19 +43,24 @@ def copy_required_backup(source: Path, backup: Path) -> None:
         raise RuntimeError(f"Required backup was not created: {backup}")
 
 
-def copy_with_backup(source: Path, target: Path, backup_dir: Path) -> dict[str, Any]:
+def backup_and_replace(source: Path, target: Path, backup: Path) -> dict[str, Any]:
     target.parent.mkdir(parents=True, exist_ok=True)
-    backup = backup_dir / target.name
     existed = target.exists()
-    if existed:
+    if existed and not backup.is_file():
         copy_required_backup(target, backup)
-    shutil.copy2(source, target)
+    replace_atomically(source, target)
     return {"path": str(target), "backup": str(backup) if existed else "", "existed": existed}
 
 
-def copy_and_verify(source: Path, target: Path) -> dict[str, str]:
-    shutil.copy2(source, target)
-    return {"source_sha256": sha256_file(source), "target_sha256": sha256_file(target)}
+def replace_atomically(source: Path, target: Path) -> None:
+    target.parent.mkdir(parents=True, exist_ok=True)
+    temp = target.with_name(f".{target.name}.djlib-doctor-tmp")
+    try:
+        shutil.copy2(source, temp)
+        os.replace(temp, target)
+    finally:
+        if temp.exists():
+            temp.unlink()
 
 
 def restore_backups(backups: list[dict[str, Any]]) -> None:

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
@@ -10,6 +9,7 @@ from .io_utils import read_json, write_json
 from .rekordbox_db_write import update_track_location_and_cues
 from .stage_common import backup_name, install_token, sha256_file
 from .stage_installer import (
+    backup_and_replace,
     copy_required_backup,
     require_app_closed,
     require_file_hashes,
@@ -127,7 +127,7 @@ def _install_operation(operation: dict[str, Any], backup_dir: Path) -> list[dict
     source = Path(operation["source"])
     target = Path(operation["target"])
     staged = Path(operation["staged_path"])
-    backups = [_copy_with_backup(staged, target, backup_dir)]
+    backups = [backup_and_replace(staged, target, backup_dir / backup_name(target))]
     backup = backup_dir / backup_name(source)
     copy_required_backup(source, backup)
     backups.append({"path": str(source), "backup": str(backup), "existed": True})
@@ -145,30 +145,9 @@ def _verify_operation(operation: dict[str, Any]) -> None:
 
 
 def _install_db(staged_db: Path, live_db: Path, backup_dir: Path) -> dict[str, Any]:
-    backup = backup_dir / backup_name(live_db)
-    copy_required_backup(live_db, backup)
-    shutil.copy2(staged_db, live_db)
-    return {"path": str(live_db), "backup": str(backup), "kind": "rekordbox_db"}
-
-
-def _copy_with_backup(source: Path, target: Path, backup_dir: Path) -> dict[str, Any]:
-    target.parent.mkdir(parents=True, exist_ok=True)
-    backup = backup_dir / backup_name(target)
-    existed = target.exists()
-    if existed:
-        copy_required_backup(target, backup)
-    _copy_atomically(source, target)
-    return {"path": str(target), "backup": str(backup) if existed else "", "existed": existed}
-
-
-def _copy_atomically(source: Path, target: Path) -> None:
-    temp = target.with_name(f".{target.name}.djlib-doctor-tmp")
-    try:
-        shutil.copy2(source, temp)
-        os.replace(temp, target)
-    finally:
-        if temp.exists():
-            temp.unlink()
+    record = backup_and_replace(staged_db, live_db, backup_dir / backup_name(live_db))
+    record["kind"] = "rekordbox_db"
+    return record
 
 
 def _check_processes(process_lines: tuple[str, ...] | list[str] | None) -> None:

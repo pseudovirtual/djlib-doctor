@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 import shutil
 import subprocess
 from dataclasses import dataclass
@@ -9,7 +8,13 @@ from typing import Any
 
 from .io_utils import read_json, write_json
 from .stage_common import backup_name, install_token, sha256_file
-from .stage_installer import copy_required_backup, require_file_hash, require_stage_token, restore_backups
+from .stage_installer import (
+    backup_and_replace,
+    copy_required_backup,
+    require_file_hash,
+    require_stage_token,
+    restore_backups,
+)
 
 FILE_OPS_STAGE_SCHEMA_VERSION = "1.0"
 FILE_OPS_INSTALL_SCHEMA_VERSION = "1.0"
@@ -142,15 +147,7 @@ def _apply_operation(operation: dict[str, Any], backup_dir: Path) -> dict[str, A
         require_file_hash(staged, operation["staged_sha256"], "Staged file")
         if kind == "move":
             require_file_hash(source, operation["source_sha256"], "Move source")
-        backups = []
-        target.parent.mkdir(parents=True, exist_ok=True)
-        if target.exists():
-            backup = backup_dir / backup_name(target)
-            copy_required_backup(target, backup)
-            backups.append({"path": str(target), "backup": str(backup), "existed": True})
-        else:
-            backups.append({"path": str(target), "backup": "", "existed": False})
-        _copy_atomically(staged, target)
+        backups = [backup_and_replace(staged, target, backup_dir / backup_name(target))]
         if kind == "move":
             backup = backup_dir / backup_name(source)
             copy_required_backup(source, backup)
@@ -173,13 +170,3 @@ def _apply_operation(operation: dict[str, Any], backup_dir: Path) -> dict[str, A
 
 def _rollback(backups: list[dict[str, Any]]) -> None:
     restore_backups(backups)
-
-
-def _copy_atomically(source: Path, target: Path) -> None:
-    temp = target.with_name(f".{target.name}.djlib-doctor-tmp")
-    try:
-        shutil.copy2(source, temp)
-        os.replace(temp, target)
-    finally:
-        if temp.exists():
-            temp.unlink()

@@ -128,7 +128,7 @@ class SeratoStageTests(unittest.TestCase):
                     return target
                 return real_copy2(source, target, *args, **kwargs)
 
-            with mock.patch("djlib_doctor.serato_stage_install.shutil.copy2", side_effect=skip_backup_copy):
+            with mock.patch("djlib_doctor.stage_installer.shutil.copy2", side_effect=skip_backup_copy):
                 with self.assertRaises(RuntimeError):
                     _install(tmp, live_library, live_music, stage_report.install_token)
 

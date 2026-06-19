@@ -6,6 +6,8 @@ Primary-library foundation through Phase H is complete. Phase K docs polish is c
 
 ## Last Done
 
+C3 atomic replacement consolidation is complete. `stage_installer.backup_and_replace()` now owns live-file backup plus same-filesystem temp-copy and `os.replace` semantics, and Rekordbox convert, Rekordbox move, generic SQLite stage, Serato stage, file ops, and Serato audio-tag installs route live replacements through it. Added a shared failure-path test proving a simulated replace error leaves the original live file intact and the backup present. Current gate: 264 tests green with 23 expected skips, plus bytecode compile, Ruff check, and Ruff format check.
+
 C2 safety consolidation is complete. `stage_installer.py` now owns shared staged-install guard helpers for confirmation-token recomputation, staged/live hash verification, SQLite sidecar refusal, app-closed refusal, and required backup creation. Rekordbox convert, Rekordbox move, Rekordbox DB stage/import, generic SQLite stage, Serato stage, file ops, and Serato audio tag install paths now use the shared helpers while preserving existing manifest formats and install reports. Current gate: 263 tests green with 23 expected skips, plus bytecode compile, Ruff check, and Ruff format check.
 
 J1 release dependency decision is documented: `pyrekordbox` and `sqlcipher3-wheels` remain core dependencies because Rekordbox DB support is core scope. Prebuilt SQLCipher wheels are supported on the current CI matrix, while Intel/x86_64 macOS on Python 3.13 remains a known `pip install` gap; use Apple Silicon or Python <=3.12 on Intel macOS.

@@ -1,9 +1,11 @@
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest import mock
 
 from djlib_doctor.stage_common import install_token
 from djlib_doctor.stage_installer import (
+    backup_and_replace,
     copy_required_backup,
     require_app_closed,
     require_file_hash,
@@ -54,6 +56,22 @@ class StageInstallerTests(unittest.TestCase):
             copy_required_backup(source, backup)
 
             self.assertEqual(backup.read_bytes(), b"db")
+
+    def test_backup_and_replace_failure_leaves_original_and_backup(self):
+        with TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            staged = root / "staged.db"
+            live = root / "master.db"
+            backup = root / "backups" / "master.db"
+            staged.write_bytes(b"new")
+            live.write_bytes(b"original")
+
+            with mock.patch("djlib_doctor.stage_installer.os.replace", side_effect=OSError("replace failed")):
+                with self.assertRaises(OSError):
+                    backup_and_replace(staged, live, backup)
+
+            self.assertEqual(live.read_bytes(), b"original")
+            self.assertEqual(backup.read_bytes(), b"original")
 
     def test_restore_backups_restores_existing_and_removes_created_paths(self):
         with TemporaryDirectory() as tmpdir:

@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import shutil
 from pathlib import Path
 from typing import Any
 
 from .io_utils import read_json, write_json
 from .stage_common import backup_name
 from .stage_installer import (
-    copy_required_backup,
+    backup_and_replace,
     require_app_closed,
     require_file_hashes,
     require_no_sqlite_sidecars,
@@ -68,10 +67,9 @@ def _check_db_sidecars(live_db: Path) -> None:
 
 
 def _install_db(staged_db: Path, live_db: Path, backup_dir: Path) -> dict[str, Any]:
-    backup = backup_dir / backup_name(live_db)
-    copy_required_backup(live_db, backup)
-    shutil.copy2(staged_db, live_db)
-    return {"path": str(live_db), "backup": str(backup), "kind": "rekordbox_db"}
+    record = backup_and_replace(staged_db, live_db, backup_dir / backup_name(live_db))
+    record["kind"] = "rekordbox_db"
+    return record
 
 
 def _install_operation(operation: dict[str, Any], backup_dir: Path) -> list[dict[str, Any]]:
@@ -84,7 +82,7 @@ def _install_operation(operation: dict[str, Any], backup_dir: Path) -> list[dict
             (staged_audio, operation["staged_audio_sha256"], "Staged converted audio"),
         ]
     )
-    backups = [_copy_with_backup(staged_audio, target, backup_dir)]
+    backups = [backup_and_replace(staged_audio, target, backup_dir / backup_name(target))]
     for row in operation.get("anlz_files", ()):
         source_anlz = Path(row["source"])
         staged_anlz = Path(row["staged"])
@@ -94,15 +92,5 @@ def _install_operation(operation: dict[str, Any], backup_dir: Path) -> list[dict
                 (staged_anlz, row["staged_sha256"], "Staged ANLZ"),
             ]
         )
-        backups.append(_copy_with_backup(staged_anlz, source_anlz, backup_dir))
+        backups.append(backup_and_replace(staged_anlz, source_anlz, backup_dir / backup_name(source_anlz)))
     return backups
-
-
-def _copy_with_backup(source: Path, target: Path, backup_dir: Path) -> dict[str, Any]:
-    target.parent.mkdir(parents=True, exist_ok=True)
-    backup = backup_dir / backup_name(target)
-    existed = target.exists()
-    if existed:
-        copy_required_backup(target, backup)
-    shutil.copy2(source, target)
-    return {"path": str(target), "backup": str(backup) if existed else "", "existed": existed}

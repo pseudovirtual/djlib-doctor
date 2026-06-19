@@ -222,7 +222,7 @@ class FileOperationsTests(unittest.TestCase):
                 calls.append((Path(src), Path(dst)))
                 real_replace(src, dst)
 
-            with mock.patch("djlib_doctor.file_operations.os.replace", side_effect=record_replace):
+            with mock.patch("djlib_doctor.stage_installer.os.replace", side_effect=record_replace):
                 apply_file_operations_stage(tmp / "stage", confirm_token=stage.install_token)
             target_bytes = target.read_bytes()
 

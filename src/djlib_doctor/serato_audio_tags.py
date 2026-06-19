@@ -8,7 +8,7 @@ from typing import Any
 from .io_utils import read_json, write_json
 from .serato_markers import build_markers2_payload, encode_markers2_geob_data
 from .stage_common import backup_name, install_token, sha256_file
-from .stage_installer import copy_required_backup, require_file_hashes, require_stage_token
+from .stage_installer import backup_and_replace, require_file_hashes, require_stage_token
 
 SERATO_AUDIO_TAG_STAGE_SCHEMA_VERSION = "1.0"
 SERATO_AUDIO_TAG_INSTALL_SCHEMA_VERSION = "1.0"
@@ -87,9 +87,7 @@ def install_serato_audio_tag_stage(stage_dir: Path, confirm_token: str) -> dict[
             ]
         )
         backup = backup_dir / backup_name(source)
-        if not backup.exists():
-            copy_required_backup(source, backup)
-        shutil.copy2(staged, source)
+        backup_and_replace(staged, source, backup)
         installed.append(
             {
                 "source_path": str(source),

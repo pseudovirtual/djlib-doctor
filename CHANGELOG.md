@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- [x] C3: Routed live-file installs through one shared backup-and-atomic-replace helper, with failure coverage proving originals and backups survive replace errors.
 - [x] C2: Added shared staged-install guard helpers for token recomputation, hash verification, sidecar/app checks, and required backups, then routed existing staged write workflows through them without changing behavior.
 - [x] C1/J1: Documented the SQLCipher wheel platform caveat while keeping `pyrekordbox` and `sqlcipher3-wheels` as core dependencies.
 - Fixed Serato Markers2 audio-tag writes to use the Serato GEOB container format: outer version header, 72-column base64 body, null padding, decoded `COLOR`/`BPMLOCK`/`CUE` entries, and footer.
