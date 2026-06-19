@@ -7,7 +7,8 @@ from unittest.mock import patch
 
 from tests.support.fake_pyrekordbox_db import FakePyrekordboxDb
 from tests.support.rekordbox_anlz_fixture import write_empty_cue_anlz_fixture
-from tests.support.rekordbox_convert_fixture import cue_row, make_rekordbox_db, write_operations
+from tests.support.rekordbox_convert_fixture import write_operations
+from tests.support.rekordbox_encrypted_assertions import read_encrypted_master_copy, rekordbox_not_running
 from tests.support.rekordbox_encrypted_fixture import (
     SqlcipherUnavailable,
     generate_encrypted_rekordbox_fixture,
@@ -27,11 +28,13 @@ class RekordboxConvertDelayTests(unittest.TestCase):
             tmp = Path(tmpdir)
             source = tmp / "Source.mp3"
             target = tmp / "Converted" / "Source.m4a"
-            db = tmp / "master.db"
             dat = tmp / "ANLZ0001.DAT"
             ext = tmp / "ANLZ0001.EXT"
+            try:
+                fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
+            except SqlcipherUnavailable as exc:
+                skip_or_fail_for_missing_encrypted_backend(self, exc)
             source.write_bytes(b"synthetic mp3 bytes")
-            make_rekordbox_db(db, source)
             write_empty_cue_anlz_fixture(dat, cue_tag=b"PCOB")
             write_empty_cue_anlz_fixture(ext, cue_tag=b"PCO2")
             ops = write_operations(tmp, source, target, dat, ext)
@@ -47,11 +50,12 @@ class RekordboxConvertDelayTests(unittest.TestCase):
                 patch("djlib_doctor.rekordbox_convert.require_audio_tools"),
                 patch("djlib_doctor.rekordbox_convert.encode_audio", side_effect=fake_encode),
                 patch("djlib_doctor.rekordbox_convert.encoder_delay_ms", side_effect=fake_delay),
+                rekordbox_not_running(),
             ):
-                stage = stage_rekordbox_conversion(db, ops, tmp / "stage")
+                stage = stage_rekordbox_conversion(fixture.encrypted_db, ops, tmp / "stage")
 
             operation = json.loads(stage.stage_manifest_path.read_text(encoding="utf-8"))["operations"][0]
-            staged_db_row = cue_row(stage.staged_db)
+            staged_library = read_encrypted_master_copy(stage.staged_db, tmp / "copied-net-delay-master.db")
             staged_dat = stage.stage_dir / "staged-anlz" / "OP-0001-ANLZ0001.DAT"
             staged_dat_cues = read_anlz_cue_times(staged_dat)
             staged_dat_grids = read_anlz_beatgrid_times(staged_dat)
@@ -62,7 +66,8 @@ class RekordboxConvertDelayTests(unittest.TestCase):
         self.assertEqual(operation["cue_shift_ms"], 21)
         self.assertEqual(operation["anlz_files"][0]["shifted_cues"], 0)
         self.assertEqual(operation["anlz_files"][0]["shifted_beatgrid_entries"], 5)
-        self.assertEqual(staged_db_row, (1021, 1521))
+        self.assertEqual(staged_library.tracks[0].path, target)
+        self.assertAlmostEqual(staged_library.tracks[0].cues[0].start, 12.366, places=3)
         self.assertEqual(staged_dat_cues, ())
         self.assertEqual(staged_dat_grids[0].times_ms, (521, 1021, 1521))
 
@@ -135,10 +140,14 @@ class RekordboxConvertDelayTests(unittest.TestCase):
             target = tmp / "Converted" / "Source.m4a"
             db = tmp / "master.db"
             source.write_bytes(b"synthetic wav bytes")
-            make_rekordbox_db(db, source)
+            try:
+                fixture = generate_encrypted_rekordbox_fixture(db)
+            except SqlcipherUnavailable as exc:
+                skip_or_fail_for_missing_encrypted_backend(self, exc)
 
             with self.assertRaisesRegex(RuntimeError, "matched 0 rows"):
-                update_track_location_and_cues(db, "999", target, 23, "test missing track")
+                with rekordbox_not_running():
+                    update_track_location_and_cues(fixture.encrypted_db, "999", target, 23, "test missing track")
 
     def test_conversion_uses_encrypted_opener_when_plain_sqlite_rejects_db(self):
         with TemporaryDirectory() as tmpdir:

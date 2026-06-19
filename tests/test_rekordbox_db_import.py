@@ -1,151 +1,77 @@
 import contextlib
 import io
 import json
-import sqlite3
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from tests.support.rekordbox_encrypted_assertions import (
+    assert_plain_sqlite_rejects,
+    read_encrypted_library,
+    read_encrypted_master_copy,
+    rekordbox_not_running,
+)
 from tests.support.rekordbox_encrypted_fixture import (
     SqlcipherUnavailable,
     generate_encrypted_rekordbox_fixture,
-    rekordbox_public_sqlcipher_key,
     skip_or_fail_for_missing_encrypted_backend,
+)
+from tests.support.rekordbox_import_fixture import (
+    make_serato_root,
+    make_serato_to_rekordbox_manifest,
+    make_unsupported_rekordbox_db,
 )
 
 from djlib_doctor.cli import main
-from djlib_doctor.io_utils import write_json
-from djlib_doctor.rekordbox_db_read import read_rekordbox_master_db
-from djlib_doctor.rekordbox_db_stage import stage_rekordbox_db_import
+from djlib_doctor.rekordbox_db_stage import install_rekordbox_db_stage, stage_rekordbox_db_import
 from djlib_doctor.serato_crate import write_serato_crate
 
 
-def make_port_manifest(path: Path) -> None:
-    write_json(
-        path,
-        {
-            "schema_version": "1.0",
-            "mode": "dry_run_only",
-            "source_platform": "serato",
-            "target_platform": "rekordbox_xml",
-            "transfer_mode": "full",
-            "tracks": [
-                {
-                    "track_id": "1",
-                    "portable_id": "Music/Track One.aiff",
-                    "path": "/Music/Track One.aiff",
-                    "title": "Track One",
-                    "artist": "Artist One",
-                    "album": "Album",
-                    "genre": "House",
-                    "key": "8A",
-                    "bpm": 124.0,
-                    "length_ms": 300000,
-                    "cues": [
-                        {
-                            "kind": "hotcue",
-                            "cue_type": "cue",
-                            "start_ms": 12345,
-                            "end_ms": None,
-                            "slot": 0,
-                            "label": "Cue A",
-                        },
-                        {
-                            "kind": "hotcue",
-                            "cue_type": "loop",
-                            "start_ms": 48000,
-                            "end_ms": 56000,
-                            "slot": 1,
-                            "label": "Loop B",
-                        },
-                    ],
-                }
-            ],
-            "skipped": [],
-        },
-    )
-
-
-def make_rekordbox_db(path: Path, supported: bool = True) -> None:
-    conn = sqlite3.connect(path)
-    try:
-        if supported:
-            conn.execute(
-                """
-                CREATE TABLE djmdContent(
-                    ID INTEGER PRIMARY KEY,
-                    FolderPath TEXT,
-                    FileNameL TEXT,
-                    Title TEXT,
-                    ArtistName TEXT,
-                    AlbumName TEXT,
-                    GenreName TEXT,
-                    KeyName TEXT,
-                    BPM REAL,
-                    Length INTEGER
-                )
-                """
-            )
-            conn.execute(
-                """
-                CREATE TABLE djmdCue(
-                    ID INTEGER PRIMARY KEY,
-                    ContentID INTEGER,
-                    InMsec INTEGER,
-                    OutMsec INTEGER,
-                    Kind INTEGER,
-                    HotCue INTEGER,
-                    Name TEXT
-                )
-                """
-            )
-        else:
-            conn.execute("CREATE TABLE something_else(id INTEGER PRIMARY KEY)")
-        conn.commit()
-    finally:
-        conn.close()
-
-
 class RekordboxDbImportTests(unittest.TestCase):
-    def test_stage_rekordbox_db_import_from_serato_port_manifest(self):
+    def test_stage_and_install_encrypted_rekordbox_db_import_from_serato_port_manifest(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
-            db = tmp / "master.db"
-            manifest = tmp / "port-manifest.json"
-            make_rekordbox_db(db)
-            make_port_manifest(manifest)
-
-            stage = stage_rekordbox_db_import(db, manifest, tmp / "stage")
-            ops = json.loads((tmp / "stage" / "rekordbox-db-import-operations.json").read_text(encoding="utf-8"))
-            conn = sqlite3.connect(stage.staged_db)
             try:
-                row = conn.execute("SELECT Title, ArtistName, BPM FROM djmdContent").fetchone()
-                cue_rows = conn.execute(
-                    "SELECT ContentID, InMsec, OutMsec, Kind, HotCue, Name FROM djmdCue ORDER BY ID"
-                ).fetchall()
-            finally:
-                conn.close()
+                fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
+            except (ImportError, SqlcipherUnavailable) as exc:
+                skip_or_fail_for_missing_encrypted_backend(self, exc)
+            assert_plain_sqlite_rejects(self, fixture.encrypted_db)
+            manifest = tmp / "port-manifest.json"
+            make_serato_to_rekordbox_manifest(manifest)
 
-        self.assertEqual(ops["summary"], {"insert": 3, "update": 0})
-        self.assertEqual(row, ("Track One", "Artist One", 124.0))
-        self.assertEqual(cue_rows, [(1, 12345, None, 0, 0, "Cue A"), (1, 48000, 56000, 4, 1, "Loop B")])
+            with rekordbox_not_running():
+                stage = stage_rekordbox_db_import(fixture.encrypted_db, manifest, tmp / "stage")
+                report = install_rekordbox_db_stage(
+                    tmp / "stage", fixture.encrypted_db, confirm_token=stage.install_token, process_lines=()
+                )
+            ops = json.loads((tmp / "stage" / "rekordbox-db-import-operations.json").read_text(encoding="utf-8"))
+            staged = read_encrypted_master_copy(stage.staged_db, tmp / "copied-import-master.db")
+            installed = read_encrypted_library(fixture.encrypted_db)
+
+        self.assertEqual(ops["summary"], {"insert": 2, "update": 1})
+        self.assertTrue(report["passed"])
+        self.assertEqual(staged.tracks[0].name, "Track One")
+        self.assertEqual(installed.tracks[0].name, "Track One")
+        self.assertGreaterEqual(len(installed.tracks[0].cues), 2)
 
     def test_cli_stage_rekordbox_db_import_prints_install_token(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
-            db = tmp / "master.db"
+            try:
+                fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
+            except (ImportError, SqlcipherUnavailable) as exc:
+                skip_or_fail_for_missing_encrypted_backend(self, exc)
             manifest = tmp / "port-manifest.json"
-            make_rekordbox_db(db)
-            make_port_manifest(manifest)
+            make_serato_to_rekordbox_manifest(manifest)
             stdout = io.StringIO()
 
-            with contextlib.redirect_stdout(stdout):
+            with contextlib.redirect_stdout(stdout), rekordbox_not_running():
                 exit_code = main(
                     [
                         "stage",
                         "rekordbox-db-import",
                         "--db",
-                        str(db),
+                        str(fixture.encrypted_db),
                         "--port-manifest",
                         str(manifest),
                         "--stage-dir",
@@ -162,14 +88,16 @@ class RekordboxDbImportTests(unittest.TestCase):
             tmp = Path(tmpdir)
             library = tmp / "Library"
             library.mkdir()
-            db = tmp / "master.db"
+            try:
+                fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
+            except (ImportError, SqlcipherUnavailable) as exc:
+                skip_or_fail_for_missing_encrypted_backend(self, exc)
             crate = tmp / "Test.crate"
-            make_rekordbox_db(db)
-            _make_serato_root(library / "root.sqlite")
+            make_serato_root(library / "root.sqlite")
             write_serato_crate(crate, ("Music/Track One.aiff",))
             stdout = io.StringIO()
 
-            with contextlib.redirect_stdout(stdout):
+            with contextlib.redirect_stdout(stdout), rekordbox_not_running():
                 exit_code = main(
                     [
                         "migrate",
@@ -184,7 +112,7 @@ class RekordboxDbImportTests(unittest.TestCase):
                         str(tmp / "out"),
                         "--stage-db",
                         "--rekordbox-db",
-                        str(db),
+                        str(fixture.encrypted_db),
                     ]
                 )
 
@@ -197,8 +125,8 @@ class RekordboxDbImportTests(unittest.TestCase):
             tmp = Path(tmpdir)
             db = tmp / "master.db"
             manifest = tmp / "port-manifest.json"
-            make_rekordbox_db(db, supported=False)
-            make_port_manifest(manifest)
+            make_unsupported_rekordbox_db(db)
+            make_serato_to_rekordbox_manifest(manifest)
 
             with self.assertRaises(ValueError):
                 stage_rekordbox_db_import(db, manifest, tmp / "stage")
@@ -209,7 +137,7 @@ class RekordboxDbImportTests(unittest.TestCase):
             db = tmp / "master.db"
             manifest = tmp / "port-manifest.json"
             db.write_bytes(b"SQLCipher encrypted Rekordbox database placeholder")
-            make_port_manifest(manifest)
+            make_serato_to_rekordbox_manifest(manifest)
 
             with self.assertRaisesRegex(ValueError, r"encrypted SQLCipher.*pyrekordbox/SQLCipher backend"):
                 stage_rekordbox_db_import(db, manifest, tmp / "stage")
@@ -218,31 +146,15 @@ class RekordboxDbImportTests(unittest.TestCase):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
             try:
-                from pyrekordbox.db6 import database
-
                 fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
             except (ImportError, SqlcipherUnavailable) as exc:
                 skip_or_fail_for_missing_encrypted_backend(self, exc)
             manifest = tmp / "port-manifest.json"
-            make_port_manifest(manifest)
+            make_serato_to_rekordbox_manifest(manifest)
 
-            original_get_pid = database.get_rekordbox_pid
-            database.get_rekordbox_pid = lambda: 0
-            try:
+            with rekordbox_not_running():
                 stage = stage_rekordbox_db_import(fixture.encrypted_db, manifest, tmp / "stage")
-                library = read_rekordbox_master_db(stage.staged_db, key=rekordbox_public_sqlcipher_key())
-            finally:
-                database.get_rekordbox_pid = original_get_pid
+                library = read_encrypted_master_copy(stage.staged_db, tmp / "copied-import-stage-master.db")
 
         self.assertEqual(library.tracks[0].name, "Track One")
         self.assertEqual(library.tracks[0].cues[0].start, 12.345)
-
-
-def _make_serato_root(path: Path) -> None:
-    conn = sqlite3.connect(path)
-    try:
-        conn.execute("CREATE TABLE asset(portable_id TEXT, name TEXT, artist TEXT)")
-        conn.execute("INSERT INTO asset VALUES('Music/Track One.aiff', 'Track One', 'Artist One')")
-        conn.commit()
-    finally:
-        conn.close()

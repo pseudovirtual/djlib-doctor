@@ -5,14 +5,13 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from tests.support.fake_pyrekordbox_db import FakePyrekordboxDb
+from tests.support.rekordbox_encrypted_assertions import read_encrypted_master_copy, rekordbox_not_running
 from tests.support.rekordbox_encrypted_fixture import (
     SqlcipherUnavailable,
     generate_encrypted_rekordbox_fixture,
-    rekordbox_public_sqlcipher_key,
     skip_or_fail_for_missing_encrypted_backend,
 )
 
-from djlib_doctor.rekordbox_db_read import read_rekordbox_master_db
 from djlib_doctor.rekordbox_move import stage_rekordbox_move
 
 
@@ -21,8 +20,6 @@ class RekordboxMoveEncryptedTests(unittest.TestCase):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
             try:
-                from pyrekordbox.db6 import database
-
                 fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
             except (ImportError, SqlcipherUnavailable) as exc:
                 skip_or_fail_for_missing_encrypted_backend(self, exc)
@@ -32,13 +29,9 @@ class RekordboxMoveEncryptedTests(unittest.TestCase):
             source.write_bytes(b"audio")
             operations = _write_operations(tmp, source, target)
 
-            original_get_pid = database.get_rekordbox_pid
-            database.get_rekordbox_pid = lambda: 0
-            try:
+            with rekordbox_not_running():
                 stage = stage_rekordbox_move(fixture.encrypted_db, operations, tmp / "stage")
-                library = read_rekordbox_master_db(stage.staged_db, key=rekordbox_public_sqlcipher_key())
-            finally:
-                database.get_rekordbox_pid = original_get_pid
+                library = read_encrypted_master_copy(stage.staged_db, tmp / "copied-move-master.db")
 
         self.assertEqual(library.tracks[0].path, target)
 
@@ -60,7 +53,9 @@ class RekordboxMoveEncryptedTests(unittest.TestCase):
 
         self.assertTrue(stage_exists)
         self.assertTrue(fake_db.closed)
+        self.assertTrue(fake_db.disposed)
         self.assertTrue(any("UPDATE" in statement and "djmdContent" in statement for statement in fake_db.statements))
+        self.assertIn("PRAGMA wal_checkpoint(TRUNCATE)", fake_db.statements)
 
 
 def _write_operations(tmp: Path, source: Path, target: Path) -> Path:
