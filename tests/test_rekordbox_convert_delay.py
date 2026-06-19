@@ -18,6 +18,7 @@ from tests.support.rekordbox_encrypted_fixture import (
 from djlib_doctor.rekordbox_anlz import read_anlz_beatgrid_times, read_anlz_cue_times
 from djlib_doctor.rekordbox_convert import stage_rekordbox_conversion
 from djlib_doctor.rekordbox_db_read import read_rekordbox_master_db
+from djlib_doctor.rekordbox_db_write import update_track_location_and_cues
 
 
 class RekordboxConvertDelayTests(unittest.TestCase):
@@ -103,6 +104,42 @@ class RekordboxConvertDelayTests(unittest.TestCase):
         self.assertEqual(library.tracks[0].path, target)
         self.assertEqual(library.tracks[0].cues[0].start, 12.345)
 
+    def test_encrypted_write_persists_when_master_db_file_is_copied(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            try:
+                from pyrekordbox.db6 import database
+
+                fixture = generate_encrypted_rekordbox_fixture(tmp / "master.db")
+            except (ImportError, SqlcipherUnavailable) as exc:
+                skip_or_fail_for_missing_encrypted_backend(self, exc)
+            copied = tmp / "copied-master.db"
+            target = tmp / "Converted" / "Track One.m4a"
+
+            original_get_pid = database.get_rekordbox_pid
+            database.get_rekordbox_pid = lambda: 0
+            try:
+                update_track_location_and_cues(fixture.encrypted_db, "1", target, 23, "test encrypted write")
+                shutil.copy2(fixture.encrypted_db, copied)
+                library = read_rekordbox_master_db(copied, key=rekordbox_public_sqlcipher_key())
+            finally:
+                database.get_rekordbox_pid = original_get_pid
+
+        self.assertEqual(library.tracks[0].path, target)
+        self.assertAlmostEqual(library.tracks[0].cues[0].start, 12.368, places=3)
+
+    def test_write_refuses_missing_track_id(self):
+        with TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            source = tmp / "Source.wav"
+            target = tmp / "Converted" / "Source.m4a"
+            db = tmp / "master.db"
+            source.write_bytes(b"synthetic wav bytes")
+            make_rekordbox_db(db, source)
+
+            with self.assertRaisesRegex(RuntimeError, "matched 0 rows"):
+                update_track_location_and_cues(db, "999", target, 23, "test missing track")
+
     def test_conversion_uses_encrypted_opener_when_plain_sqlite_rejects_db(self):
         with TemporaryDirectory() as tmpdir:
             tmp = Path(tmpdir)
@@ -133,7 +170,9 @@ class RekordboxConvertDelayTests(unittest.TestCase):
 
         self.assertTrue(stage_exists)
         self.assertTrue(fake_db.closed)
+        self.assertTrue(fake_db.disposed)
         self.assertTrue(any("UPDATE" in statement and "djmdContent" in statement for statement in fake_db.statements))
+        self.assertIn("PRAGMA wal_checkpoint(TRUNCATE)", fake_db.statements)
 
 
 if __name__ == "__main__":

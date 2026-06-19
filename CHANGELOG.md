@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Hardened encrypted Rekordbox writes by checkpointing SQLCipher WAL pages into `master.db`, disposing the writer engine, refusing zero-row cue/location updates, and adding a copy-only encrypted round-trip persistence test.
 - [x] J0: Routed staged Rekordbox DB operations, conversion, and move/rename updates through a shared encrypted-capable writer for SQLCipher `master.db` compatibility.
 - Updated agent-facing docs, skills, plugin metadata, and llms files to match current staged Rekordbox convert/move, encrypted DB, and two-way migration behavior.
 - Recorded Phase I live validation counts for Rekordbox 7.2.8 and Serato DJ Pro, including cue-shift, ANLZ, crate, Markers2, database V2, and `djmdCue` findings.

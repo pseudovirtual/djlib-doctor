@@ -6,6 +6,7 @@ class FakePyrekordboxDb:
         self.engine = _FakeEngine(self)
         self.statements: list[str] = []
         self.closed = False
+        self.disposed = False
 
     def close(self) -> None:
         self.closed = True
@@ -20,6 +21,9 @@ class _FakeEngine:
 
     def connect(self) -> _FakeConnection:
         return _FakeConnection(self.db)
+
+    def dispose(self) -> None:
+        self.db.disposed = True
 
 
 class _FakeConnection:
@@ -37,7 +41,12 @@ class _FakeConnection:
         self.db.statements.append(sql)
         if "PRAGMA integrity_check" in sql:
             return _FakeRows([("ok",)])
+        if "PRAGMA wal_checkpoint" in sql:
+            return _FakeRows([(0, 0, 0)])
         return _FakeRows([])
+
+    def execution_options(self, **_options: object) -> _FakeConnection:
+        return self
 
 
 class _FakeRows(list):

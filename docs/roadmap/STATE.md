@@ -6,6 +6,8 @@ Primary-library foundation through Phase H is complete. Phase K docs polish is c
 
 ## Last Done
 
+Critical J0 follow-up: encrypted Rekordbox writes now force SQLCipher WAL pages into the main `master.db` with `PRAGMA wal_checkpoint(TRUNCATE)` after the write transaction, dispose the writer engine, and refuse zero-row cue/location updates instead of reporting a silent no-op. The canonical encrypted-write test copies only `master.db` after writing and reopens the copy, matching the stage/install copy behavior that exposed the live bug.
+
 J0 routed staged Rekordbox DB operations, conversion, and move/rename DB updates through one encrypted-capable writer. The shared writer uses plain SQLite only for actual plain fixtures and falls back to `open_master_database` when `master.db` is rejected as not plain SQLite, keeping staged hashes, sidecar checks, install tokens, backups, and install verification intact.
 
 Recent Phase I fixes and validation remain recorded: Serato `database V2` nested `otrk` extraction, local ANLZ cue-scope documentation, opt-in local Markers2 validation harness coverage, documented PCOB/PCO2 cue-count offsets, and Rekordbox `djmdCue` real columns/counts.
