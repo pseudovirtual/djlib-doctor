@@ -41,7 +41,7 @@ class SafetyTests(unittest.TestCase):
     def test_timestamped_backup_path_is_predictable(self):
         backup = timestamped_backup_path(Path("/tmp/master.db"), "before-test", datetime(2026, 6, 5, 12, 30, 45))
 
-        self.assertEqual(str(backup), "/tmp/master.before-test.20260605-123045.db")
+        self.assertEqual(backup, Path("/tmp/master.before-test.20260605-123045.db"))
 
     def test_app_process_checks_detect_running_serato(self):
         checks = check_app_processes_closed(
