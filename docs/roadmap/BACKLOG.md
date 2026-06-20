@@ -38,7 +38,7 @@ Scope: Rekordbox and Serato only. Do not add other DJ apps or a neutral universa
 - [x] E1: Add Ruff lint/format config, dev dependency, CI checks, and apply formatting.
 - [x] E2: Add cross-OS CI matrix for Python 3.9 and 3.13.
 - [x] E3: Complete package metadata and ship `py.typed`.
-- [ ] E4: Add TestPyPI dry-run publishing and clean-venv smoke install workflow. Repo workflow is added; blocked on maintainer TestPyPI trusted-publisher setup.
+- [x] E4: Add TestPyPI dry-run publishing and clean-venv smoke install workflow; TestPyPI publish, attestations, and clean-venv smoke passed on Ubuntu, macOS, and Windows.
 
 ## Phase F - Real Rekordbox master.db Read/Write
 
@@ -89,7 +89,7 @@ Scope: Rekordbox and Serato only. Do not add other DJ apps or a neutral universa
 ## Phase J - Release
 
 - [x] J1: Decide and document the sqlcipher3-wheels coverage gap for Intel macOS plus Python 3.13: keep pyrekordbox/sqlcipher core, document the supported matrix, and recommend Apple Silicon or Python <=3.12 on Intel macOS.
-- [ ] J2: Execute the TestPyPI smoke after maintainer trusted-publisher setup, then flip README install instructions only after smoke passes.
+- [x] J2: Execute the TestPyPI smoke after maintainer trusted-publisher setup, then flip README install instructions only after smoke passes.
 - [ ] J3: Cut a real pre-release tag and confirm the release workflow end to end.
 
 ## Phase K - Docs Polish

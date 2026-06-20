@@ -56,25 +56,30 @@ DJ apps store creative timing in several places: library databases, audio tags, 
 ## Quick Start
 
 ```bash
-git clone https://github.com/pseudovirtual/djlib-doctor.git
-cd djlib-doctor
-python3 -m pip install -e .
-djlib-doctor verify tests/fixtures/rekordbox/simple.xml --no-file-check
+python3 -m pip install djlib-doctor
 djlib-doctor detect
 djlib-doctor examples
 djlib-doctor self-test
 ```
 
-Serato audio tag staging needs optional dependencies: `python3 -m pip install -e ".[audio-tags]"`.
+Serato audio tag staging needs optional dependencies: `python3 -m pip install "djlib-doctor[audio-tags]"`.
 
 Rekordbox `master.db` work uses default dependencies: `pyrekordbox` and `sqlcipher3-wheels`. If SQLCipher cannot import on your platform, Rekordbox DB commands fail closed with a backend-unavailable message.
 
 SQLCipher support depends on prebuilt `sqlcipher3-wheels` coverage. The supported binary-wheel matrix currently covers the project CI targets: Ubuntu x64, Windows x64, and current GitHub macOS arm64 runners on Python 3.9 and 3.13. Prebuilt wheels are not available for every platform/Python combination; the known gap is Intel/x86_64 macOS on Python 3.13, where `pip install` may fail to build SQLCipher locally. On Intel macOS, use Python <=3.12 for now; Apple Silicon users should prefer the normal supported Python versions.
 
+Install from source for development:
+
+```bash
+git clone https://github.com/pseudovirtual/djlib-doctor.git
+cd djlib-doctor
+python3 -m pip install -e ".[dev]"
+djlib-doctor verify tests/fixtures/rekordbox/simple.xml --no-file-check
+```
+
 Run the full suite:
 
 ```bash
-python3 -m pip install -e ".[dev]"
 PYTHONPATH=src python3 -m unittest discover -s tests
 PYTHONPATH=src PYTHONPYCACHEPREFIX=work/pycache python3 -m compileall -q src tests
 ```
@@ -195,5 +200,5 @@ Use djlib-doctor to inspect my Rekordbox XML export. Stay read-only, explain the
 
 ## Project Status
 
-Implemented: verification, snapshots, cleanup plans, review logs, schema output, export comparison, byte fingerprinting, migration certification, Serato inspection, two-way dry-run porting, and staged/token-gated install workflows. Still pre-release: TestPyPI/PyPI smoke validation, broader version coverage, ANLZ write-path round-trip validation, and Serato saved-loop GUI validation.
+Implemented: verification, snapshots, cleanup plans, review logs, schema output, export comparison, byte fingerprinting, migration certification, Serato inspection, two-way dry-run porting, and staged/token-gated install workflows. The TestPyPI publish plus clean-venv `self-test` smoke passed on Ubuntu, macOS, and Windows. Remaining release work is the maintainer-controlled real PyPI tag/publish flow; broader version coverage, ANLZ write-path round-trip validation, and Serato saved-loop GUI validation remain limited.
 More docs: [index](docs/README.md), [features](docs/feature-list.md), [workflows](docs/human-workflows.md), [convert](docs/how-to-convert-without-losing-cues.md), [crate port](docs/how-to-port-one-crate.md), [Serato porting](docs/serato-porting.md), [architecture](docs/product-architecture.md).

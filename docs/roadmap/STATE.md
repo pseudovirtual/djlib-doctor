@@ -2,11 +2,13 @@
 
 ## Phase
 
-Code for the current 0.1.0 release target is complete. Release-prep docs now distinguish real-data validated behavior from experimental coverage, and remaining work is the human TestPyPI/PyPI release flow in `docs/RELEASE.md`.
+Code for the current 0.1.0 release target is complete. CI is green on Ubuntu, macOS, and Windows, the TestPyPI publish plus clean-venv `self-test` smoke passed on all three runners, and the remaining work is the maintainer-controlled real PyPI release flow in `docs/RELEASE.md`.
 
 ## Last Done
 
-Windows CI hardening is complete. Rekordbox pyrekordbox reads and writes now close sessions and dispose SQLAlchemy engines through one shared helper before staged replace or temporary-directory cleanup, with tests covering read disposal and a Windows-like `os.replace` refusal when a pyrekordbox handle would remain open. Rekordbox file URL parsing now handles Windows drive URLs, preserves streaming placeholders, and serializes config and Serato-to-Rekordbox manifest paths with forward slashes. Current backend-present macOS gate: `.venv` suite 279 tests green with 3 expected skips, bytecode compile green, Ruff check green, and Ruff format check green. Windows CI still needs the remote matrix to confirm the real OS file-lock behavior; Linux should continue to skip Rekordbox DB backend tests only.
+Final 0.1.0 release prep is complete. The README now uses `pip install djlib-doctor` as the primary install path, with source install kept as the development path and the SQLCipher platform caveat kept near install instructions. `pyproject.toml` remains at version `0.1.0` and Development Status `3 - Alpha`. The changelog has a dated 0.1.0 section with validated capabilities, known limitations, TestPyPI smoke success, and final CI hardening. Official GitHub Actions are pinned to Node 24-native majors: `checkout@v7`, `setup-python@v6`, `upload-artifact@v7`, and `download-artifact@v8`.
+
+Windows CI hardening is complete. Rekordbox pyrekordbox reads and writes now close sessions and dispose SQLAlchemy engines through one shared helper before staged replace or temporary-directory cleanup, with tests covering read disposal and a Windows-like `os.replace` refusal when a pyrekordbox handle would remain open. Rekordbox file URL parsing now handles Windows drive URLs, preserves streaming placeholders, and serializes config and Serato-to-Rekordbox manifest paths with forward slashes. Current backend-present macOS gate: `.venv` suite 279 tests green with 3 expected skips, bytecode compile green, Ruff check green, and Ruff format check green. Remote CI is green on Ubuntu, macOS, and Windows for Python 3.9 and 3.13; Linux intentionally skips Rekordbox DB backend tests only.
 
 CI encrypted-DB hardening is complete. Encrypted Rekordbox `master.db` backend tests now use one shared `requires_rekordbox_backend` gate that skips on Linux or unavailable SQLCipher/pyrekordbox backends while leaving platform-agnostic tests running. The encrypted fixture is now built through pyrekordbox's own SQLCipher engine and self-checks by reopening through `read_rekordbox_master_db`; the plain fixture schema has one source, pyrekordbox `Base` over forced `sqlite+pysqlite`, with no hand-maintained fallback schema. `read_rekordbox_master_db` now maps query-time sqlite/sqlcipher/SQLAlchemy driver failures to the clear unsupported/encrypted message, and backup names are hardened so shallow paths cannot escape the stage backup directory. Current backend-present gate: `.venv` suite 273 tests green with 3 expected skips, bytecode compile green, Ruff check green, and Ruff format check green. Current system gate: 273 tests green with 27 expected skips.
 
@@ -50,7 +52,7 @@ Recent Phase I fixes and validation remain recorded: Serato `database V2` nested
 
 ## Next
 
-Phase J-prep and the J1 SQLCipher matrix decision are complete. Next is human release execution: follow `docs/RELEASE.md` to configure/confirm trusted publishers, run the TestPyPI rc smoke, update README to `pip install djlib-doctor` only after smoke passes, then tag and verify the real PyPI release.
+Phase J-prep, the J1 SQLCipher matrix decision, and the TestPyPI dry run are complete. Next is human release execution: follow `docs/RELEASE.md`, push `main`, confirm the `pypi` GitHub environment and PyPI trusted publisher, push tag `v0.1.0`, and verify the real PyPI install.
 
 Phase I still cannot complete I1, the device-export cue side of I2, or broad I4 golden-vector expansion from synthetic fixtures. Real validation on Rekordbox 7.2.8 and Serato DJ Pro has already confirmed local ANLZ beatgrid parsing, PCOB/PCO2 cue-count offsets for empty local cue containers, Serato crate reading, the Markers2 parser path, and hotcue slot = Kind - 1 for Rekordbox cues. The repo currently has only `tests/fixtures/real/.gitignore` and `tests/fixtures/real/README.md`; there is no `manifest.json` or captured library payload. Provide an approved local-only fixture under `tests/fixtures/real/manifest.json`, following `docs/real-fixtures.md`, with:
 
@@ -70,12 +72,12 @@ Phase H implementation is complete; Phase I remains the real-world validation ch
 
 ## Blockers
 
-TestPyPI and PyPI trusted publisher setup is a maintainer/account action. See `docs/RELEASE.md` for the release checklist. Minimum TestPyPI setup:
+PyPI trusted publisher setup and the final release tag are maintainer/account actions. See `docs/RELEASE.md` for the release checklist. Minimum remaining setup:
 
-1. Sign in to https://test.pypi.org as the owning account for `djlib-doctor`.
+1. Sign in to https://pypi.org as the owning account for `djlib-doctor`.
 2. Go to Account settings -> Publishing -> Add a new pending publisher.
-3. Use owner `pseudovirtual`, repository `djlib-doctor`, workflow name `release.yml`, and environment name `testpypi`.
+3. Use owner `pseudovirtual`, repository `djlib-doctor`, workflow name `release.yml`, and environment name `pypi`.
 4. Save the pending publisher for project name `djlib-doctor`.
-5. In GitHub, ensure the repository has an environment named `testpypi`; no secrets are needed for trusted publishing.
-6. Trigger the `Release` workflow with `workflow_dispatch` or push a pre-release tag such as `v0.1.0rc1`.
-7. Confirm the `testpypi-smoke` job installs from TestPyPI and runs `djlib-doctor self-test` on Ubuntu, macOS, and Windows.
+5. In GitHub, ensure the repository has an environment named `pypi`; no secrets are needed for trusted publishing.
+6. Push `main`, then push tag `v0.1.0`.
+7. Confirm the Release workflow publishes to real PyPI and verify `pip install djlib-doctor` plus `djlib-doctor self-test` in a clean venv.

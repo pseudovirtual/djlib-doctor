@@ -12,16 +12,20 @@ Use this checklist for a human-controlled release. Do not publish from a local c
    - environment: `testpypi` or `pypi`
 3. Re-check the SQLCipher platform caveat: `sqlcipher3-wheels` does not provide every platform/Python wheel. The known gap is Intel/x86_64 macOS on Python 3.13; use Apple Silicon or Python <=3.12 on Intel macOS.
 
-## Dry Run
+## Completed Dry Run
 
-1. Dispatch the Release workflow manually, or push a prerelease tag such as `v0.1.0rc1`.
-2. Confirm the workflow publishes to TestPyPI using the `testpypi` environment.
-3. Confirm the clean-venv smoke job installs from TestPyPI and runs `djlib-doctor self-test` on Ubuntu, macOS, and Windows.
+The 0.1.0 release candidate dry run passed end to end:
+
+1. The Release workflow published to TestPyPI using the `testpypi` environment.
+2. GitHub artifact attestations completed.
+3. The clean-venv smoke job installed from TestPyPI and ran `djlib-doctor self-test` on Ubuntu, macOS, and Windows.
+4. The README primary install path is now `pip install djlib-doctor`.
 
 ## Final Release
 
-1. Only after TestPyPI smoke passes, update the README install path to `pip install djlib-doctor` and commit it.
-2. Push the final tag, such as `v0.1.0`.
-3. Confirm the Release workflow publishes to real PyPI using the `pypi` environment.
-4. Verify `pip install djlib-doctor` from real PyPI in a clean venv.
-5. Run `djlib-doctor self-test` in that clean venv.
+1. Push `main` after this release-prep commit lands.
+2. Confirm the GitHub `pypi` environment exists and the PyPI trusted publisher is configured for owner `pseudovirtual`, repository `djlib-doctor`, workflow `release.yml`, and environment `pypi`.
+3. Push the final tag: `v0.1.0`.
+4. Confirm the Release workflow publishes to real PyPI using the `pypi` environment.
+5. Verify `pip install djlib-doctor` from real PyPI in a clean venv.
+6. Run `djlib-doctor self-test` in that clean venv.
