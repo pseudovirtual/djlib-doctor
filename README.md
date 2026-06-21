@@ -37,9 +37,9 @@ That's enough to start poking at your library read-only. The first thing most pe
 djlib-doctor verify ~/Desktop/rekordbox-export.xml
 ```
 
-> Working with Serato audio tags? Add the optional extras: `pip install "djlib-doctor[audio-tags]"`.
+> Working with Serato file tags? Add the optional extras: `pip install "djlib-doctor[audio-tags]"`.
 
-## How it keeps your library safe
+## Safety Model
 
 Anything that *reads* your library runs freely and changes nothing.
 
@@ -81,44 +81,28 @@ Use djlib-doctor to inspect my Rekordbox XML export. Stay read-only,
 explain the findings in DJ language, and don't modify my library.
 ```
 
-## Under the hood
+## What's Validated
 
-The detail below is for the curious and for contributors — you don't need any of it to use the tool.
-
-<details>
-<summary><strong>What's been validated against real libraries</strong></summary>
-
-- **Rekordbox encrypted `master.db`** reads through pyrekordbox/SQLCipher: tracks, playlists, and hot cues, memory cues, and saved loops via the real `InMsec`/`OutMsec`/`Kind`/`is_hot_cue`/`is_memory_cue` schema.
+- Rekordbox encrypted `master.db` reads through pyrekordbox/SQLCipher: tracks, playlists, and hot cues, memory cues, and saved loops via the real `InMsec`/`OutMsec`/`Kind`/`is_hot_cue`/`is_memory_cue` schema.
 - **Cue-safe conversion** shifts cues by the net encoder delay so WAV/AIFF/MP3 → M4A keeps cues aligned. Validated on a real Rekordbox 7.2.8 library including an encrypted write round-trip where the cue persisted. (Rekordbox 7+ didn't compensate AAC gapless metadata in that test, so the positive cue shift is required.)
 - **Serato Markers2 cue writes** use Serato's real container shape (version header + base64 body); a written hot cue showed up at the exact position in real Serato DJ.
 - **Serato reads** cover real crates, real `database V2` records (`pfil`/`tsng`/`tart`/`talb`/`tgen`/`tkey`), and Serato Markers2/BeatGrid tags.
 - **Rekordbox ANLZ** beatgrid (`PQTZ`/`PQT2`) and cue container (`PCOB`/`PCO2`) offsets parse correctly on real analysis files.
 
-</details>
-
-<details>
-<summary><strong>Known limits & experimental areas</strong></summary>
+## Experimental / Limited Coverage
 
 - ANLZ beat-shift during conversion is lightly covered end-to-end; parsing is validated, but the write path still needs a real track-with-ANLZ round-trip.
-- Serato saved-loop display isn't yet verified in the Serato GUI (hot cue display is).
-- Version coverage beyond Rekordbox 7.2.8 and captured Serato DJ Pro data is still experimental.
+- Serato saved-loop display is not yet verified in the Serato GUI (hot cue display is).
+- Broad Rekordbox and Serato version coverage beyond Rekordbox 7.2.8 and captured Serato DJ Pro data is still experimental.
 - Fingerprinting is byte-level only today; acoustic fingerprinting is planned behind an optional backend.
 
-</details>
-
-<details>
-<summary><strong>Platform / SQLCipher notes</strong></summary>
+## Platform / SQLCipher Notes
 
 Rekordbox `master.db` work uses `pyrekordbox` and `sqlcipher3-wheels` (installed by default). Prebuilt SQLCipher wheels cover the CI targets — Ubuntu x64, Windows x64, and current GitHub macOS arm64 runners on Python 3.9 and 3.13. The known gap is **Intel/x86_64 macOS on Python 3.13**, where `pip install` may fail to build SQLCipher locally; use Python ≤3.12 there for now. If SQLCipher can't import, Rekordbox DB commands fail closed with a clear backend-unavailable message rather than doing anything risky.
 
-</details>
-
-<details>
-<summary><strong>Why cue-safe migration is genuinely hard</strong></summary>
+## Why Cue-Safe Migration Is Hard
 
 DJ apps scatter creative timing across several places: library databases, audio tags, ANLZ files, crates, XML exports, and player-specific analysis caches. A cue-safe workflow has to preserve cue kind, hotcue slot, loop end, playlist order, file path, and encoder-delay behavior *together* — which is why `djlib-doctor` previews and stages changes before installing them.
-
-</details>
 
 ## For developers
 
