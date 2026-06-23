@@ -9,7 +9,7 @@ Start with the current docs below. Archived docs are retained for project histor
 - [How To Convert Without Losing Cues](how-to-convert-without-losing-cues.md)
 - [How To Port One Crate](how-to-port-one-crate.md)
 - [Python API Examples](api-examples.md)
-- [Phase I Results](phase-i-results.md)
+- [Validation Results](validation-results.md)
 - [Product Architecture](product-architecture.md)
 - [Release Checklist](RELEASE.md)
 - [Safety](safety.md)
@@ -20,10 +20,9 @@ Start with the current docs below. Archived docs are retained for project histor
 - [Rekordbox XML Concepts](rekordbox-xml-concepts.md)
 - [Rekordbox DB Schema](rekordbox-db-schema.md)
 - [Real Fixture Capture](real-fixtures.md)
-- [Execution Plan](execution-plan.md)
-- [Legacy Script Audit](legacy-script-audit.md)
 
 ## Archived Docs
 
 - [GitHub Launch Plan](archive/github-launch-plan.md)
+- [Legacy Script Audit](archive/legacy-script-audit.md)
 - [Private Release Checklist](archive/private-release-checklist.md)

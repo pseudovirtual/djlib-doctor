@@ -93,46 +93,11 @@ class DocsStructureTests(unittest.TestCase):
         self.assertNotIn("`Type` carries cue-vs-loop", text)
         self.assertNotIn("`HotCue`/`Kind` distinguish", text)
 
-    def test_roadmap_tracks_active_backlog_and_state(self):
-        backlog = ROOT / "docs" / "roadmap" / "BACKLOG.md"
-        state = ROOT / "docs" / "roadmap" / "STATE.md"
-
-        self.assertTrue(backlog.exists())
-        self.assertTrue(state.exists())
-
-        backlog_text = backlog.read_text(encoding="utf-8")
-        state_text = state.read_text(encoding="utf-8")
-        for label in ("Phase A", "A1", "Phase B", "B1", "Phase C", "C1", "Phase D", "D1"):
-            self.assertIn(label, backlog_text)
-        self.assertIn("Code for the current 0.1.0 release target is complete", state_text)
-        self.assertIn("Next", state_text)
-
-    def test_roadmap_records_real_validation_and_release_blockers(self):
-        backlog = (ROOT / "docs" / "roadmap" / "BACKLOG.md").read_text(encoding="utf-8")
-        state = (ROOT / "docs" / "roadmap" / "STATE.md").read_text(encoding="utf-8")
-
-        for phrase in (
-            "PCOB/PCO2 len_cues count offset",
-            "cue-shift SIGN/necessity",
-            "Serato Markers2/BeatGrid",
-            "sqlcipher3-wheels coverage gap",
-        ):
-            self.assertIn(phrase, backlog)
-        for phrase in (
-            "real encrypted Rekordbox master.db",
-            "real `.DAT` and `.EXT` ANLZ files",
-            "real Rekordbox import/export check",
-            "real Serato Markers2 and BeatGrid capture",
-        ):
-            self.assertIn(phrase, state)
-
     def test_phase_i_rekordbox_728_shift_result_is_documented(self):
         index = (ROOT / "docs" / "README.md").read_text(encoding="utf-8")
-        state = (ROOT / "docs" / "roadmap" / "STATE.md").read_text(encoding="utf-8")
-        result = (ROOT / "docs" / "phase-i-results.md").read_text(encoding="utf-8")
+        result = (ROOT / "docs" / "validation-results.md").read_text(encoding="utf-8")
 
-        self.assertIn("phase-i-results.md", index)
-        self.assertIn("Rekordbox 7.2.8", state)
+        self.assertIn("validation-results.md", index)
         for phrase in (
             "Rekordbox >=7 ignores AAC gapless",
             "cue/beat shift is positive",
@@ -144,28 +109,10 @@ class DocsStructureTests(unittest.TestCase):
         ):
             self.assertIn(phrase, result)
 
-    def test_phase_i_real_data_followups_are_recorded(self):
-        backlog = (ROOT / "docs" / "roadmap" / "BACKLOG.md").read_text(encoding="utf-8")
-        state = (ROOT / "docs" / "roadmap" / "STATE.md").read_text(encoding="utf-8")
-
-        for phrase in (
-            "I5: Fix Serato `database V2` track extraction",
-            "I6: Document local Rekordbox ANLZ scope",
-            "I7: Add an opt-in, local-only real Serato Markers2 validation harness",
-        ):
-            self.assertIn(phrase, backlog)
-        for phrase in (
-            "Serato `database V2` nested `otrk` extraction",
-            "local ANLZ cue-scope documentation",
-            "opt-in local Markers2 validation harness",
-            "PCOB/PCO2 cue-count offsets",
-        ):
-            self.assertIn(phrase, state)
-
     def test_local_anlz_cue_scope_is_documented(self):
         docs = "\n".join(
             (ROOT / path).read_text(encoding="utf-8")
-            for path in ("docs/phase-i-results.md", "docs/how-to-convert-without-losing-cues.md")
+            for path in ("docs/validation-results.md", "docs/how-to-convert-without-losing-cues.md")
         )
 
         for phrase in (

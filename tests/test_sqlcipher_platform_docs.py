@@ -7,8 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 class SqlcipherPlatformDocsTests(unittest.TestCase):
     def test_sqlcipher_platform_caveat_is_documented(self):
         docs = "\n".join(
-            (ROOT / path).read_text(encoding="utf-8")
-            for path in ("README.md", "docs/rekordbox-db-schema.md", "docs/roadmap/STATE.md")
+            (ROOT / path).read_text(encoding="utf-8") for path in ("README.md", "docs/rekordbox-db-schema.md")
         )
 
         for phrase in (

@@ -40,7 +40,7 @@ Recommended:
 - `docs/safety.md`
 - `docs/reports.md`
 - `docs/rekordbox-xml-concepts.md`
-- `docs/legacy-script-audit.md`
+- `docs/archive/legacy-script-audit.md`
 - `examples/reports/`
 - `llms.txt` (done)
 - `llms-full.txt` (done)

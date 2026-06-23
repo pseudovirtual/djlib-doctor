@@ -20,7 +20,7 @@ Review any matches before committing.
 - [ ] `CONTRIBUTING.md` exists.
 - [ ] `SECURITY.md` exists.
 - [ ] `CHANGELOG.md` exists.
-- [ ] `docs/legacy-script-audit.md` contains generalized use cases only.
+- [ ] `docs/archive/legacy-script-audit.md` contains generalized use cases only.
 - [ ] GitHub Actions test workflow exists.
 - [ ] Issue templates exist.
 - [ ] PR template exists.
