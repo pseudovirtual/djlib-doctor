@@ -9,7 +9,6 @@ class StatusDocsTests(unittest.TestCase):
         text = "\n".join(
             (ROOT / path).read_text(encoding="utf-8")
             for path in (
-                "docs/end-to-end-product-plan.md",
                 "docs/product-architecture.md",
                 "SECURITY.md",
                 "CHANGELOG.md",

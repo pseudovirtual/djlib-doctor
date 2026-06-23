@@ -117,7 +117,7 @@ Goal: make sure the public project captures real cleanup lessons without leaking
 
 Workflow:
 
-1. Review [Legacy Script Audit](legacy-script-audit.md).
+1. Review [Legacy Script Audit](archive/legacy-script-audit.md).
 2. Pick one use-case family.
 3. Add a synthetic fixture that captures the behavior.
 4. Add expected human and JSON report examples.

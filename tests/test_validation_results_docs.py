@@ -4,11 +4,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-class PhaseIResultsDocsTests(unittest.TestCase):
+class ValidationResultsDocsTests(unittest.TestCase):
     def test_live_validation_counts_are_recorded(self):
-        result = (ROOT / "docs" / "phase-i-results.md").read_text(encoding="utf-8")
-        state = (ROOT / "docs" / "roadmap" / "STATE.md").read_text(encoding="utf-8")
-        docs = f"{result}\n{state}"
+        docs = (ROOT / "docs" / "validation-results.md").read_text(encoding="utf-8")
 
         for phrase in (
             "150 real .DAT",
@@ -26,7 +24,7 @@ class PhaseIResultsDocsTests(unittest.TestCase):
             self.assertIn(phrase, docs)
 
     def test_fixture_hardening_results_are_recorded(self):
-        result = (ROOT / "docs" / "phase-i-results.md").read_text(encoding="utf-8")
+        result = (ROOT / "docs" / "validation-results.md").read_text(encoding="utf-8")
 
         for phrase in (
             "J4 fixture-hardening verification",
